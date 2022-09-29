@@ -23,17 +23,17 @@ import {
   updatePartsCompany,
   createPartsInfo,
   createMachine,
-} from "./libs/initialSetup";
+} from "./libs/initialSetup.js";
 
-import formsRoutes from "./routes/forms.routes";
-import authRoutes from "./routes/auth.routes";
-import userRouter from "./routes/user.routes";
-import kaizenRoutes from "./routes/Others/kaizen.routes";
-import employeesRoutes from "./routes/employees.routes";
-import deviationRoutes from "./routes/General/deviation.routes";
-import partsRoutes from "./routes/Quality/parts.routes";
-import customersRoutes from "./routes/General/customer.routes";
-import validationSettingsRoutes from "./routes/General/validationSettings.routes";
+import formsRoutes from "./routes/forms.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
+import kaizenRoutes from "./routes/Others/kaizen.routes.js";
+import employeesRoutes from "./routes/employees.routes.js";
+import deviationRoutes from "./routes/General/deviation.routes.js";
+import partsRoutes from "./routes/Quality/parts.routes.js";
+import customersRoutes from "./routes/General/customer.routes.js";
+import validationSettingsRoutes from "./routes/General/validationSettings.routes.js";
 
 
 
