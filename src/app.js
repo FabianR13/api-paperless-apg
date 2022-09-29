@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import pkg from "../package.json";
-import config from "./config";
+import config from "./config.js";
 
 import {
   createRoles,
