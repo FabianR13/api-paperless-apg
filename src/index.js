@@ -1,6 +1,5 @@
 import app from "./app.js";
 import "./database.js";
-import myJson from '../package.json' assert {type: 'json'};
 
 // settings
 app.set('port', process.env.PORT || 4000);
