@@ -1,9 +1,9 @@
 // Validator
 
-import { ROLES } from "../models/Role";
-import User from "../models/User";
-import Employees from "../models/Employees";
-import Role from "../models/Role";
+import { ROLES } from "../models/Role.js";
+import User from "../models/User.js";
+import Employees from "../models/Employees.js";
+import Role from "../models/Role.js";
 
 export const checkDuplicateUsernameorEmail = async (req, res, next) => {
     
