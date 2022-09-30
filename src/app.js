@@ -20,15 +20,15 @@ const {
   createMachine
 } = require("./libs/initialSetup.js");
 
-import formsRoutes from "./routes/forms.routes.js";
-import authRoutes from "./routes/auth.routes.js";
-import userRouter from "./routes/user.routes.js";
-import kaizenRoutes from "./routes/Others/kaizen.routes.js";
-import employeesRoutes from "./routes/employees.routes.js";
-import deviationRoutes from "./routes/General/deviation.routes.js";
-import partsRoutes from "./routes/Quality/parts.routes.js";
-import customersRoutes from "./routes/General/customer.routes.js";
-import validationSettingsRoutes from "./routes/General/validationSettings.routes.js";
+const formsRoutes = require("./routes/forms.routes.js");
+const authRoutes = require( "./routes/auth.routes.js");
+const userRouter = require( "./routes/user.routes.js");
+const kaizenRoutes = require( "./routes/Others/kaizen.routes.js");
+const employeesRoutes = require( "./routes/employees.routes.js");
+const deviationRoutes = require( "./routes/General/deviation.routes.js");
+const partsRoutes = require( "./routes/Quality/parts.routes.js");
+const customersRoutes = require( "./routes/General/customer.routes.js");
+const validationSettingsRoutes = require( "./routes/General/validationSettings.routes.js");
 
 
 
