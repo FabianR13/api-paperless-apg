@@ -1,5 +1,4 @@
 // Controlador para el Kaizen
-import { json } from "body-parser";
 import { nextTick } from "process";
 import Kaizen from "../../../models/Others/Kaizen.js";
 import Company from "../../../models/Company.js";
