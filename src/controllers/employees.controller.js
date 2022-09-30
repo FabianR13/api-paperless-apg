@@ -8,7 +8,8 @@ import Dashboard from "../models/Dashboard.js";
 import Employees from "../models/Employees.js";
 import Deparment from "../models/Deparment.js";
 import Company from "../models/Company.js";
-const fs = require("fs");
+// const fs = require("fs");
+import fs from "fs";
 
 //nuevo empleado
 export const signEmployee = async (req, res) => {
