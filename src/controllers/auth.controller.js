@@ -7,7 +7,7 @@ import Position from "../models/Position.js";
 import Dashboard from "../models/Dashboard.js";
 import Employees from "../models/Employees.js";
 import Company from "../models/Company.js";
-import { Redshift } from "aws-sdk.js";
+import { Redshift } from "aws-sdk";
 import { isAdmin } from "../middlewares/auth.Jwt.js";
 
 //Usuario Nuevo
