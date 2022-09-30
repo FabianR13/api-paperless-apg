@@ -1,21 +1,21 @@
-import Role from "../models/Role";
-import Deparment from "../models/Deparment";
-import Position from "../models/Position";
-import User from "../models/User";
-import Dashboard from "../models/Dashboard";
-import Employees from "../models/Employees";
-import Forms from "../models/Forms";
-import { dataEmployees } from "./EmployeeRawData";
-import { dataForms } from "./FormsRawData";
-import Customer from "../models/General/Customer";
-import Parts from "../models/Quality/Parts";
-import { dataParts } from "./PartsRawData";
-import Kaizen from "../models/Others/Kaizen";
-import Company from "../models/Company";
-import { dataPartsInfo } from "./PartsInfoRawData";
-import PartsInfo from "../models/Quality/PartsInfo";
-import { dataMachine } from "./MachineRawData";
-import Machine from "../models/Setup/Machine";
+import Role from "../models/Role.js";
+import Deparment from "../models/Deparment.js";
+import Position from "../models/Position.js";
+import User from "../models/User.js";
+import Dashboard from "../models/Dashboard.js";
+import Employees from "../models/Employees.js";
+import Forms from "../models/Forms.js";
+import { dataEmployees } from "./EmployeeRawData.js";
+import { dataForms } from "./FormsRawData.js";
+import Customer from "../models/General/Customer.js";
+import Parts from "../models/Quality/Parts.js";
+import { dataParts } from "./PartsRawData.js";
+import Kaizen from "../models/Others/Kaizen.js";
+import Company from "../models/Company.js";
+import { dataPartsInfo } from "./PartsInfoRawData.js";
+import PartsInfo from "../models/Quality/PartsInfo.js";
+import { dataMachine } from "./MachineRawData.js";
+import Machine from "../models/Setup/Machine.js";
 
 //crear compañias
 export const createCompanys = async () => {
