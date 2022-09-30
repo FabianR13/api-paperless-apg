@@ -1,7 +1,7 @@
 
 import Deparment from "../../../models/Deparment.js";
 import Customer from "../../../models/General/Customer.js";
-import Parts from "../../../models/Quality/Parts";
+import Parts from "../../../models/Quality/Parts.js";
 import DeviationRequest from "../../../models/General/DeviationRequest.js";
 import User from "../../../models/User.js";
 import DeviationRiskAssessment from "../../../models/General/DeviationRiskAssessment.js";
