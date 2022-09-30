@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import jwt from "jsonwebtoken.js";
+import jwt from "jsonwebtoken";
 import config from "../config.js";
 import Role from "../models/Role.js";
 import Department from "../models/Deparment.js";
