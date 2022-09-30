@@ -1,10 +1,10 @@
 // Authorizator
 
 import jwt from "jsonwebtoken";
-import config from "../config";
-import User from "../models/User";
-import Role from "../models/Role";
-import Company from "../models/Company";
+import config from "../config.js";
+import User from "../models/User.js";
+import Role from "../models/Role.js";
+import Company from "../models/Company.js";
 
 // Verify the token provided in the Header
 export const verifyToken = async (req, res, next) => {
