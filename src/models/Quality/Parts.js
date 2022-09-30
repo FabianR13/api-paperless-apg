@@ -1,6 +1,4 @@
-import { LexModelBuildingService } from "aws-sdk";
 import {Schema, model} from "mongoose";
-import { stringify } from "uuid";
 
 const partSchema =new Schema(
  
