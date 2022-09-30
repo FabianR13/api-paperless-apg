@@ -1,6 +1,6 @@
-import Parts from "../../models/Quality/Parts";
-import Customer from "../../models/General/Customer";
-import Company from "../../models/Company";
+import Parts from "../../models/Quality/Parts.js";
+import Customer from "../../models/General/Customer.js";
+import Company from "../../models/Company.js";
 
 
 

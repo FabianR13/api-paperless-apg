@@ -1,11 +1,11 @@
 
-import Deparment from "../../../models/Deparment";
-import Customer from "../../../models/General/Customer";
+import Deparment from "../../../models/Deparment.js";
+import Customer from "../../../models/General/Customer.js";
 import Parts from "../../../models/Quality/Parts";
-import DeviationRequest from "../../../models/General/DeviationRequest";
-import User from "../../../models/User";
-import DeviationRiskAssessment from "../../../models/General/DeviationRiskAssessment";
-import Company from "../../../models/Company";
+import DeviationRequest from "../../../models/General/DeviationRequest.js";
+import User from "../../../models/User.js";
+import DeviationRiskAssessment from "../../../models/General/DeviationRiskAssessment.js";
+import Company from "../../../models/Company.js";
 const fs = require("fs");
 
 

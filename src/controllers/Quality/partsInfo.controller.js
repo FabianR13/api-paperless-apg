@@ -1,4 +1,4 @@
-import PartsInfo from "../../models/Quality/PartsInfo";
+import PartsInfo from "../../models/Quality/PartsInfo.js";
 
 export const signPartsInfo = async (req,res) => {
     const {

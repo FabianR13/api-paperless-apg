@@ -1,12 +1,12 @@
-import ValidationSettings from "../../../models/General/ValidationSettings";
-import Machine from "../../../models/Setup/Machine";
-import User from "../../../models/User";
-import Company from "../../../models/Company";
-import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical";
-import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction";
-import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality";
-import TemporalStop from "../../../models/General/TemporalStop";
-import EndRun from "../../../models/General/EndRun";
+import ValidationSettings from "../../../models/General/ValidationSettings.js";
+import Machine from "../../../models/Setup/Machine.js";
+import User from "../../../models/User.js";
+import Company from "../../../models/Company.js";
+import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical.js";
+import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction.js";
+import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality.js";
+import TemporalStop from "../../../models/General/TemporalStop.js";
+import EndRun from "../../../models/General/EndRun.js";
 
 //method to post 
 export const createValidationSettings = async (req, res) => {

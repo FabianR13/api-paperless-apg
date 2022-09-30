@@ -1,4 +1,4 @@
-import Customer from "../../../models/General/Customer";
+import Customer from "../../../models/General/Customer.js";
 
 export const signCustomer =async (req, res) => {
     const {

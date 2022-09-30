@@ -1,14 +1,14 @@
-import User from "../models/User";
+import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import config from "../config";
-import Role from "../models/Role";
-import Department from "../models/Deparment";
-import Position from "../models/Position";
-import Dashboard from "../models/Dashboard";
-import Employees from "../models/Employees";
-import Company from "../models/Company";
-import { Redshift } from "aws-sdk";
-import { isAdmin } from "../middlewares/auth.Jwt";
+import config from "../config.js";
+import Role from "../models/Role.js";
+import Department from "../models/Deparment.js";
+import Position from "../models/Position.js";
+import Dashboard from "../models/Dashboard.js";
+import Employees from "../models/Employees.js";
+import Company from "../models/Company.js";
+import { Redshift } from "aws-sdk.js";
+import { isAdmin } from "../middlewares/auth.Jwt.js";
 
 //Usuario Nuevo
 export const signUp = async (req, res) => {

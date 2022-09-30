@@ -1,5 +1,5 @@
-import Company from "../../../models/Company";
-import TemporalStop from "../../../models/General/TemporalStop";
+import Company from "../../../models/Company.js";
+import TemporalStop from "../../../models/General/TemporalStop.js";
 //method to post
 export const createTemporalStop = async(req,res) => {
     const{

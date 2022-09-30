@@ -1,6 +1,6 @@
-import Dashboard from "../models/Dashboard";
+import Dashboard from "../models/Dashboard.js";
 //import Form from "../models/Forms";
-import Forms from "../models/Forms";
+import Forms from "../models/Forms.js";
 
 // Forms that are shown in the Dashboard
 export const createForms = async (req, res) => {

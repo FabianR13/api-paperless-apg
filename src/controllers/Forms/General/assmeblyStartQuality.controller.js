@@ -1,9 +1,9 @@
 
 
-import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality";
-import User from "../../../models/User";
-import Company from "../../../models/Company";
-import DeviationRequest from "../../../models/General/DeviationRequest";
+import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality.js";
+import User from "../../../models/User.js";
+import Company from "../../../models/Company.js";
+import DeviationRequest from "../../../models/General/DeviationRequest.js";
 
 //method to post
 export const createAssemblyStartQuality = async (req, res) => {

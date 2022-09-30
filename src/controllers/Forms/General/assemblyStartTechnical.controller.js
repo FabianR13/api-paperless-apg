@@ -1,7 +1,7 @@
 
-import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical";
-import Company from "../../../models/Company";
-import User from "../../../models/User";
+import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical.js";
+import Company from "../../../models/Company.js";
+import User from "../../../models/User.js";
 //method to post
 export const createAssemblyStartTechnial = async(req, res) => {
     const{

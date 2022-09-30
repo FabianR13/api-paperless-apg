@@ -1,6 +1,6 @@
-import Company from "../../../models/Company";
-import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction";
-import User from "../../../models/User";
+import Company from "../../../models/Company.js";
+import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction.js";
+import User from "../../../models/User.js";
 //mehtod to post 
 export const createAssemblyStartProduction =  async (req,res) => {
     const{

@@ -1,6 +1,6 @@
-import Company from "../../../models/Company";
-import EndRun from "../../../models/General/EndRun";
-import User from "../../../models/User";
+import Company from "../../../models/Company.js";
+import EndRun from "../../../models/General/EndRun.js";
+import User from "../../../models/User.js";
 //method to post
 export const createEndRun = async(req,res) => {
     const{

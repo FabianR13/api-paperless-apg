@@ -1,13 +1,13 @@
-import User from "../models/User";
-import jwt from "jsonwebtoken";
-import config from "../config";
-import Role from "../models/Role";
-import Department from "../models/Deparment";
-import Position from "../models/Position";
-import Dashboard from "../models/Dashboard";
-import Employees from "../models/Employees";
-import Deparment from "../models/Deparment";
-import Company from "../models/Company";
+import User from "../models/User.js";
+import jwt from "jsonwebtoken.js";
+import config from "../config.js";
+import Role from "../models/Role.js";
+import Department from "../models/Deparment.js";
+import Position from "../models/Position.js";
+import Dashboard from "../models/Dashboard.js";
+import Employees from "../models/Employees.js";
+import Deparment from "../models/Deparment.js";
+import Company from "../models/Company.js";
 const fs = require("fs");
 
 //nuevo empleado

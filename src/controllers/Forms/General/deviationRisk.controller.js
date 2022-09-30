@@ -1,7 +1,7 @@
 
-import DeviationRiskAssesment from "../../../models/General/DeviationRiskAssessment";
-import Company from "../../../models/Company";
-import User from "../../../models/User";
+import DeviationRiskAssesment from "../../../models/General/DeviationRiskAssessment.js";
+import Company from "../../../models/Company.js";
+import User from "../../../models/User.js";
 
 
 
