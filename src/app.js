@@ -4,7 +4,7 @@ import morgan from "morgan";
 // import pkg from "../package.json";
 import config from "./config.js";
 import pkg from "../package.json" assert { type: "json" };
-import("package.json", { assert: { type: "json" } });
+import("../package.json", { assert: { type: "json" } });
 
 import {
   createRoles,
