@@ -6,7 +6,8 @@ import DeviationRequest from "../../../models/General/DeviationRequest.js";
 import User from "../../../models/User.js";
 import DeviationRiskAssessment from "../../../models/General/DeviationRiskAssessment.js";
 import Company from "../../../models/Company.js";
-const fs = require("fs");
+// const fs = require("fs");
+import fs from "fs";
 
 
 export const createDeviationRequest = async (req, res) => {
