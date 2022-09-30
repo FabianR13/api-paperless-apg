@@ -2,8 +2,8 @@ import Router from "express";
 
 const router = Router();
 
-import * as deviationRequestController from "../../controllers/Forms/General/deviationReq.controller";
-import * as deviationRiskController from "../../controllers/Forms/General/deviationRisk.controller";
+import * as deviationRequestController from "../../controllers/Forms/General/deviationReq.controller.js";
+import * as deviationRiskController from "../../controllers/Forms/General/deviationRisk.controller.js";
 import uploadDeviationFile from "../../middlewares/uploadDeviationFile.js";
 import { authJwt } from "../../middlewares";
 //Deviation request

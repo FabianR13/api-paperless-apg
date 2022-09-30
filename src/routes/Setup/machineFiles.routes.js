@@ -1,5 +1,5 @@
 import { Router } from "express";
-import * as machineControler from "../../controllers/Forms/Setup/machineFiles.controler";
+import * as machineControler from "../../controllers/Forms/Setup/machineFiles.controler.js";
 const router = Router();
 
 

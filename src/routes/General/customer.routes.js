@@ -2,7 +2,7 @@ import Router from "express";
 
 const router = Router();
 
-import * as customerController from "../../controllers/Forms/General/customers.controller";
+import * as customerController from "../../controllers/Forms/General/customers.controller.js";
 
 router.post(
     "/NewCustomer",

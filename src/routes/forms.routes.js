@@ -1,8 +1,8 @@
 import { Router } from "express";
 const router = Router();
 
-import * as formsController from "../controllers/forms.controller";
-import { authJwt } from "../middlewares";
+import * as formsController from "../controllers/forms.controller.js";
+import { authJwt } from "../middlewares.js";
 
 router.post(
   "/",

@@ -1,12 +1,12 @@
 import Router from "express";
 
 const router =  Router();
-import * as assemblyStartTechnicalController from "../../controllers/Forms/General/assemblyStartTechnical.controller";
-import * as validationSettingsController from "../../controllers/Forms/General/validationSettings.controller";
-import * as assemblyStartQualityController from "../../controllers/Forms/General/assmeblyStartQuality.controller";
-import * as assemblyStartProductionController from "../../controllers/Forms/General/assemblyStartProduction.controller";
-import * as temporalStopController from "../../controllers/Forms/General/temporalStop.controller";
-import * as endRunController from "../../controllers/Forms/General/endRun.controller";
+import * as assemblyStartTechnicalController from "../../controllers/Forms/General/assemblyStartTechnical.controller.js";
+import * as validationSettingsController from "../../controllers/Forms/General/validationSettings.controller.js";
+import * as assemblyStartQualityController from "../../controllers/Forms/General/assmeblyStartQuality.controller.js";
+import * as assemblyStartProductionController from "../../controllers/Forms/General/assemblyStartProduction.controller.js";
+import * as temporalStopController from "../../controllers/Forms/General/temporalStop.controller.js";
+import * as endRunController from "../../controllers/Forms/General/endRun.controller.js";
 
 
 

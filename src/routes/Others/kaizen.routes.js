@@ -1,8 +1,8 @@
 import { Router } from "express";
-import * as kaizenController from "../../controllers/Forms/Others/kaizen.controller";
+import * as kaizenController from "../../controllers/Forms/Others/kaizen.controller.js";
 const router = Router();
-import { uploadKaizenImgs } from "../../middlewares/uploadKaizenImg";
-import { authJwt } from "../../middlewares";
+import { uploadKaizenImgs } from "../../middlewares/uploadKaizenImg.js";
+import { authJwt } from "../../middlewares.js";
 
 // Route to get All the kaizens
 router.get(

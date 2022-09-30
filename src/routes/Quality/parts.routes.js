@@ -2,9 +2,9 @@ import Router from "express";
 
 const router = Router();
 
-import * as partsController from "../../controllers/Quality/parts.controller";
-import { authJwt } from "../../middlewares";
-import * as partsInfoController from "../../controllers/Quality/partsInfo.controller";
+import * as partsController from "../../controllers/Quality/parts.controller.js";
+import { authJwt } from "../../middlewares.js";
+import * as partsInfoController from "../../controllers/Quality/partsInfo.controller.js";
 
 router.post(
     "/newpartesInfo", partsInfoController.signPartsInfo

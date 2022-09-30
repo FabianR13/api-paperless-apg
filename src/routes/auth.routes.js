@@ -1,8 +1,8 @@
 import { Router } from "express";
 const router = Router();
 
-import * as authController from "../controllers/auth.controller";
-import { verifySignup, authJwt } from "../middlewares";
+import * as authController from "../controllers/auth.controller.js";
+import { verifySignup, authJwt } from "../middlewares.js";
 
 router.post(
   "/Signup/:CompanyId",
