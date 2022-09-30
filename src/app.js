@@ -1,8 +1,10 @@
 // import pkg from '../package.json' assert {type: 'json'};
-import express from "express";
-import morgan from "morgan";
+// import express from "express";
+// import morgan from "morgan";
+const express =requiere("express");
+const morgan = require("morgan");
 // import pkg from "../package.json";
-import config from "./config.js";
+// import config from "./config.js";
 // import pkg from "../package.json" assert { type: "json" };
 // import("../package.json", { assert: { type: "json" } });
 
