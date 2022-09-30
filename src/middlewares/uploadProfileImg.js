@@ -1,5 +1,7 @@
-import multer from 'multer';
-const shortid = require("shortid");
+// const multer = require("multer");
+// const shortid = require("shortid");
+import multer from "multer";
+import shortid from "shortid";
 
 // Save Locally the Files
 const storage = multer.diskStorage({
