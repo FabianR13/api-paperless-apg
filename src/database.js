@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-// const mongoose = require("mongoose");
+// const mongose = require("mongoose")
+const mongoose = require("mongoose");
 // dddd
 // Local Enviroment
 // mongoose

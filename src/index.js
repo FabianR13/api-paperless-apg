@@ -1,5 +1,5 @@
 // import app from "./app.js";
-import "./database.js";
+// import "./database.js";
 // const database = require("./database.js");
 const {app} = require("./app.js");
 // 
