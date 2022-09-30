@@ -39,7 +39,7 @@ import validationSettingsRoutes from "./routes/General/validationSettings.routes
 
 
 
-const pkg = require("../package.json");
+// const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express().use("*", cors());
@@ -73,7 +73,7 @@ const app = express().use("*", cors());
 // createEmployees();
 
 
-app.set("pkg", pkg);
+// app.set("pkg", pkg);
 
 app.use(morgan("dev"));
 app.use(express.json({limit: '25mb'}));
@@ -137,4 +137,4 @@ app.get("/api/cors", (req, res) => {
 //   main().catch(console.error);
 // });
 
-export default app;
+module.exports = app;
