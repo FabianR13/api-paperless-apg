@@ -1,4 +1,3 @@
-import timespan from "jsonwebtoken/lib/timespan";
 import { Schema, model } from "mongoose";
 
 const dashboardSchema = new Schema(
