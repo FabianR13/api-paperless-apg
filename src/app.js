@@ -4,7 +4,7 @@ import morgan from "morgan";
 // import pkg from "../package.json";
 import config from "./config.js";
 // import pkg from "../package.json" assert { type: "json" };
-import("../package.json", { assert: { type: "json" } });
+// import("../package.json", { assert: { type: "json" } });
 
 import {
   createRoles,
@@ -41,7 +41,7 @@ import validationSettingsRoutes from "./routes/General/validationSettings.routes
 
 
 
-
+const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express().use("*", cors());
