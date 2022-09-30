@@ -5,10 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "build": "babel src --out-dir build",
     "dev": "nodemon src/index.js --exec babel-node",
-    "start": "node src/index.js",
-    "build": "ng build",
-  "heroku-postbuild": "ng build --prod" 
+    "start": "node src/index.js"
   },
   "keywords": [],
   "author": "Rinconator",
