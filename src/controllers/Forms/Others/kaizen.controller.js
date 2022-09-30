@@ -1,11 +1,13 @@
 // Controlador para el Kaizen
+const Kaizen = require( "../../../models/Others/Kaizen.js");
+const Company = require( "../../../models/Company.js");
+const fs = require("fs");
+// import fs from "fs";
 import { nextTick } from "process";
 import Kaizen from "../../../models/Others/Kaizen.js";
 import Company from "../../../models/Company.js";
-// const fs = require("fs");
-import fs from "fs";
 
-export const  createKaizen = async (req, res) => {
+const  createKaizen = async (req, res) => {
   const {
     kaizenName,
     date,
@@ -119,7 +121,7 @@ export const  createKaizen = async (req, res) => {
 };
 
 // Getting all Kaizens
-export const getKaizens = async (req, res) => {
+const getKaizens = async (req, res) => {
   const {CompanyId} = req.params
   if(CompanyId.length !== 24){
     return;
@@ -137,7 +139,7 @@ export const getKaizens = async (req, res) => {
 };
 
 // Getting Kaizen by Id
-export const getKaizenById = async (req, res) => {
+const getKaizenById = async (req, res) => {
   const foundKaizen = await Kaizen.findById(req.params.kaizenId);
   if (!foundKaizen) {
     res
@@ -151,7 +153,7 @@ export const getKaizenById = async (req, res) => {
 };
 
 // Getting Kaizens Filtered
-export const getKaizensFiltered = async (req, res) => {
+const getKaizensFiltered = async (req, res) => {
   const {start, end, area, status, createdBy, montlyRank,company} = req.body
   let options = {};
 
@@ -193,7 +195,7 @@ export const getKaizensFiltered = async (req, res) => {
 };
 
 // Updating the Kaizen All data
-export const updateKaizen = async (req, res) => {
+const updateKaizen = async (req, res) => {
   //const updatedKaizen = await K
   const { kaizenId } = req.params;
   const {
@@ -261,7 +263,7 @@ export const updateKaizen = async (req, res) => {
 };
 
 // Updating the Kaizen All data
-export const updateKaizenStatus = async (req, res) => {
+const updateKaizenStatus = async (req, res) => {
   //const updatedKaizen = await K
   const { kaizenId } = req.params;
   const { status, observations,montlyRank,lastModifyBy } = req.body;
@@ -292,7 +294,7 @@ export const updateKaizenStatus = async (req, res) => {
 };
 
 // Function to modify the Images from a Kaizen
-export const modifyKaizenImg = async (req, res) => {
+const modifyKaizenImg = async (req, res) => {
   const { kaizenId } = req.params;
 
   //Getting Previous Images
@@ -418,7 +420,7 @@ export const modifyKaizenImg = async (req, res) => {
 
 
 //delete kaizen
-export const deleteKaizen = async (req, res) => {
+const deleteKaizen = async (req, res) => {
   //const updatedKaizen = await K
   const { kaizenId } = req.params;
   const path =
@@ -499,4 +501,15 @@ if (prevKaizenImagesA) {
 		
 	});
 
+};
+
+module.exports = {
+  createKaizen,
+  getKaizens,
+  getKaizenById,
+  getKaizensFiltered,
+  updateKaizen,
+  updateKaizenStatus,
+  modifyKaizenImg,
+  deleteKaizen
 };

@@ -1,5 +1,6 @@
-import {Schema, model} from "mongoose";
-import { stringify } from "uuid";
+const {Schema, model} = require("mongoose");
+// import {Schema, model} from "mongoose";
+// import { stringify } from "uuid";
 
 const deviationRiskSchema = new Schema (
     {

@@ -1,8 +1,11 @@
-import Company from "../../../models/Company.js";
-import EndRun from "../../../models/General/EndRun.js";
-import User from "../../../models/User.js";
+const Company = require( "../../../models/Company.js");
+const EndRun = require( "../../../models/General/EndRun.js");
+const User = require( "../../../models/User.js");
+// import Company from "../../../models/Company.js";
+// import EndRun from "../../../models/General/EndRun.js";
+// import User from "../../../models/User.js";
 //method to post
-export const createEndRun = async(req,res) => {
+const createEndRun = async(req,res) => {
     const{
         verWatherMold,
         temperatures,
@@ -86,7 +89,7 @@ export const createEndRun = async(req,res) => {
     res.json({status:"200", message:"change mold created", savedEndRun});
 }
 //method to update
-export const updateEndRun = async (req, res) => {
+const updateEndRun = async (req, res) => {
     const {endRunId} = req.params;
 
      
@@ -196,9 +199,15 @@ export const updateEndRun = async (req, res) => {
     res.status(200).json({status:"200", message:"change mold updated", body: updatedEndRun});
 }
 //method to get
-export const getEndRun = async (req,res) => {
+const getEndRun = async (req,res) => {
     const endRun = await EndRun.find().sort({
         verWatherMold:1,
     });
     res.json({status:"200", message:"change mold loaded", body: endRun});
 }
+
+module.exports = {
+  createEndRun,
+  updateEndRun,
+  getEndRun
+};

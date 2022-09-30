@@ -1,9 +1,11 @@
-
-import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical.js";
-import Company from "../../../models/Company.js";
-import User from "../../../models/User.js";
+const AssemblyStartTechnical = require( "../../../models/General/AssemblyStartTechnical.js");
+const Company = require( "../../../models/Company.js");
+const User = require( "../../../models/User.js");
+// import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical.js";
+// import Company from "../../../models/Company.js";
+// import User from "../../../models/User.js";
 //method to post
-export const createAssemblyStartTechnial = async(req, res) => {
+const createAssemblyStartTechnial = async(req, res) => {
     const{
         parameterSetting,
         revisionDate,
@@ -70,7 +72,7 @@ export const createAssemblyStartTechnial = async(req, res) => {
     res.json({status:"200", message:"assembly start Technical created", savedAssemblyStartTechnical});
 }
 //method to update 
-export const updateAssemblyStartTechnical = async (req,res) => {
+const updateAssemblyStartTechnical = async (req,res) => {
     const {assemblyStartTechnicalId} = req.params;
 
 
@@ -146,9 +148,16 @@ export const updateAssemblyStartTechnical = async (req,res) => {
     res.status(200).json({status:"200",message:"assembly start updated", body:updatedAssemblyStartTechnical});
 }
 //method to get 
-export const getAssemblyStartTechnical = async (req,res) => {
+const getAssemblyStartTechnical = async (req,res) => {
     const assemblyStartTechnical = await AssemblyStartTechnical.find().sort({
         parameterSetting:1,
     });
     res.json({status:"200",message:"assemblyStart", body: assemblyStartTechnical});
 }
+
+
+module.export = {
+    createAssemblyStartTechnial,
+    updateAssemblyStartTechnical,
+    getAssemblyStartTechnical
+};

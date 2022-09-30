@@ -1,4 +1,3 @@
-// const mongose = require("mongoose")
 const mongoose = require("mongoose");
 // dddd
 // Local Enviroment

@@ -1,9 +1,11 @@
-import Dashboard from "../models/Dashboard.js";
+const Dashboard = require("../models/Dashboard.js");
+const Forms = require("../models/Forms.js");
+// import Dashboard from "../models/Dashboard.js";
+// import Forms from "../models/Forms.js";
 //import Form from "../models/Forms";
-import Forms from "../models/Forms.js";
 
 // Forms that are shown in the Dashboard
-export const createForms = async (req, res) => {
+const createForms = async (req, res) => {
   const { name, description,back, dashboard } = req.body;
 
   const newForm = new Forms({ name, description ,back});
@@ -18,7 +20,7 @@ export const createForms = async (req, res) => {
   res.status(201).json(formSaved);
 };
 
-export const getForms = async (req, res) => {
+const getForms = async (req, res) => {
   const forms = await Forms.find();
   res.json(forms);
 };
@@ -37,12 +39,12 @@ export const getForms = async (req, res) => {
 // };
 
 // Get Dashboard Cards by Category
-export const getDashboardById = async (req, res) => {
+const getDashboardById = async (req, res) => {
   const foundForms = await Forms.find({dashboard: {$in: req.params.formsId}}).populate({path:"dashboard", select: "name"})
   res.status(200).json({status: "200", message: "Forms Loaded", body: foundForms});
 };
 
-export const getFormsbyGeneral = async (req, res) => {
+const getFormsbyGeneral = async (req, res) => {
   const { dashboardId } = req.body;
 
   console.log(dashboardId);
@@ -77,3 +79,10 @@ export const getFormsbyGeneral = async (req, res) => {
 //   const deleteForm = await Form.findByIdAndDelete(formId);
 //   res.status(204).json();
 // };
+
+module.exports ={
+  createForms,
+  getForms,
+  getDashboardById,
+  getFormsbyGeneral
+};

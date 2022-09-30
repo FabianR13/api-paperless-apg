@@ -1,18 +1,24 @@
-import User from "../models/User.js";
-import jwt from "jsonwebtoken";
-import config from "../config.js";
-import Role from "../models/Role.js";
-import Department from "../models/Deparment.js";
-import Position from "../models/Position.js";
-import Dashboard from "../models/Dashboard.js";
-import Employees from "../models/Employees.js";
-import Deparment from "../models/Deparment.js";
-import Company from "../models/Company.js";
-// const fs = require("fs");
-import fs from "fs";
+const fs = require("fs");
+const Employees = require( "../models/Employees.js");
+const Deparment = require( "../models/Deparment.js");
+const Company = require( "../models/Company.js");
+const Department = require( "../models/Deparment.js");
+const Position = require( "../models/Position.js");
+// import Employees from "../models/Employees.js";
+// import Deparment from "../models/Deparment.js";
+// import Company from "../models/Company.js";
+// import Department from "../models/Deparment.js";
+// import Position from "../models/Position.js";
+// import User from "../models/User.js";
+// import jwt from "jsonwebtoken";
+// import config from "../config.js";
+// import Role from "../models/Role.js";
+// import Dashboard from "../models/Dashboard.js";
+
+// import fs from "fs";
 
 //nuevo empleado
-export const signEmployee = async (req, res) => {
+const signEmployee = async (req, res) => {
     const{ 
         name, 
         lastName,
@@ -87,18 +93,18 @@ if (req.file) {
     // res.status(200).json({token});
 };
 // Getting all positions
-export const getPositions = async (req, res) => {
+const getPositions = async (req, res) => {
     const positions = await Position.find().sort({name: 1});
     res.json({ status: "200", message: "Position Loaded", body: positions });
   };
 
   // Getting all positions
-export const getDepartments = async (req, res) => {
+const getDepartments = async (req, res) => {
   const departments = await Deparment.find().sort({name: 1});
   res.json({ status: "200", message: "Department Loaded", body: departments });
 };
   // Getting all employees
-  export const getEmployees = async (req, res) => {
+const getEmployees = async (req, res) => {
     const {CompanyId} = req.params
     if(CompanyId.length !== 24){
       return;
@@ -116,7 +122,7 @@ export const getDepartments = async (req, res) => {
     
   };
  // Updating the employee user
-export const updateEmployeeUser = async (req, res) => {
+const updateEmployeeUser = async (req, res) => {
   const { employeeId } = req.params;
   const { user } = req.body;
 
@@ -216,7 +222,7 @@ export const updateEmployeeUser = async (req, res) => {
 };
 
 // Function to modify the Image from a employee
-export const modifyProfileImg = async (req, res) => {
+const modifyProfileImg = async (req, res) => {
   const { employeeId } = req.params;
 
   //Getting Previous Images
@@ -292,4 +298,14 @@ export const modifyProfileImg = async (req, res) => {
     message: "Employee Updated",
     body: foundEmployeeNew,
   });
+};
+
+
+module.exports ={
+  signEmployee,
+  getPositions,
+  getDepartments,
+  getEmployees,
+  updateEmployeeUser,
+  modifyProfileImg
 };

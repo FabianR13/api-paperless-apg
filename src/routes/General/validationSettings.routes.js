@@ -1,65 +1,107 @@
-import Router from "express";
-
+const {Router} = require("express");
 const router =  Router();
-import * as assemblyStartTechnicalController from "../../controllers/Forms/General/assemblyStartTechnical.controller.js";
-import * as validationSettingsController from "../../controllers/Forms/General/validationSettings.controller.js";
-import * as assemblyStartQualityController from "../../controllers/Forms/General/assmeblyStartQuality.controller.js";
-import * as assemblyStartProductionController from "../../controllers/Forms/General/assemblyStartProduction.controller.js";
-import * as temporalStopController from "../../controllers/Forms/General/temporalStop.controller.js";
-import * as endRunController from "../../controllers/Forms/General/endRun.controller.js";
+const {
+    createAssemblyStartTechnial,
+    updateAssemblyStartTechnical,
+    getAssemblyStartTechnical
+} = require("../../controllers/Forms/General/assemblyStartTechnical.controller.js");
+const {
+    createAssemblyStartProduction,
+    updateAssemblyStartProduction,
+    getAssemblyStartProduction
+} = require("../../controllers/Forms/General/assemblyStartProduction.controller.js");
+const {
+    createAssemblyStartQuality,
+    updateAssemblyStartQuality,
+    getAssemblyStartQuality
+} = require("../../controllers/Forms/General/assmeblyStartQuality.controller.js");
+const {
+    createValidationSettings,
+    updateValidationSetting,
+    getValidationSetting
+} = require("../../controllers/Forms/General/validationSettings.controller.js");
+const {
+    createTemporalStop,
+    updateTemporalStop,
+    getTemporalStop
+} = require("../../controllers/Forms/General/temporalStop.controller.js");
+const {
+    createEndRun,
+    updateEndRun,
+    getEndRun
+} = require("../../controllers/Forms/General/endRun.controller.js");
+// import Router from "express";
+// import * as assemblyStartTechnicalController from "../../controllers/Forms/General/assemblyStartTechnical.controller.js";
+// import * as validationSettingsController from "../../controllers/Forms/General/validationSettings.controller.js";
+// import * as assemblyStartQualityController from "../../controllers/Forms/General/assmeblyStartQuality.controller.js";
+// import * as assemblyStartProductionController from "../../controllers/Forms/General/assemblyStartProduction.controller.js";
+// import * as temporalStopController from "../../controllers/Forms/General/temporalStop.controller.js";
+// import * as endRunController from "../../controllers/Forms/General/endRun.controller.js";
 
 
 
 //method to post assembly Start
 router.post(
-    "/newAssemblyStartTechnical", assemblyStartTechnicalController.createAssemblyStartTechnial
+    "/newAssemblyStartTechnical", 
+    createAssemblyStartTechnial
 );
 //methos to post validations settings 
 router.post (
-    "/newValidationSettings", validationSettingsController.createValidationSettings
+    "/newValidationSettings", 
+    createValidationSettings
 );
 // method to post assmebly quality
 router.post(
-    "/newAssemblyStartQuality", assemblyStartQualityController.createAssemblyStartQuality
+    "/newAssemblyStartQuality", 
+    createAssemblyStartQuality
 );
 //method to post assembly production 
 router.post (
-    "/newAssemblyStartProduction", assemblyStartProductionController.createAssemblyStartProduction
+    "/newAssemblyStartProduction", 
+    createAssemblyStartProduction
 );
 //methos to post run data 
 router.post(
-    "/newTemporalStop", temporalStopController.createTemporalStop
+    "/newTemporalStop", 
+    createTemporalStop
 );
 //method to post change mold
 router.post(
-    "/newEndRun", endRunController.createEndRun
+    "/newEndRun", 
+    createEndRun
 );
 
 
 //IN HERE STARTS METHOD PUT 
 //method to update change validation setting
 router.put(
-    "/updateValidationSettings/:validationSettingId", validationSettingsController.updateValidationSetting
+    "/updateValidationSettings/:validationSettingId", 
+    updateValidationSetting
 );
 //method to update assembly start
 router.put(
-    "/updateAssemblyStartsTechnicals/:assemblyStartTechnicalId", assemblyStartTechnicalController.updateAssemblyStartTechnical
+    "/updateAssemblyStartsTechnicals/:assemblyStartTechnicalId", 
+    updateAssemblyStartTechnical
 );
 //methos to updte assembly quality
 router.put(
-    "/updateAssemblyStartQualitys/:assemblyStartQualityId", assemblyStartQualityController.updateAssemblyStartQuality
+    "/updateAssemblyStartQualitys/:assemblyStartQualityId", 
+    updateAssemblyStartQuality
 );
 //method to update assembly production
 router.put(
-    "/updateAssemblySP/:assemblyStartProductionId", assemblyStartProductionController.updateAssemblyStartProduction
+    "/updateAssemblySP/:assemblyStartProductionId", 
+    updateAssemblyStartProduction
 );
 //mehod to update mold reset
 router.put(
-    "/updateTemporalStops/:temporalStopId", temporalStopController.updateTemporalStop
+    "/updateTemporalStops/:temporalStopId", 
+    updateTemporalStop
 );
 //method to update Change Mold
 router.put(
-    "/updateEndRuns/:endRunId", endRunController.updateEndRun
+    "/updateEndRuns/:endRunId", 
+    updateEndRun
 );
 
 
@@ -67,26 +109,33 @@ router.put(
 //IN HERE STARTS METHOD GET
 //method to get validation settings 
 router.get(
-    "/validationSetting", validationSettingsController.getValidationSetting
+    "/validationSetting", 
+    getValidationSetting
 );
 //method to get mold Reset 
 router.get(
-    "/temporalStop", temporalStopController.getTemporalStop
+    "/temporalStop", 
+    getTemporalStop
 );
 //method to get change mold 
 router.get(
-    "/endRun", endRunController.getEndRun
+    "/endRun", 
+    getEndRun
 );
 // method to get assembly quality
 router.get(
-    "/assemblyStartQuality", assemblyStartQualityController.getAssemblyStartQuality
+    "/assemblyStartQuality", 
+    getAssemblyStartQuality
 );
 // method to get assembly Start
 router.get(
-    "/assemblyStartTechnical", assemblyStartTechnicalController.getAssemblyStartTechnical
+    "/assemblyStartTechnical", 
+    getAssemblyStartTechnical
 );
 // method to get assembly production
 router.get(
-    "/assemblyStartProduction", assemblyStartProductionController.getAssemblyStartProduction
+    "/assemblyStartProduction", 
+    getAssemblyStartProduction
 );
+
 module.exports = router;

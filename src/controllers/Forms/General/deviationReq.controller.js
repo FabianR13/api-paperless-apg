@@ -1,16 +1,21 @@
+const Customer = require( "../../../models/General/Customer.js");
+const Parts = require( "../../../models/Quality/Parts.js");
+const DeviationRequest = require( "../../../models/General/DeviationRequest.js");
+const User = require( "../../../models/User.js");
+const DeviationRiskAssessment = require( "../../../models/General/DeviationRiskAssessment.js");
+const Company = require( "../../../models/Company.js");
+const fs = require("fs");
+// import Customer from "../../../models/General/Customer.js";
+// import Parts from "../../../models/Quality/Parts.js";
+// import DeviationRequest from "../../../models/General/DeviationRequest.js";
+// import User from "../../../models/User.js";
+// import DeviationRiskAssessment from "../../../models/General/DeviationRiskAssessment.js";
+// import Company from "../../../models/Company.js";
 
-import Deparment from "../../../models/Deparment.js";
-import Customer from "../../../models/General/Customer.js";
-import Parts from "../../../models/Quality/Parts.js";
-import DeviationRequest from "../../../models/General/DeviationRequest.js";
-import User from "../../../models/User.js";
-import DeviationRiskAssessment from "../../../models/General/DeviationRiskAssessment.js";
-import Company from "../../../models/Company.js";
-// const fs = require("fs");
-import fs from "fs";
+// import fs from "fs";
+// import Deparment from "../../../models/Deparment.js";
 
-
-export const createDeviationRequest = async (req, res) => {
+const createDeviationRequest = async (req, res) => {
     const{
       deviationDate,      
       deviationType,
@@ -128,7 +133,7 @@ export const createDeviationRequest = async (req, res) => {
 
 };
 // Getting all deviations
-export const getDeviationRequest = async (req, res) => {
+const getDeviationRequest = async (req, res) => {
   const {CompanyId} = req.params
   if(CompanyId.length !== 24){
     return;
@@ -146,7 +151,7 @@ export const getDeviationRequest = async (req, res) => {
 };
 
 // Getting deviation by Id
-export const getDeviationById = async (req, res) => {
+const getDeviationById = async (req, res) => {
   const foundDeviation = await DeviationRequest.findById(req.params.deviationId).populate({ path: 'customer'}).populate({ path: 'requestBy'}).populate({ path: 'requestBy',populate:{path:"employee",model:"Employees",populate:{path:"department",model:"Department"}}}).populate({ path: 'parts'});
   if (!foundDeviation) {
     res
@@ -159,7 +164,7 @@ export const getDeviationById = async (req, res) => {
     .json({ status: "200", message: "Deviation Founded", body: foundDeviation });
 };
 // Updating deviation status
-export const updateDeviation = async (req, res) => {
+const updateDeviation = async (req, res) => {
   const { deviationId } = req.params;
   const { 
     deviationGranted, 
@@ -201,7 +206,7 @@ export const updateDeviation = async (req, res) => {
 //method to update deviation request 
 
 
-export const updateDeviationReq = async (req, res) => {
+const updateDeviationReq = async (req, res) => {
  
   const {deviationId} = req.params;
   const newCustomer =  req.body.customer;
@@ -318,7 +323,7 @@ if(newCustomer){
 
 
 //Update deviation risk status
-export const updateRiskStatus = async (req,res) => {
+const updateRiskStatus = async (req,res) => {
 
   const newDeviationNumber = req.body.deviationNumber;
   const {deviationId} = req.params;
@@ -354,7 +359,7 @@ export const updateRiskStatus = async (req,res) => {
 
 
 //close deviation
-export const updateDeviationStatus = async (req, res) => {
+const updateDeviationStatus = async (req, res) => {
   
   const { deviationId } = req.params;
 
@@ -432,4 +437,15 @@ export const updateDeviationStatus = async (req, res) => {
     message: "Deviation Updated",
     body: foundDeviationNew,
   });
+};
+
+
+module.exports = {
+  createDeviationRequest,
+  getDeviationRequest,
+  getDeviationById,
+  updateDeviation,
+  updateDeviationReq,
+  updateRiskStatus,
+  updateDeviationStatus
 };

@@ -1,13 +1,20 @@
-import { Router } from "express";
+const {Router} = require("express");
 const router = Router();
-
-import * as userController from "../controllers/user.controller.js";
-import { authJwt, verifySignup } from "../middlewares/index.js";
+const {
+    verifyToken,
+    isAdmin
+}= require("../middlewares/auth.Jwt.js");
+const {
+    checkRolesExisted
+}= require("../middlewares/verifySignup.js");
+const createUser = require("../controllers/user.controller.js");
+// import * as userController from "../controllers/user.controller.js";
+// import { authJwt, verifySignup } from "../middlewares/index.js";
 
 router.post("/", [
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    verifySignup.checkRolesExisted
-], userController.createUser);
+    verifyToken,
+    isAdmin,
+    checkRolesExisted
+], createUser);
 
 module.exports = router;

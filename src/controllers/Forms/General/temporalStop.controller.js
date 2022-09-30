@@ -1,7 +1,9 @@
-import Company from "../../../models/Company.js";
-import TemporalStop from "../../../models/General/TemporalStop.js";
+const Company = require( "../../../models/Company.js");
+const TemporalStop = require( "../../../models/General/TemporalStop.js");
+// import Company from "../../../models/Company.js";
+// import TemporalStop from "../../../models/General/TemporalStop.js";
 //method to post
-export const createTemporalStop = async(req,res) => {
+const createTemporalStop = async(req,res) => {
     const{
         date1,
         date2,
@@ -45,7 +47,7 @@ export const createTemporalStop = async(req,res) => {
     res.json({status:"200", message:"Run data created", savedTemporalStop});
 }
 // method to update
-export const updateTemporalStop = async (req, res) => {
+const updateTemporalStop = async (req, res) => {
     const {temporalStopId} = req.params;
     const {
         date1,
@@ -87,9 +89,15 @@ export const updateTemporalStop = async (req, res) => {
     res.status(200).json({status:"200", message:"mold reset updated", body: updatedTemporalStop});
 }
 //method to get 
-export const getTemporalStop = async (req, res) => {
+const getTemporalStop = async (req, res) => {
     const temporalStop = await TemporalStop.find().sort({
         initalValidation:1,
     });
     res.json({status:"200", message:" temporal stop is loaded", body: temporalStop});
 }
+
+module.exports = {
+    createTemporalStop,
+    updateTemporalStop,
+    getTemporalStop
+};

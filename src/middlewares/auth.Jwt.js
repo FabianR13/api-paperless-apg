@@ -1,13 +1,17 @@
 // Authorizator
-
-import jwt from "jsonwebtoken";
-import config from "../config.js";
-import User from "../models/User.js";
-import Role from "../models/Role.js";
-import Company from "../models/Company.js";
+const jwt = require("jsonwebtoken");
+const config = require("../config.js");
+const User = require("../models/User.js");
+const {Role} = ("../models/Role.js");
+const Company = require("../models/Company.js");
+// import jwt from "jsonwebtoken";
+// import config from "../config.js";
+// import User from "../models/User.js";
+// import Role from "../models/Role.js";
+// import Company from "../models/Company.js";
 
 // Verify the token provided in the Header
-export const verifyToken = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   
   try {
     const token = req.headers["x-access-token"];
@@ -33,7 +37,7 @@ export const verifyToken = async (req, res, next) => {
 };
 
 // Verify Moderador Role (moderador role)
-export const isModerator = async (req, res, next) => {
+const isModerator = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -79,7 +83,7 @@ export const isModerator = async (req, res, next) => {
 };
 
 // Verify admin Role (admin role)
-export const isAdmin = async (req, res, next) => {
+const isAdmin = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -109,7 +113,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify GeneralR Role (Read and Write)
-export const isGeneralR = async (req, res, next) => {
+const isGeneralR = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -162,7 +166,7 @@ export const isGeneralR = async (req, res, next) => {
 };
 
 // Verify GeneralRW Role (Read and Write)
-export const isGeneralRW = async (req, res, next) => {
+const isGeneralRW = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -206,7 +210,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify OtherRW Role (Read and Write)
-export const isOtherRW = async (req, res, next) => {
+const isOtherRW = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -248,7 +252,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify OtherR Role (Read)
-export const isOtherR = async (req, res, next) => {
+const isOtherR = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -301,7 +305,7 @@ export const isOtherR = async (req, res, next) => {
 };
 
 // Verify SetupR Role (Read)
-export const isSetupR = async (req, res, next) => {
+const isSetupR = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -353,7 +357,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify SetupRW Role (Read adn Write)
-export const isSetupRW = async (req, res, next) => {
+const isSetupRW = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -395,7 +399,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify KaizenR Role (Read)
-export const isKaizenR = async (req, res, next) => {
+const isKaizenR = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -454,7 +458,7 @@ export const isKaizenR = async (req, res, next) => {
 };
 
 // Verify KaizenRW Role (Read and Write)
-export const isKaizenRW = async (req, res, next) => {
+const isKaizenRW = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -495,7 +499,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify KaizenRW Role (Read and Write) Just to modify Status
-export const isKaizenAprroval = async (req, res, next) => {
+const isKaizenAprroval = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -535,7 +539,7 @@ export const isKaizenAprroval = async (req, res, next) => {
 };
 
 // Verify KaizenR Role (Read)
-export const isQualityR = async (req, res, next) => {
+const isQualityR = async (req, res, next) => {
   console.log("aca")
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
@@ -587,7 +591,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify KaizenRW Role (Read and Write)
-export const isQualityRW = async (req, res, next) => {
+const isQualityRW = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -629,7 +633,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify ProductionR Role (Read)
-export const isProductionR = async (req, res, next) => {
+const isProductionR = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -675,7 +679,7 @@ export const isProductionR = async (req, res, next) => {
 };
 
 // Verify ProductionRW Role (Read and Write)
-export const isProductionRW = async (req, res, next) => {
+const isProductionRW = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -716,7 +720,7 @@ if(Access.company[0].name==="Axiom"){
 };
 
 // Verify Accesss to company
-export const isAutorized = async (req, res, next) => {
+const isAutorized = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const  Access = [];
   const { CompanyId } = req.params;
@@ -733,7 +737,7 @@ export const isAutorized = async (req, res, next) => {
     .json({ message: "Unauthorized access", status: "403" });
 };
 // Verify DeviationR Role (Create)
-export const isDeviationR = async (req, res, next) => {
+const isDeviationR = async (req, res, next) => {
   const user = await User.findById(req.userId);
   const roles = await Role.find({ _id: { $in: user.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
@@ -768,4 +772,26 @@ export const isDeviationR = async (req, res, next) => {
   return res
     .status(403)
     .json({ message: "Deviation Role Required", status: "403" });
+};
+
+
+module.exports = {
+  verifyToken,
+  isModerator,
+  isAdmin,
+  isGeneralR,
+  isGeneralRW,
+  isOtherRW,
+  isOtherR,
+  isSetupR,
+  isSetupRW,
+  isKaizenR,
+  isKaizenRW,
+  isKaizenAprroval,
+  isQualityR,
+  isQualityRW,
+  isProductionR,
+  isProductionRW,
+  isAutorized,
+  isDeviationR
 };

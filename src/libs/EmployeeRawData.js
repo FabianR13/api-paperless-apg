@@ -1,4 +1,4 @@
-export const dataEmployees = [
+const dataEmployees = [
   // Catorcenal
   // ---------Direction---------
   {name: 'Ananthakumar', lastName: 'Pathmanathan', numberEmployee: '10064', department: 'Direction', position: 'General Manager',active:true,picture:"10064.jpeg",user:false},
@@ -227,3 +227,5 @@ export const dataEmployees = [
   {name: 'Blanca Estela', lastName: 'Rayas Rico', numberEmployee: '10908', department: 'Production', position: 'Production Operator',active:true,picture:"10908.jpeg",user:false},
   {name: 'Juan Carlos', lastName: 'Ramirez Hernandez', numberEmployee: '10909', department: 'Production', position: 'Production Operator',active:true,picture:"10909.jpeg",user:false},
 ];
+
+module.exports = dataEmployees;

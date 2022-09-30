@@ -1,7 +1,7 @@
-// const multer = require("multer");
-// const shortid = require("shortid");
-import multer from "multer";
-import shortid from "shortid";
+const multer = require("multer");
+const shortid = require("shortid");
+// import multer from "multer";
+// import shortid from "shortid";
 
 // Save Locally the Files
 const storage = multer.diskStorage({
@@ -17,9 +17,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }); //Single Field Form
 
  // Upload Multiple Fields Form
-export const uploadKaizenImgs = upload.fields([
+const uploadKaizenImgs = upload.fields([
     { name: "kaizenImagesB", maxCount: 5 },
     { name: "kaizenImagesA", maxCount: 5 },
   ]);
 
   
+module.exports = uploadKaizenImgs;

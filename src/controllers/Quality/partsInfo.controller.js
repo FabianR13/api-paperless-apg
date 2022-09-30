@@ -1,6 +1,7 @@
-import PartsInfo from "../../models/Quality/PartsInfo.js";
+const PartsInfo = require("../../models/Quality/PartsInfo.js");
+// import PartsInfo from "../../models/Quality/PartsInfo.js";
 
-export const signPartsInfo = async (req,res) => {
+const signPartsInfo = async (req,res) => {
     const {
         machine, 
         numberCavities,
@@ -36,7 +37,7 @@ export const signPartsInfo = async (req,res) => {
     const savedPartsInfos = await newPartInfo.save();
     res.json({status:"200", message:"part info created", savedPartsInfos});
 };
-export const updatePartInfo = async(req, res) => {
+const updatePartInfo = async(req, res) => {
     const {partInfoId}= req.params;
     const{
         machine, 
@@ -80,3 +81,9 @@ export const updatePartInfo = async(req, res) => {
     res.status(200).json({stauts:"200", message:"part info updated",body:updatedPartInfo});
 
 }
+
+
+module.exports = {
+    signPartsInfo,
+    updatePartInfo
+};

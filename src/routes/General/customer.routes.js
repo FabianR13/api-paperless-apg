@@ -1,15 +1,18 @@
-import Router from "express";
-
+const {Router} = require("express");
 const router = Router();
-
-import * as customerController from "../../controllers/Forms/General/customers.controller.js";
+const {
+    signCustomer,
+    getCustomers
+} = require("../../controllers/Forms/General/customers.controller.js");
+// import Router from "express";
+// import * as customerController from "../../controllers/Forms/General/customers.controller.js";
 
 router.post(
     "/NewCustomer",
-    customerController.signCustomer
+    signCustomer
 );
 router.get("/Customers",
-customerController.getCustomers
+getCustomers
 );
 
 

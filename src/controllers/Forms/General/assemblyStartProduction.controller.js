@@ -1,8 +1,11 @@
-import Company from "../../../models/Company.js";
-import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction.js";
-import User from "../../../models/User.js";
+const Company = require( "../../../models/Company.js");
+const AssemblyStartProduction = require( "../../../models/General/AssemblyStartProduction.js");
+const User = require( "../../../models/User.js");
+// import Company from "../../../models/Company.js";
+// import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction.js";
+// import User from "../../../models/User.js";
 //mehtod to post 
-export const createAssemblyStartProduction =  async (req,res) => {
+const createAssemblyStartProduction =  async (req,res) => {
     const{
         trainOperator,
         materialsRemoved,
@@ -54,7 +57,7 @@ export const createAssemblyStartProduction =  async (req,res) => {
      res.json({status:"200", message:"assembly production created",savedAssemblyStartProduction});
 }
 //method to update 
-export const updateAssemblyStartProduction = async (req, res) => {
+const updateAssemblyStartProduction = async (req, res) => {
     const {assemblyStartProductionId} = req.params;
   
    
@@ -114,9 +117,15 @@ export const updateAssemblyStartProduction = async (req, res) => {
 }
 
 //method to get 
-export const getAssemblyStartProduction = async (req,res) => {
+const getAssemblyStartProduction = async (req,res) => {
     const assemblyStartProduction = await AssemblyStartProduction.find().sort({
         trainOperator:1,
     });
     res.json({status:"200", message:"assembly production loaded", body:assemblyStartProduction});
 }
+
+module.exports = {
+  createAssemblyStartProduction,
+  updateAssemblyStartProduction,
+  getAssemblyStartProduction
+};

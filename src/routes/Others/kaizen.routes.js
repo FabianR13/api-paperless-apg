@@ -1,74 +1,93 @@
-import { Router } from "express";
-import * as kaizenController from "../../controllers/Forms/Others/kaizen.controller.js";
+const { Router } = require("express");
 const router = Router();
-import { uploadKaizenImgs } from "../../middlewares/uploadKaizenImg.js";
-import { authJwt } from "../../middlewares/index.js";
+const {
+  createKaizen,
+  getKaizens,
+  getKaizenById,
+  getKaizensFiltered,
+  updateKaizen,
+  updateKaizenStatus,
+  modifyKaizenImg,
+  deleteKaizen
+} = require("../../controllers/Forms/Others/kaizen.controller.js");
+const uploadKaizenImgs = require("../../middlewares/uploadKaizenImg.js");
+const {
+  verifyToken,
+  isKaizenR,
+  isKaizenRW,
+  isKaizenAprroval,
+  isAutorized
+} = require("../../middlewares/auth.Jwt.js");
+// import { Router } from "express";
+// import * as kaizenController from "../../controllers/Forms/Others/kaizen.controller.js";
+// import { uploadKaizenImgs } from "../../middlewares/uploadKaizenImg.js";
+// import { authJwt } from "../../middlewares/index.js";
 
 // Route to get All the kaizens
 router.get(
   "/Kaizens/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isKaizenR,
-  kaizenController.getKaizens,
+  verifyToken,
+  isAutorized,
+  isKaizenR,
+  getKaizens,
 );
 
 // Route to get a Specific Kaizen by Id
 router.get(
   "/Kaizen/:kaizenId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isKaizenR,
-  kaizenController.getKaizenById,
+  verifyToken,
+  isAutorized,
+  isKaizenR,
+  getKaizenById,
 );
 
 // Route to Post a New Kaizen
 router.post("/NewKaizen/:CompanyId", 
 uploadKaizenImgs, 
-kaizenController.createKaizen);
+createKaizen);
 
 // Route to modify all the fields in a specific kaizen
 router.put(
   "/UpdateKaizen/:kaizenId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isKaizenRW,
-  kaizenController.updateKaizen
+  verifyToken,
+  isAutorized,
+  isKaizenRW,
+  updateKaizen
 );
 
 //Route to modify just the Status of a Kaizen
 router.put(
   "/UpdateKaizen/Status/:kaizenId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isKaizenAprroval,
-  kaizenController.updateKaizenStatus
+  verifyToken,
+  isAutorized,
+  isKaizenAprroval,
+  updateKaizenStatus
 );
 
 //Route to modify Images from the Kaizen
 router.put(
   "/UpdateKaizen/Images/:kaizenId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isKaizenRW,
+  verifyToken,
+  isAutorized,
+  isKaizenRW,
   uploadKaizenImgs,
-  kaizenController.modifyKaizenImg
+  modifyKaizenImg
 );
 
 router.post(
   "/KaizensFiltered/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isKaizenR,
-  kaizenController.getKaizensFiltered
+  verifyToken,
+  isAutorized,
+  isKaizenR,
+  getKaizensFiltered
 );
 // Route to delete kaizen
 router.delete(
   "/DeleteKaizen/:kaizenId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isKaizenRW,
-  kaizenController.deleteKaizen
+  verifyToken,
+  isAutorized,
+  isKaizenRW,
+  deleteKaizen
 );
 
 module.exports = router;

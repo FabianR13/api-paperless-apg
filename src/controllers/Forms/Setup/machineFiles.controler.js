@@ -1,8 +1,8 @@
-// const fs = require('fs');
-import fs from "fs";
+const fs = require('fs');
+// import fs from "fs";
 
 
-export const readFiles = async (req,res)=>{
+const readFiles = async (req,res)=>{
     const path=
     "//192.168.200.10\\Public\\Anuncios\\Documents";
     
@@ -23,3 +23,4 @@ export const readFiles = async (req,res)=>{
     });
 }
 
+module.exports = readFiles;

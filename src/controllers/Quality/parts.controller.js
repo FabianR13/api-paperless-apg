@@ -1,11 +1,14 @@
-import Parts from "../../models/Quality/Parts.js";
-import Customer from "../../models/General/Customer.js";
-import Company from "../../models/Company.js";
+const Parts = require( "../../models/Quality/Parts.js");
+const Customer = require( "../../models/General/Customer.js");
+const Company = require( "../../models/Company.js");
+// import Parts from "../../models/Quality/Parts.js";
+// import Customer from "../../models/General/Customer.js";
+// import Company from "../../models/Company.js";
 
 
 
 
-export const createPart = async (req, res) => {
+const createPart = async (req, res) => {
     const{
         partnumber,
         partName,
@@ -37,7 +40,7 @@ export const createPart = async (req, res) => {
 };
 
 //update parts
-export const udpateParts = async (req, res) => {
+const udpateParts = async (req, res) => {
   const {partId} = req.params;
   const UpdPart = [];
   UpdPart.partnumber = req.body.partnumber;
@@ -73,7 +76,7 @@ export const udpateParts = async (req, res) => {
   res.status(200).json({status:"200", message:"part updated", body:updatedPart});
 }
 //Getting all parts
-export const getParts = async (req,res) => {
+const getParts = async (req,res) => {
   const {CompanyId} = req.params
   if(CompanyId.length !== 24){
     return;
@@ -90,3 +93,9 @@ export const getParts = async (req,res) => {
     res.json({status: "200", message: "Parts loaded", body: parts});
   }
   
+
+  module.exports = {
+    createPart,
+    udpateParts,
+    getParts
+  };

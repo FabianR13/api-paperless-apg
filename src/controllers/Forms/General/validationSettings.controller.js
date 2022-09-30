@@ -1,15 +1,24 @@
-import ValidationSettings from "../../../models/General/ValidationSettings.js";
-import Machine from "../../../models/Setup/Machine.js";
-import User from "../../../models/User.js";
-import Company from "../../../models/Company.js";
-import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical.js";
-import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction.js";
-import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality.js";
-import TemporalStop from "../../../models/General/TemporalStop.js";
-import EndRun from "../../../models/General/EndRun.js";
+const ValidationSettings = require( "../../../models/General/ValidationSettings.js");
+const Machine = require( "../../../models/Setup/Machine.js");
+const User = require( "../../../models/User.js");
+const Company = require( "../../../models/Company.js");
+const AssemblyStartTechnical = require( "../../../models/General/AssemblyStartTechnical.js");
+const AssemblyStartProduction = require( "../../../models/General/AssemblyStartProduction.js");
+const AssemblyStartQuality = require( "../../../models/General/AssemblyStartQuality.js");
+const TemporalStop = require( "../../../models/General/TemporalStop.js");
+const EndRun = require( "../../../models/General/EndRun.js");
+// import ValidationSettings from "../../../models/General/ValidationSettings.js";
+// import Machine from "../../../models/Setup/Machine.js";
+// import User from "../../../models/User.js";
+// import Company from "../../../models/Company.js";
+// import AssemblyStartTechnical from "../../../models/General/AssemblyStartTechnical.js";
+// import AssemblyStartProduction from "../../../models/General/AssemblyStartProduction.js";
+// import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality.js";
+// import TemporalStop from "../../../models/General/TemporalStop.js";
+// import EndRun from "../../../models/General/EndRun.js";
 
 //method to post 
-export const createValidationSettings = async (req, res) => {
+const createValidationSettings = async (req, res) => {
     const {
         
         machine,
@@ -106,7 +115,7 @@ export const createValidationSettings = async (req, res) => {
     res.json({status:"200", message:"validation settings created", savedValidationSettings});
 }
 //method to update 
-export const updateValidationSetting = async (req,res) => {
+const updateValidationSetting = async (req,res) => {
     const {validationSettingId} = req.params;
 
 
@@ -253,10 +262,16 @@ export const updateValidationSetting = async (req,res) => {
     res.status(200).json({status:"200", message:"validation settings updated", body:updatedValidationSetting});
 }
 //mthod to get
-export const getValidationSetting = async (req, res) =>{
+const getValidationSetting = async (req, res) =>{
     const validationSetting = await ValidationSettings.find().sort({
         number:1,
       
     });
     res.json({status:"200", message:"validationSetting loaded", body: validationSetting});
 }
+
+module.exports = {
+  createValidationSettings,
+  updateValidationSetting,
+  getValidationSetting
+};

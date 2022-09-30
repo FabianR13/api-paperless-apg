@@ -1,6 +1,8 @@
-import Customer from "../../../models/General/Customer.js";
+const Customer = require( "../../../models/General/Customer.js");
+// import { LexModelBuildingService } from "aws-sdk";
+// import Customer from "../../../models/General/Customer.js";
 
-export const signCustomer =async (req, res) => {
+const signCustomer =async (req, res) => {
     const {
         name,
     } = req.body;
@@ -14,7 +16,12 @@ export const signCustomer =async (req, res) => {
     res.json({status: "200", message: "Customer created", savedCustomer});
 };
 // Getting all customers
-export const getCustomers = async (req, res) => {
+const getCustomers = async (req, res) => {
     const customers = await Customer.find().sort({name: 1});
     res.json({status: "200", message: "Customers loaded", body: customers});
   }
+
+  module.exports = {
+    signCustomer,
+    getCustomers
+  };

@@ -1,4 +1,4 @@
-export const dataPartsInfo=[   
+const dataPartsInfo=[   
     {partnumber:['MIO-7237'],machine:1,numberCavities:"2",shotWeight:"20|812.8",totalShotWeight:"20|812.8",avgPartWeight:"20|405.4",cycleTime:"10|56.0",partsPerHour:"128",cushion:"",recovery:"",fillTime:"",peakPress:"",status:"",company:""},
     {partnumber:['MIO-7207'],machine:1,numberCavities:"2",shotWeight:"|242.5",totalShotWeight:"",avgPartWeight:"|121.25",cycleTime:"|38.45",partsPerHour:"187",cushion:"",recovery:"",fillTime:"",peakPress:"",status:"",company:""},
     {partnumber:['MIO-7238'],machine:8,numberCavities:"2",shotWeight:"|N/A",totalShotWeight:"|214.25",avgPartWeight:"|107.13",cycleTime:"10|40.0",partsPerHour:"180",cushion:"",recovery:"",fillTime:"",peakPress:"",status:"",company:""},
@@ -70,7 +70,7 @@ export const dataPartsInfo=[
 {partnumber:["1624937-00-A"],machine:"",numberCavities:"",shotWeight:"",totalShotWeight:"",avgPartWeight:"",cycleTime:"",partsPerHour:"",cushion:"",recovery:"",fillTime:"",peakPress:"",status:"",company:""},
    
 ];
-
+module.exports = dataPartsInfo;
     // {machine:"5",numberCavities:"|1",shotWeight:"|N/A",totalShotWeight:"|603.3",avgPartWeight:"|570.00",cycleTime:"10|49.00",partsPerHour:"71"},
     // {machine:"3",numberCavities:"|2",shotWeight:"|N/A",totalShotWeight:"|490.00",avgPartWeight:"|245.00",cycleTime:"10|33.3",partsPerHour:"216"},
     // {machine:"3",numberCavities:"|1",shotWeight:"|N/A",totalShotWeight:"|729.00",avgPartWeight:"|670.00",cycleTime:"10|52.00",partsPerHour:"69"},

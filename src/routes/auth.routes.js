@@ -1,65 +1,86 @@
-import { Router } from "express";
+const { Router } = require("express");
 const router = Router();
-
-import * as authController from "../controllers/auth.controller.js";
-import { verifySignup, authJwt } from "../middlewares/index.js";
+const {
+  signUp,
+  newRole,
+  signIn,
+  getDashboardCards,
+  getUsers,
+  getRoles,
+  updateUser,
+  updatePassword,
+  updateUserSign,
+  getCompany
+} = require("../controllers/auth.controller.js");
+const {
+  checkDuplicateUsernameorEmail,
+  checkDuplicateRole
+} = require("../middlewares/verifySignup.js");
+const {
+  verifyToken,
+  isAdmin,
+  isAutorized
+} = require("../middlewares/auth.Jwt.js");
+// import { Router } from "express";
+// import * as authController from "../controllers/auth.controller.js";
+// import { verifySignup, authJwt } from "../middlewares/index.js";
 
 router.post(
   "/Signup/:CompanyId",
-  [verifySignup.checkDuplicateUsernameorEmail],
+  [checkDuplicateUsernameorEmail],
   //for the first user disble (verifyToken, isAutorized and isAdmin)
-  // authJwt.verifyToken,
-  // authJwt.isAutorized,
-  // authJwt.isAdmin,
-  authController.signUp
+  verifyToken,
+  isAutorized,
+  isAdmin,
+  signUp
 );
 
 router.post(
   "/NewRole/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAdmin,
-  verifySignup.checkDuplicateRole,
-  authController.newRole
+  verifyToken,
+  isAdmin,
+  checkDuplicateRole,
+  newRole
 );
 
 router.put("/UpdateUser/:userId/:CompanyId",
-authJwt.verifyToken, 
-authJwt.isAutorized,
-authJwt.isAdmin,
-authController.updateUser);
+verifyToken, 
+isAutorized,
+isAdmin,
+updateUser);
 
 router.put(
   "/ChangePassword/:userId",
-  authJwt.verifyToken,
-  authController.updatePassword
+  verifyToken,
+  updatePassword
 );
 
 router.put(
   "/ChangeSignature/:userId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isAdmin,
-  authController.updateUserSign
+  verifyToken,
+  isAutorized,
+  isAdmin,
+  updateUserSign
 );
 
 router.get("/Users/:CompanyId", 
-authJwt.verifyToken, 
-authJwt.isAutorized,
-authController.getUsers);
+verifyToken, 
+isAutorized,
+getUsers);
 
 router.get("/Roles", 
-authJwt.verifyToken, 
-authController.getRoles);
+verifyToken, 
+getRoles);
 
 router.get("/Companies", 
-authJwt.verifyToken, 
-authController.getCompany);
+verifyToken, 
+getCompany);
 
 router.post("/Signin/:CompanyId", 
-authController.signIn);
+signIn);
 
 router.get("/Dashboard", 
-authJwt.verifyToken, 
-authController.getDashboardCards);
+verifyToken, 
+getDashboardCards);
 
 module.exports = router;

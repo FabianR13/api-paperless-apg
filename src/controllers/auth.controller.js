@@ -1,16 +1,23 @@
-import User from "../models/User.js";
-import jwt from "jsonwebtoken";
-import config from "../config.js";
-import Role from "../models/Role.js";
-import Department from "../models/Deparment.js";
-import Position from "../models/Position.js";
-import Dashboard from "../models/Dashboard.js";
-import Employees from "../models/Employees.js";
-import Company from "../models/Company.js";
-import { isAdmin } from "../middlewares/auth.Jwt.js";
+const User =require("../models/User.js");
+const jwt =require( "jsonwebtoken");
+const config =require( "../config.js");
+const {Role} =require( "../models/Role.js");
+const Dashboard =require( "../models/Dashboard.js");
+const Employees =require( "../models/Employees.js");
+const Company =require( "../models/Company.js");
+// import User from "../models/User.js";
+// import jwt from "jsonwebtoken";
+// import config from "../config.js";
+// import Role from "../models/Role.js";
+// import Dashboard from "../models/Dashboard.js";
+// import Employees from "../models/Employees.js";
+// import Company from "../models/Company.js";
+// import { isAdmin } from "../middlewares/auth.Jwt.js";
+// import Department from "../models/Deparment.js";
+// import Position from "../models/Position.js";
 
 //Usuario Nuevo
-export const signUp = async (req, res) => {
+const signUp = async (req, res) => {
   const { username, email, password,signature, roles, rolesAxiom, employee, companyAccess, company } = req.body;
   const newUser = new User({
     username,
@@ -60,7 +67,7 @@ export const signUp = async (req, res) => {
   // res.status(200).json({ token });
 };
 //Nuevo Rol
-export const newRole = async (req, res) => {
+const newRole = async (req, res) => {
   const { name,description, category } = req.body;
 
   const newRole = new Role({
@@ -75,7 +82,7 @@ export const newRole = async (req, res) => {
 };
 // Usuario Existente
 
-export const signIn = async (req, res) => {
+const signIn = async (req, res) => {
   const userFound = await User.findOne({
     username: req.body.username,
   })
@@ -238,12 +245,12 @@ export const signIn = async (req, res) => {
   });
 };
 
-export const getDashboardCards = async (req, res) => {
+const getDashboardCards = async (req, res) => {
   const cardsFound = await Dashboard.find();
   res.json({ status: "200", message: "Dashboard Loaded", body: cardsFound });
 };
 // Getting all Users
-export const getUsers = async (req, res) => {
+const getUsers = async (req, res) => {
   const {CompanyId} = req.params
   if(CompanyId.length !== 24){
     return;
@@ -260,12 +267,12 @@ export const getUsers = async (req, res) => {
   res.json({ status: "200", message: "Users Loaded", body: users });
 };
 // Getting all Roles
-export const getRoles = async (req, res) => {
+const getRoles = async (req, res) => {
   const roles = await Role.find();
   res.json({ status: "200", message: "Roles Loaded", body: roles });
 };
 // Updating user
-export const updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
   //const updatedKaizen = await K
   const { userId } = req.params;
   const userFound = await User.findOne({
@@ -318,7 +325,7 @@ export const updateUser = async (req, res) => {
     .json({ status: "200", message: "User Updated ", body: updatedUser });
 };
 // Updating user password
-export const updatePassword = async (req, res) => {
+const updatePassword = async (req, res) => {
   //const updatedKaizen = await K
   const { userId } = req.params;
   const userFound = await User.findOne({
@@ -364,7 +371,7 @@ export const updatePassword = async (req, res) => {
 };
 
 // Updating user signature
-export const updateUserSign = async (req, res) => {
+const updateUserSign = async (req, res) => {
   //const updatedKaizen = await K
   const { userId } = req.params;
   const { signature} =req.body;
@@ -389,7 +396,20 @@ export const updateUserSign = async (req, res) => {
 };
 
 //get company
-export const getCompany = async (req, res) => {
+const getCompany = async (req, res) => {
   const companies = await Company.find();
   res.json({ status: "200", message: "Companies Loaded", body: companies });
+};
+
+module.exports = {
+  signUp,
+  newRole,
+  signIn,
+  getDashboardCards,
+  getUsers,
+  getRoles,
+  updateUser,
+  updatePassword,
+  updateUserSign,
+  getCompany
 };

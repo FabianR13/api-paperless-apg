@@ -1,4 +1,4 @@
-export const dataParts = [
+const dataParts = [
     {partnumber:['MIO-7237'], partName:'LEV3 Shell', partEcl:'4',customer:'Stant',mould:"STA5A",documents:""},
     {partnumber:['MIO-7207'], partName:'ECE Cover', partEcl:'3',customer:'Stant',mould:"Sta2B",documents:""},
     {partnumber:['MIO-7238'], partName:'LEV3 Cover', partEcl:'5',customer:'Stant',mould:"STA2B",documents:""},
@@ -98,3 +98,4 @@ export const dataParts = [
 
     {partnumber:['57008758AB'], partName:'DJ Access Cover', partEcl:'4',customer:'Stellantis',mould:"",documents:""},
 ];
+module.exports = dataParts;

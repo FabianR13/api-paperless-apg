@@ -1,12 +1,14 @@
-
-
-import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality.js";
-import User from "../../../models/User.js";
-import Company from "../../../models/Company.js";
-import DeviationRequest from "../../../models/General/DeviationRequest.js";
+const AssemblyStartQuality = require( "../../../models/General/AssemblyStartQuality.js");
+const User = require( "../../../models/User.js");
+const Company = require( "../../../models/Company.js");
+const DeviationRequest = require( "../../../models/General/DeviationRequest.js");
+// import AssemblyStartQuality from "../../../models/General/AssemblyStartQuality.js";
+// import User from "../../../models/User.js";
+// import Company from "../../../models/Company.js";
+// import DeviationRequest from "../../../models/General/DeviationRequest.js";
 
 //method to post
-export const createAssemblyStartQuality = async (req, res) => {
+const createAssemblyStartQuality = async (req, res) => {
     const {
         sheetVerification,
         numberDevitaion,
@@ -63,7 +65,7 @@ export const createAssemblyStartQuality = async (req, res) => {
     res.json({status:"200", message:"Assembly Quality created", savedAssemblyStartQuality});
 }
 //method to update
-export const updateAssemblyStartQuality = async (req,res) => {
+const updateAssemblyStartQuality = async (req,res) => {
     const {assemblyStartQualityId} = req.params;
 
     if(!req.body.employee){
@@ -128,9 +130,15 @@ export const updateAssemblyStartQuality = async (req,res) => {
     res.status(200).json({status:"200", message:"assembly quality updated", body:updatedAssemblyStartQuality});
 }
 //method to get
-export const getAssemblyStartQuality = async(req,res) => {
+const getAssemblyStartQuality = async(req,res) => {
     const assemblyStartQuality = await AssemblyStartQuality.find().sort({
         sheetVerification:1,
     });
     res.json({status:"200", message:"assembly quality loaded", body: assemblyStartQuality});
 }
+
+module.exports = {
+    createAssemblyStartQuality,
+    updateAssemblyStartQuality,
+    getAssemblyStartQuality
+};

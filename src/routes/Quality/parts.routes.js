@@ -1,37 +1,53 @@
-import Router from "express";
-
+const {Router} = require("express");
 const router = Router();
-
-import * as partsController from "../../controllers/Quality/parts.controller.js";
-import { authJwt } from "../../middlewares/index.js";
-import * as partsInfoController from "../../controllers/Quality/partsInfo.controller.js";
+const {
+    createPart,
+    udpateParts,
+    getParts
+  } = require("../../controllers/Quality/parts.controller.js");
+const {
+    verifyToken,
+    isQualityR,
+    isQualityRW,
+    isAutorized
+} = require("../../middlewares/auth.Jwt.js");
+const {
+    signPartsInfo,
+    updatePartInfo
+} = require("../../controllers/Quality/partsInfo.controller.js");
+// import Router from "express";
+// import * as partsController from "../../controllers/Quality/parts.controller.js";
+// import { authJwt } from "../../middlewares/index.js";
+// import * as partsInfoController from "../../controllers/Quality/partsInfo.controller.js";
 
 router.post(
-    "/newpartesInfo", partsInfoController.signPartsInfo
+    "/newpartesInfo", 
+    signPartsInfo
 );
 
 router.put(
-    "/actualizarPartInfo/:partInfoId", partsInfoController.updatePartInfo
+    "/actualizarPartInfo/:partInfoId", 
+    updatePartInfo
 );
 
 router.post(
     "/NewPart/:CompanyId",
-    authJwt.verifyToken,
-    authJwt.isAutorized,
-    authJwt.isQualityRW,
-    partsController.createPart
+    verifyToken,
+    isAutorized,
+    isQualityRW,
+    createPart
     );
     
 router.get("/Parts/:CompanyId",
-    authJwt.verifyToken,
-    authJwt.isAutorized,
-    authJwt.isQualityR,
-    partsController.getParts
+    verifyToken,
+    isAutorized,
+    isQualityR,
+    getParts
 );
 router.put("/UpdatePart/:partId/:CompanyId",
-authJwt.verifyToken,
-    authJwt.isAutorized,
-    authJwt.isQualityRW,
-partsController.udpateParts);
+    verifyToken,
+    isAutorized,
+    isQualityRW,
+    udpateParts);
 
 module.exports = router;

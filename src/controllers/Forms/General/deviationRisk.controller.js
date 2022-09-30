@@ -1,11 +1,12 @@
+const DeviationRiskAssesment = require( "../../../models/General/DeviationRiskAssessment.js");
+const Company = require( "../../../models/Company.js");
+// import DeviationRiskAssesment from "../../../models/General/DeviationRiskAssessment.js";
+// import Company from "../../../models/Company.js";
+// import User from "../../../models/User.js";
 
-import DeviationRiskAssesment from "../../../models/General/DeviationRiskAssessment.js";
-import Company from "../../../models/Company.js";
-import User from "../../../models/User.js";
 
 
-
-export const createDeviationRisk = async (req, res) => {
+const createDeviationRisk = async (req, res) => {
     const {
         deviationNumber,  
         reason,
@@ -153,7 +154,7 @@ export const createDeviationRisk = async (req, res) => {
     res.json({status:"200", message: "Deviation risk assesmen is created", savedDeviationRisk});
 }
 //update all data deviation risk assessment
-export const updateDeviationRisk = async (req, res) => {
+const updateDeviationRisk = async (req, res) => {
   const {deviationRiskId} = req.params;
   const {
     reason,
@@ -277,7 +278,7 @@ export const updateDeviationRisk = async (req, res) => {
   res.status(200).json({status:"200", message:"Deviation Risk updated", body:updatedDeviationRisk});
 }
 // Getting deviation by Id
-export const getDeviationRiskById = async (req, res) => {
+const getDeviationRiskById = async (req, res) => {
   const foundDeviationRisk = await DeviationRiskAssesment.findById(req.params.deviationRiskId);
   if (!foundDeviationRisk) {
     res
@@ -287,4 +288,10 @@ export const getDeviationRiskById = async (req, res) => {
   res
     .status(200)
     .json({ status: "200", message: "Deviation Founded", body: foundDeviationRisk });
+};
+
+module.exports = {
+  createDeviationRisk,
+  updateDeviationRisk,
+  getDeviationRiskById
 };

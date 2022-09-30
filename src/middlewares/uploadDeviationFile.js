@@ -1,7 +1,7 @@
-// const multer = require("multer");
-// const shortid = require("shortid");
-import multer from "multer";
-import shortid from "shortid";
+const multer = require("multer");
+const shortid = require("shortid");
+// import multer from "multer";
+// import shortid from "shortid";
 
 // Save Locally the Files
 const storage = multer.diskStorage({
@@ -19,6 +19,6 @@ const storage = multer.diskStorage({
   const upload = multer({ storage }); //Single Field Form
   
    // Upload Multiple Fields Form
-  export default upload.single('deviationStatus');
+module.exports = upload.single('deviationStatus');
   
   

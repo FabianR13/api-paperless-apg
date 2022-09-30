@@ -1,18 +1,32 @@
-import { Router } from "express";
+const Router = require("express");
 const router = Router();
-
-import * as formsController from "../controllers/forms.controller.js";
-import { authJwt } from "../middlewares/index.js";
+const {
+  verifyToken,
+  isAdmin,
+  isGeneralR,
+  isOtherR,
+  isSetupR,
+  isQualityR,
+  isProductionR,
+  isAutorized
+}= require("../middlewares/auth.Jwt.js");
+const {
+  createForms,
+  getForms,
+  getDashboardById
+} = require("../controllers/forms.controller.js")
+// import * as formsController from "../controllers/forms.controller.js";
+// import { authJwt } from "../middlewares/index.js";
 
 router.post(
   "/",
-  [authJwt.verifyToken, authJwt.isAdmin],
-  formsController.createForms
+  [verifyToken, isAdmin],
+  createForms
 );
 
 router.get("/", 
-authJwt.verifyToken, 
-formsController.getForms);
+verifyToken, 
+getForms);
 
 // router.get(
 //   "/list/general",
@@ -23,42 +37,42 @@ formsController.getForms);
 
 router.get(
   "/General/:formsId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isGeneralR,
-  formsController.getDashboardById
+  verifyToken,
+  isAutorized,
+  isGeneralR,
+  getDashboardById
 );
 
 router.get(
   "/Setup/:formsId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-  authJwt.isSetupR,
-  formsController.getDashboardById
+  verifyToken,
+  isAutorized,
+  isSetupR,
+  getDashboardById
 );
 
 router.get(
   "/Other/:formsId/:CompanyId",
-  authJwt.verifyToken, 
-  authJwt.isAutorized,
-  authJwt.isOtherR,
-  formsController.getDashboardById
+  verifyToken, 
+  isAutorized,
+  isOtherR,
+  getDashboardById
 );
 
 router.get(
   "/Quality/:formsId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-   authJwt.isQualityR,
-  formsController.getDashboardById
+  verifyToken,
+  isAutorized,
+  isQualityR,
+  getDashboardById
 );
 
 router.get(
   "/Production/:formsId/:CompanyId",
-  authJwt.verifyToken,
-  authJwt.isAutorized,
-   authJwt.isProductionR,
-  formsController.getDashboardById
+  verifyToken,
+  isAutorized,
+  isProductionR,
+  getDashboardById
 );
 
 // router.get("/:formId", authJwt.verifyToken, formsController.getFormById);
