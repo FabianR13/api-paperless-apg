@@ -2,7 +2,8 @@
 import { nextTick } from "process";
 import Kaizen from "../../../models/Others/Kaizen.js";
 import Company from "../../../models/Company.js";
-const fs = require("fs");
+// const fs = require("fs");
+import fs from "fs";
 
 export const  createKaizen = async (req, res) => {
   const {
