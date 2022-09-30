@@ -3,7 +3,7 @@ import Router from "express";
 const router = Router();
 
 import * as partsController from "../../controllers/Quality/parts.controller.js";
-import { authJwt } from "../../middlewares.js";
+import { authJwt } from "../../middlewares/index.js";
 import * as partsInfoController from "../../controllers/Quality/partsInfo.controller.js";
 
 router.post(

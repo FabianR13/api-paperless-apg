@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as kaizenController from "../../controllers/Forms/Others/kaizen.controller.js";
 const router = Router();
 import { uploadKaizenImgs } from "../../middlewares/uploadKaizenImg.js";
-import { authJwt } from "../../middlewares.js";
+import { authJwt } from "../../middlewares/index.js";
 
 // Route to get All the kaizens
 router.get(

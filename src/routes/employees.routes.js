@@ -2,7 +2,7 @@ import Router from "express";
 const router = Router();
 
 import * as employeesController from "../controllers/employees.controller.js";
-import { verifySignup, authJwt } from "../middlewares.js";
+import { verifySignup, authJwt } from "../middlewares/index.js";
 import  uploadProfileImage  from "../middlewares/uploadProfileImg.js";
 
 router.post(
