@@ -17,8 +17,6 @@ import {
   createCustomers,
   createParts,
   updateRoles,
-  createDeviationRequest,
-  createDeviationRisk,
   updateKaizens,
   createCompanys,
   updateEmployees,
