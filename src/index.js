@@ -1,5 +1,6 @@
-import app from "./app.mjs";
+// import app from "./app.js";
 import "./database.js";
+const app = require("./app.js");
 // 
 // settings
 app.set('port', process.env.PORT || 4000);
