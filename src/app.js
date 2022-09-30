@@ -6,25 +6,19 @@ const morgan = require("morgan");
 // import pkg from "../package.json" assert { type: "json" };
 // import("../package.json", { assert: { type: "json" } });
 
-import {
+const {
+  createCompanys,
+  createDashboard,
   createRoles,
   createDepartments,
   createPositions,
-  createUser,
-  createDashboard,
-  createEmployees,
-  createForms,
   createCustomers,
+  createForms,
+  createEmployees,
   createParts,
-  updateRoles,
-  updateKaizens,
-  createCompanys,
-  updateEmployees,
-  updateUsersCompany,
-  updatePartsCompany,
   createPartsInfo,
-  createMachine,
-} from "./libs/initialSetup.js";
+  createMachine
+} = require("./libs/initialSetup.js");
 
 import formsRoutes from "./routes/forms.routes.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -39,7 +33,7 @@ import validationSettingsRoutes from "./routes/General/validationSettings.routes
 
 
 
-// const pkg = require("../package.json");
+const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express().use("*", cors());
@@ -65,16 +59,10 @@ const app = express().use("*", cors());
 // Cuarto inicio
 // createMachine();
 
-// Metodos no usados
-// updateKaizens();
-// updateEmployees();
-// updateUsersCompany();
-// updatePartsCompany();
-// createEmployees();
 
 
-// app.set("pkg", pkg);
 
+app.set("pkg", pkg);
 app.use(morgan("dev"));
 app.use(express.json({limit: '25mb'}));
 app.use(express.urlencoded({limit: '25mb'}));

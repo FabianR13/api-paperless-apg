@@ -18,7 +18,7 @@ import { dataMachine } from "./MachineRawData.js";
 import Machine from "../models/Setup/Machine.js";
 
 //crear compañias
-export const createCompanys = async () => {
+const createCompanys = async () => {
   try {
     const count = await Company.estimatedDocumentCount();
 
@@ -33,7 +33,7 @@ export const createCompanys = async () => {
   }
 };
 // crear dashboard
-export const createDashboard = async () => {
+const createDashboard = async () => {
   try {
     const count = await Dashboard.estimatedDocumentCount();
 
@@ -83,7 +83,7 @@ export const createDashboard = async () => {
   }
 };
 // Crear roles
-export const createRoles = async () => {
+const createRoles = async () => {
   try {
     const count = await Role.estimatedDocumentCount();
 
@@ -114,7 +114,7 @@ export const createRoles = async () => {
   }
 };
 // Crear departamentos
-export const createDepartments = async () => {
+const createDepartments = async () => {
   try {
     const count = await Deparment.estimatedDocumentCount();
 
@@ -144,7 +144,7 @@ export const createDepartments = async () => {
   }
 };
 // Crear posiciones
-export const createPositions = async () => {
+const createPositions = async () => {
   try {
     const count = await Position.estimatedDocumentCount();
 
@@ -223,7 +223,7 @@ new Position({name: 'Customer Service Jr', description:'Intern' }).save(),
   }
 };
 // Crear customer
-export const createCustomers = async () => {
+const createCustomers = async () => {
   try {
     const count = await Customer.estimatedDocumentCount();
 
@@ -246,7 +246,7 @@ export const createCustomers = async () => {
   }
 };
  // Create Forms
- export const createForms = async () => {
+const createForms = async () => {
   let forms = dataForms;
 
   try {
@@ -280,7 +280,7 @@ export const createCustomers = async () => {
   }
 }
 // Crear empleado
-export const createEmployees = async () => {
+const createEmployees = async () => {
   let employees = dataEmployees;
   const foundCompany = await Company.find({
     name: { $in: "APG Mexico" },
@@ -327,7 +327,7 @@ export const createEmployees = async () => {
   }
 }
   // Create parts
-  export const createParts = async () => {
+  const createParts = async () => {
     let parts = dataParts;
     const status = true;
     const foundCompany = await Company.find({
@@ -368,7 +368,7 @@ export const createEmployees = async () => {
  }
  };
  //create parts info
- export const createPartsInfo = async () =>{
+ const createPartsInfo = async () =>{
   let partsinfo = dataPartsInfo;
   let status = true;
   const foundCompany = await Company.find({
@@ -415,7 +415,7 @@ export const createEmployees = async () => {
 
 }
 //create machines
-export const createMachine = async () => {
+const createMachine = async () => {
   let machines = dataMachine;
   const foundCompany = await Company.find({
     name: { $in: "APG Mexico" },
@@ -465,239 +465,239 @@ export const createMachine = async () => {
 
 
 
-//agregar campos a usuarios
-export const updateUsersCompany = async () => {
-  const users = await User.find();
-  const foundCompany = await Company.find({
-    name: { $in: "APG Mexico" },
-  });
-  const company = foundCompany.map((company) => company._id);
-  const companyAccess = foundCompany.map((company) => company._id);
-  const foundRoles = await Role.find({ name: { $in: "user" }});
-  const rolesAxiom = foundRoles.map((role) => role._id);
-  try {
-      for(let i=0;i<users.length;i++){
-        await User.updateMany(
-          {
-            $set: {
-              company,
-              rolesAxiom,
-              companyAccess,
-            },
-          }
+// //agregar campos a usuarios
+// export const updateUsersCompany = async () => {
+//   const users = await User.find();
+//   const foundCompany = await Company.find({
+//     name: { $in: "APG Mexico" },
+//   });
+//   const company = foundCompany.map((company) => company._id);
+//   const companyAccess = foundCompany.map((company) => company._id);
+//   const foundRoles = await Role.find({ name: { $in: "user" }});
+//   const rolesAxiom = foundRoles.map((role) => role._id);
+//   try {
+//       for(let i=0;i<users.length;i++){
+//         await User.updateMany(
+//           {
+//             $set: {
+//               company,
+//               rolesAxiom,
+//               companyAccess,
+//             },
+//           }
           
-        );
-      }
+//         );
+//       }
      
-  } catch (error) {
-    console.error(error);
-  }
-};
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 
 
-// Actualizar roles
-export const updateRoles = async () => {
-  const foundCompany = await Company.find({
-    name: { $in: "APG Mexico" },
-  });
-  const company = foundCompany.map((company) => company._id);
-  try {
-     await Role.updateOne(
-      { name: "user" },
-      {
-        $set: {
-          company,
-        },
-      }
+// // Actualizar roles
+// export const updateRoles = async () => {
+//   const foundCompany = await Company.find({
+//     name: { $in: "APG Mexico" },
+//   });
+//   const company = foundCompany.map((company) => company._id);
+//   try {
+//      await Role.updateOne(
+//       { name: "user" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
       
-    );
-    await Role.updateOne(
-      { name: "moderador" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "admin" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "GeneralR" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "GeneralRW" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "SetupR" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "SetupRW" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "QualityR" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "QualityRW" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "ProductionR" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "ProductionRW" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "OtherR" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "OtherRW" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "KaizenR" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "KaizenRW" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "KaizenApproval" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "QualityASL" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "QualityASM" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "QualityASH" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    await Role.updateOne(
-      { name: "SeniorManagement" },
-      {
-        $set: {
-          company,
-        },
-      }
-    );
-    // console.log(values);
-  } catch (error) {
-    console.error(error);
-  }
-};
+//     );
+//     await Role.updateOne(
+//       { name: "moderador" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "admin" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "GeneralR" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "GeneralRW" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "SetupR" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "SetupRW" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "QualityR" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "QualityRW" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "ProductionR" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "ProductionRW" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "OtherR" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "OtherRW" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "KaizenR" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "KaizenRW" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "KaizenApproval" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "QualityASL" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "QualityASM" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "QualityASH" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     await Role.updateOne(
+//       { name: "SeniorManagement" },
+//       {
+//         $set: {
+//           company,
+//         },
+//       }
+//     );
+//     // console.log(values);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 
 
 
-export const createUser = async () => {
-  try {
-    const count = await User.estimatedDocumentCount();
+// export const createUser = async () => {
+//   try {
+//     const count = await User.estimatedDocumentCount();
 
-    if (count > 0) return;
+//     if (count > 0) return;
 
-    const values = await Promise.all(
-      new User({
-        name: "Elden",
-        lastName: "Lord",
-        employeeNo: "1",
-        username: "Eldenlord",
-        password: "ranni1!",
-        email: "it.admin@apgmexico.mx",
-        roles: ["admin", "moderador", "user"],
-        department: "GENERAL",
-        position: "Administrator",
-      }).save()
+//     const values = await Promise.all(
+//       new User({
+//         name: "Elden",
+//         lastName: "Lord",
+//         employeeNo: "1",
+//         username: "Eldenlord",
+//         password: "ranni1!",
+//         email: "it.admin@apgmexico.mx",
+//         roles: ["admin", "moderador", "user"],
+//         department: "GENERAL",
+//         position: "Administrator",
+//       }).save()
      
-    );
-    // console.log(values);
-  } catch (error) {
-    console.error(error);
-  }
-};
+//     );
+//     // console.log(values);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 
 
@@ -710,91 +710,103 @@ export const createUser = async () => {
 
   
 
-  // for (let i = 0; i < roles.length; i++) {
-  //   if (roles[i].name === "KaizenRW" || roles[i].name === "admin") {
-  //     canModify = "true";
-  //   }
-  //   if (roles[i].name === "KaizenApproval" || roles[i].name === "admin") {
-  //     canApprove = "true";
-  //   }
-  // }
+//   // for (let i = 0; i < roles.length; i++) {
+//   //   if (roles[i].name === "KaizenRW" || roles[i].name === "admin") {
+//   //     canModify = "true";
+//   //   }
+//   //   if (roles[i].name === "KaizenApproval" || roles[i].name === "admin") {
+//   //     canApprove = "true";
+//   //   }
+//   // }
 
-//agregar campos a kaizens
-  export const updateKaizens = async () => {
-    const kaizens = await Kaizen.find().sort({ consecutive: -1 }).limit(1);
-    const foundCompany = await Company.find({
-      name: { $in: "APG Mexico" },
-    });
-    const company = foundCompany.map((company) => company._id);
-    try {
-        for(let i=0;i<kaizens[0].consecutive+1;i++){
-          await Kaizen.updateOne(
-            { consecutive: i },
-            {
-              $set: {
-                implementationCost:0,
-                company,
-              },
-            }
+// //agregar campos a kaizens
+//   export const updateKaizens = async () => {
+//     const kaizens = await Kaizen.find().sort({ consecutive: -1 }).limit(1);
+//     const foundCompany = await Company.find({
+//       name: { $in: "APG Mexico" },
+//     });
+//     const company = foundCompany.map((company) => company._id);
+//     try {
+//         for(let i=0;i<kaizens[0].consecutive+1;i++){
+//           await Kaizen.updateOne(
+//             { consecutive: i },
+//             {
+//               $set: {
+//                 implementationCost:0,
+//                 company,
+//               },
+//             }
             
-          );
-        }
+//           );
+//         }
        
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  //agregar campos a empleados
-  export const updateEmployees = async () => {
-    const foundCompany = await Company.find({
-      name: { $in: "APG Mexico" },
-    });
-    const company = foundCompany.map((company) => company._id);
-    try {
-        for(let i=10000;i<10900;i++){
-          await Employees.updateOne(
-            { numberEmployee: i.toString() },
-            {
-              $set: {
-                company,
-              },
-            }
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   };
+//   //agregar campos a empleados
+//   export const updateEmployees = async () => {
+//     const foundCompany = await Company.find({
+//       name: { $in: "APG Mexico" },
+//     });
+//     const company = foundCompany.map((company) => company._id);
+//     try {
+//         for(let i=10000;i<10900;i++){
+//           await Employees.updateOne(
+//             { numberEmployee: i.toString() },
+//             {
+//               $set: {
+//                 company,
+//               },
+//             }
             
-          );
-        }
+//           );
+//         }
        
-    } catch (error) {
-      console.error(error);
-    }
-  };
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   };
 
 
   
-   //agregar company a parts
-   export const updatePartsCompany = async () => {
-    const status = true;
-    const foundCompany = await Company.find({
-      name: { $in: "APG Mexico" },
-    });
-    const company = foundCompany.map((company) => company._id);
-    try {
-        // for(let i=0;i<users.length;i++){
-          await Parts.updateMany(
-            {
-              $set: {
-                status:status,
-                company,
-              },
-            }
+//    //agregar company a parts
+//    export const updatePartsCompany = async () => {
+//     const status = true;
+//     const foundCompany = await Company.find({
+//       name: { $in: "APG Mexico" },
+//     });
+//     const company = foundCompany.map((company) => company._id);
+//     try {
+//         // for(let i=0;i<users.length;i++){
+//           await Parts.updateMany(
+//             {
+//               $set: {
+//                 status:status,
+//                 company,
+//               },
+//             }
             
-          );
-        // }
+//           );
+//         // }
        
-    } catch (error) {
-      console.error(error);
-    }
-  };
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   };
  
 
-
+module.exports = {
+  createCompanys,
+  createDashboard,
+  createRoles,
+  createDepartments,
+  createPositions,
+  createCustomers,
+  createForms,
+  createEmployees,
+  createParts,
+  createPartsInfo,
+  createMachine
+}
  
