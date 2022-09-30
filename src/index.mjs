@@ -1,4 +1,4 @@
-import app from "./app.js";
+import app from "./app.mjs";
 import "./database.js";
 // const database = require("./database.js");
 // const app = require("./app.js");
