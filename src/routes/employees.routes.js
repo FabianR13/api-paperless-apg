@@ -61,4 +61,4 @@ router.put(
   uploadProfileImage,
   employeesController.modifyProfileImg
 );
-export default router;
+module.exports = router;

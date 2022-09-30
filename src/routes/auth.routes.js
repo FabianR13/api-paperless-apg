@@ -62,4 +62,4 @@ router.get("/Dashboard",
 authJwt.verifyToken, 
 authController.getDashboardCards);
 
-export default router;
+module.exports = router;

@@ -71,4 +71,4 @@ router.delete(
   kaizenController.deleteKaizen
 );
 
-export default router;
+module.exports = router;

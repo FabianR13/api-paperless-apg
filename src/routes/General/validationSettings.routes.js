@@ -89,4 +89,4 @@ router.get(
 router.get(
     "/assemblyStartProduction", assemblyStartProductionController.getAssemblyStartProduction
 );
-export default router;
+module.exports = router;

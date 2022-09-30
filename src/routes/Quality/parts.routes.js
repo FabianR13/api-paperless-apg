@@ -34,4 +34,4 @@ authJwt.verifyToken,
     authJwt.isQualityRW,
 partsController.udpateParts);
 
-export default router; 
+module.exports = router;

@@ -91,4 +91,4 @@ authJwt.isAutorized,
 authJwt.isDeviationR,
 deviationRiskController.getDeviationRiskById);
 
-export default router;
+module.exports = router;

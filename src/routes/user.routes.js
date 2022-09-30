@@ -10,4 +10,4 @@ router.post("/", [
     verifySignup.checkRolesExisted
 ], userController.createUser);
 
-export default router;
+module.exports = router;

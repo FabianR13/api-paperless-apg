@@ -14,4 +14,4 @@ customerController.getCustomers
 
 
 
-export default router;
+module.exports = router;

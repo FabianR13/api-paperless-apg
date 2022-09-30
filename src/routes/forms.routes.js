@@ -67,4 +67,4 @@ router.get(
 
 // router.delete("/:formId", [authJwt.verifyToken, authJwt.isAdmin], formsController.deleteFormById);
 
-export default router;
+module.exports = router;
