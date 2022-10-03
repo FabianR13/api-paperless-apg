@@ -60,4 +60,4 @@ function uploadKaizenImgs(file) {
 //   ]);
 
   
-module.exports = uploadKaizenImgs(file);
+module.exports = uploadKaizenImgs;
