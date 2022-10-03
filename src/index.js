@@ -1,7 +1,7 @@
 const app = require("./app.js");
 // import app from "./app.js";
 // import "./database.js";
-const database = require("./database.js");
+const database = require("./database");
 // 
 // settings
 app.set('port', process.env.PORT || 4000);

@@ -1,16 +1,10 @@
 const mongoose = require("mongoose");
-// dddd
-// Local Enviroment
-// mongoose
-//   .connect("mongodb://127.0.0.1/paperlessapgapidb", {
-//       useNewUrlParser: true,
-//       useUnifiedTopology: true
-//   })
-//   .then((db) => console.log("Db is connected"))
-//   .catch((error) => console.log(error));
+const dotenv = require('dotenv')
+dotenv.config({path:__dirname+'/.env'});
+
 
 mongoose
-  .connect("mongodb+srv://PaperlessApg:AdminPaperlessDb@paperlessapgdb.m1cphdz.mongodb.net/paperlessapgapidb", {
+  .connect(process.env.MONGODB_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true
   })
