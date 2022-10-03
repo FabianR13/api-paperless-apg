@@ -10,7 +10,8 @@ const {
   updateUser,
   updatePassword,
   updateUserSign,
-  getCompany
+  getCompany,
+  getAccess
 } = require("../controllers/auth.controller.js");
 const {
   checkDuplicateUsernameorEmail,
@@ -78,6 +79,9 @@ getCompany);
 
 router.post("/Signin/:CompanyId", 
 signIn);
+
+router.post("/Access", 
+getAccess);
 
 router.get("/Dashboard", 
 verifyToken, 

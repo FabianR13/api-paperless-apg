@@ -401,6 +401,17 @@ const getCompany = async (req, res) => {
   res.json({ status: "200", message: "Companies Loaded", body: companies });
 };
 
+const getAccess = async (req, res) => {
+  if(req.body.password != "DirectoryAccess")
+  return res
+    .status(403)
+    .json({  message: "Access Denied", status: "403" });
+
+
+
+  res.json({ status: "200", message: "Access" });
+};
+
 module.exports = {
   signUp,
   newRole,
@@ -411,5 +422,6 @@ module.exports = {
   updateUser,
   updatePassword,
   updateUserSign,
-  getCompany
+  getCompany,
+  getAccess
 };
