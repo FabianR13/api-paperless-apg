@@ -1,7 +1,7 @@
 const User =require("../models/User.js");
 const jwt =require( "jsonwebtoken");
 const config =require( "../config.js");
-const {Role} =require( "../models/Role.js");
+const Role =require( "../models/Role.js");
 const Dashboard =require( "../models/Dashboard.js");
 const Employees =require( "../models/Employees.js");
 const Company =require( "../models/Company.js");
