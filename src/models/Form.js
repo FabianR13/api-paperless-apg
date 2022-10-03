@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import { Schema, model } from "mongoose";
 
-const formSchema = new Schema(
+const formSchema = new mongoose.Schema(
   {
     name: String,
     category: String,
@@ -15,4 +16,5 @@ const formSchema = new Schema(
   }
 );
 
-export default model("Form", formSchema);
+// export default model("Form", formSchema);
+module.exports = mongoose.model("Form", formSchema);

@@ -1,8 +1,9 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import { Schema, model } from "mongoose";
 
 
-const companySchema = new Schema(
+const companySchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -20,4 +21,5 @@ const companySchema = new Schema(
   }
 );
 
-export default model("Company", companySchema);
+// export default model("Company", companySchema);
+module.exports = mongoose.model("Company", companySchema);

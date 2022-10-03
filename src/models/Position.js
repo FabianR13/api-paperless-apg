@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import { Schema, model } from "mongoose";
 
-const positionSchema = new Schema(
+const positionSchema = new mongoose.Schema(
   {
     name: String,
     description: String,
@@ -14,4 +15,5 @@ const positionSchema = new Schema(
   }
 );
 
-export default model("Position", positionSchema);
+// export default model("Position", positionSchema);
+module.exports = mongoose.model("Position", positionSchema);

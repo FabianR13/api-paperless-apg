@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import { Schema, model } from "mongoose";
 
-const formsSchema = new Schema(
+const formsSchema = new mongoose.Schema(
   {
     name: String,
     description: String,
@@ -9,7 +10,7 @@ const formsSchema = new Schema(
     dashboard: [
       {
         ref: "Dashboard",
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
       },
     ],
   },
@@ -19,4 +20,5 @@ const formsSchema = new Schema(
   }
 );
 
-export default model("Forms", formsSchema);
+// export default model("Forms", formsSchema);
+module.exports = mongoose.model("Forms", formsSchema);

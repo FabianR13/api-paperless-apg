@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import { Schema, model } from "mongoose";
 
-const dashboardSchema = new Schema(
+const dashboardSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -23,4 +24,5 @@ const dashboardSchema = new Schema(
   { timestamps: true, versionKey: false }
 );
 
-export default model("Dashboard", dashboardSchema);
+// export default model("Dashboard", dashboardSchema);
+module.exports = mongoose.model("Dashboard", dashboardSchema);

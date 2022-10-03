@@ -1,5 +1,5 @@
 // Validator
-const {ROLES,Role} = require("../models/Role.js");
+const {Role} = require("../models/Role.js");
 const User = require("../models/User.js");
 const Employees = require("../models/Employees.js");
 // import { ROLES } from "../models/Role.js";
@@ -37,25 +37,25 @@ const checkDuplicateRole = async (req, res, next) => {
 
 }
 
-const checkRolesExisted = (req, res, next) => {
-  console.log(req.body)
-  if (req.body.roles) {
-    for (let i = 0; i < req.body.roles.length; i++) {
-      if (!ROLES.includes(req.body.roles[i])) {
-        return res.status(400).json({
-          message: `Role ${req.body.roles[i]} does not exists`,
-        });
-      }
-    }
-  }
+// const checkRolesExisted = (req, res, next) => {
+//   console.log(req.body)
+//   if (req.body.roles) {
+//     for (let i = 0; i < req.body.roles.length; i++) {
+//       if (!ROLES.includes(req.body.roles[i])) {
+//         return res.status(400).json({
+//           message: `Role ${req.body.roles[i]} does not exists`,
+//         });
+//       }
+//     }
+//   }
 
-  next();
-};
+//   next();
+// };
 
 
 module.exports = {
   checkDuplicateUsernameorEmail,
   checkDuplicateEmployeeNo,
-  checkDuplicateRole,
-  checkRolesExisted
+  checkDuplicateRole
+  // checkRolesExisted
 };

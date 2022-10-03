@@ -35,8 +35,8 @@ const validationSettingsRoutes = require( "./routes/General/validationSettings.r
 const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const app = express().use("*", cors());
-
+// const app = express().use("*", cors());
+const app = express()
 
 //Primer inicio de API
 // createCompanys();

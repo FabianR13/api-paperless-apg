@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const partSchema =new Schema(
+const partSchema =new mongoose.Schema(
  
     {
         partnumber: [{ type: String },],
@@ -14,13 +15,13 @@ const partSchema =new Schema(
         customer:[
             {
                 ref: "Customer",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         company:[
             {
                 ref: "Company",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         mould:{ 
@@ -35,4 +36,5 @@ const partSchema =new Schema(
 
     }
 );
-export default model ("Parts", partSchema);
+// export default model ("Parts", partSchema);
+module.exports = mongoose.model("Parts", partSchema);

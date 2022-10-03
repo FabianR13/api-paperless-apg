@@ -1,8 +1,9 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 // import { stringify } from "uuid";
 
-const deviationRiskSchema = new Schema (
+const deviationRiskSchema = new mongoose.Schema (
     {
         deviationNumber: {
             type: String,
@@ -194,7 +195,7 @@ const deviationRiskSchema = new Schema (
         approvedBy: [
             {
                 ref:"User",
-                type:Schema.Types.ObjectId, 
+                type: mongoose.Schema.Types.ObjectId, 
             },
         ],
       
@@ -204,7 +205,7 @@ const deviationRiskSchema = new Schema (
         company:[
             {
                 ref: "Company",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
        },
@@ -212,4 +213,5 @@ const deviationRiskSchema = new Schema (
         timestamps: true,
       }
 );
-export default model ("DeviationRiskAssessment",deviationRiskSchema);
+// export default model ("DeviationRiskAssessment",deviationRiskSchema);
+module.exports = mongoose.model("DeviationRiskAssessment",deviationRiskSchema);

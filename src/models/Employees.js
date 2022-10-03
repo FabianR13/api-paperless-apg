@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const employeesSchema = new Schema(
+const employeesSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -19,13 +20,13 @@ const employeesSchema = new Schema(
         department: [
             {
                 ref: "Department",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             },
         ],
         position: [
             {
                 ref: "Position",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             },
         ],
         active:{
@@ -41,10 +42,11 @@ const employeesSchema = new Schema(
         company:[
             {
                 ref: "Company",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         
     }
 );
-    export default model ("Employees", employeesSchema);
+    // export default model ("Employees", employeesSchema);
+    module.exports = mongoose.model("Employees", employeesSchema);

@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const deviationRequestSchema = new Schema(
+const deviationRequestSchema = new mongoose.Schema(
     {
         deviationDate: {
             type: Date,
@@ -16,7 +17,7 @@ const deviationRequestSchema = new Schema(
         customer:[
             {
                 ref: "Customer",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             },
         ],
         supplier:{
@@ -25,7 +26,7 @@ const deviationRequestSchema = new Schema(
         requestBy: [
             {
                 ref:"User",
-                type:Schema.Types.ObjectId, 
+                type: mongoose.Schema.Types.ObjectId, 
             },
         ],
         implementationDate: {
@@ -37,7 +38,7 @@ const deviationRequestSchema = new Schema(
         parts: [
             {
                 ref: "Parts",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             },
         ],
         sectionTwo:{
@@ -110,7 +111,7 @@ const deviationRequestSchema = new Schema(
         company:[
             {
                 ref: "Company",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
 
@@ -120,8 +121,8 @@ const deviationRequestSchema = new Schema(
       }
 );
 
-export default model ("DeviationRequest", deviationRequestSchema);
-
+// export default model ("DeviationRequest", deviationRequestSchema);
+module.exports = mongoose.model("DeviationRequest", deviationRequestSchema);
 
 
 

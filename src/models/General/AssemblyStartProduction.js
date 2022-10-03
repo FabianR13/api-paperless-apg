@@ -1,6 +1,7 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
-const assemblyStartProductionSchema = new Schema(
+const assemblyStartProductionSchema = new mongoose.Schema(
     {
         trainOperator:{
             type:String,
@@ -37,7 +38,7 @@ const assemblyStartProductionSchema = new Schema(
         employee:[
             {
                 ref:"User",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
        
@@ -49,9 +50,10 @@ const assemblyStartProductionSchema = new Schema(
         },
         company:[{
             ref:"Company",
-            type:Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
         }],
 
     }
 )
-export default model ("AssemblyStartProduction", assemblyStartProductionSchema);
+// export default model ("AssemblyStartProduction", assemblyStartProductionSchema);
+module.exports = mongoose.model("AssemblyStartProduction", assemblyStartProductionSchema);

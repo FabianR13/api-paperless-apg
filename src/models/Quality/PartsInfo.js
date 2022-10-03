@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const partsInfoSchema = new Schema(
+const partsInfoSchema = new mongoose.Schema(
     {
         machine:{
             type:Number,
@@ -27,13 +28,13 @@ const partsInfoSchema = new Schema(
         company:[
             {
                 ref: "Company",
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         partnumber:[
             {
                 ref:"Parts",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         cushion:{
@@ -55,4 +56,5 @@ const partsInfoSchema = new Schema(
 
     }
 )
-export default model("PartsInfo", partsInfoSchema);
+// export default model("PartsInfo", partsInfoSchema);
+module.exports = mongoose.model("PartsInfo", partsInfoSchema);

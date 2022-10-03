@@ -1,15 +1,16 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
 
-const validationSettingsSchema = new Schema(
+const validationSettingsSchema = new mongoose.Schema(
     {
      
        
         machine:[
             {
                 ref:"Machine",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         assemblyPartNumber:{
@@ -29,7 +30,7 @@ const validationSettingsSchema = new Schema(
         moldInstalledBy:[
             {
             ref:"User",
-            type:Schema.Types.ObjectId
+            type: mongoose.Schema.Types.ObjectId
         }
             ],
         resin:{
@@ -45,32 +46,32 @@ const validationSettingsSchema = new Schema(
         assemblyStartTechnical:[
             {
                 ref:"AssemblyStarTechnical",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         assemblyStartQuality:[
             {
                 ref:"AssemblyStartQuality",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
 
         assmeblyStartProduction:[
             {
                 ref:"AssemblyStartProduction",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         temporalStop:[
             {
                 ref:"TemporalStop",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         company:[
             {
                 ref:"Company",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         status:{
@@ -79,9 +80,10 @@ const validationSettingsSchema = new Schema(
         endRun:[
             {
                 ref:"EndRun",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
     }
 )
-export default model("ValidationSettings", validationSettingsSchema);
+// export default model("ValidationSettings", validationSettingsSchema);
+module.exports = mongoose.model("ValidationSettings", validationSettingsSchema);

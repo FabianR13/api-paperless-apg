@@ -15,23 +15,24 @@ const {
   getDepartments,
   getEmployees,
   updateEmployeeUser,
-  modifyProfileImg
+  modifyProfileImg,
+  updateEmployee
 } = require("../controllers/employees.controller.js");
-const uploadProfileImage = require("../middlewares/uploadProfileImg.js");
+const {uploadProfileImage} = require("../middlewares/uploadProfileImg.js");
 // import Router from "express";
 // import * as employeesController from "../controllers/employees.controller.js";
 // import { verifySignup, authJwt } from "../middlewares/index.js";
 // import  uploadProfileImage  from "../middlewares/uploadProfileImg.js";
 
-router.post(
-    "/NewEmployee/:CompanyId",
-    checkDuplicateEmployeeNo,
-    verifyToken,
-    isAutorized,
-    isModerator,
-    uploadProfileImage,
-    signEmployee
-);
+// router.post(
+//     "/NewEmployee/:CompanyId",
+//     checkDuplicateEmployeeNo,
+//     verifyToken,
+//     isAutorized,
+//     isModerator,
+//     uploadProfileImage,
+//     signEmployee
+// );
 
 
 // Route to get All the positions
@@ -71,14 +72,14 @@ router.put(
   updateEmployee
 );
 //Update employe image
-router.put(
-  "/UpdateEmployee/Picture/:employeeId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isModerator,
-  uploadProfileImage,
-  modifyProfileImg
-);
+// router.put(
+//   "/UpdateEmployee/Picture/:employeeId/:CompanyId",
+//   verifyToken,
+//   isAutorized,
+//   isModerator,
+//   uploadProfileImage,
+//   modifyProfileImg
+// );
 
 
 module.exports = router;

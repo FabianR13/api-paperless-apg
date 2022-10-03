@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import { Schema, model } from "mongoose";
 
-const kaizenSchema = new Schema(
+const kaizenSchema = new mongoose.Schema(
   {
     kaizenName: {
       type: String,
@@ -84,7 +85,7 @@ const kaizenSchema = new Schema(
     company:[
       {
           ref: "Company",
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
       }
   ],
     kaizenImagesB: [{ img: { type: String } }],
@@ -95,4 +96,5 @@ const kaizenSchema = new Schema(
   }
 );
 
-export default model("Kaizen", kaizenSchema);
+// export default model("Kaizen", kaizenSchema);
+module.exports = mongoose.model("Kaizen", kaizenSchema);

@@ -41,10 +41,10 @@ const {
 
 
 //method to post assembly Start
-router.post(
-    "/newAssemblyStartTechnical", 
-    createAssemblyStartTechnial
-);
+// router.post(
+//     "/newAssemblyStartTechnical", 
+//     createAssemblyStartTechnial
+// );
 //methos to post validations settings 
 router.post (
     "/newValidationSettings", 
@@ -79,10 +79,10 @@ router.put(
     updateValidationSetting
 );
 //method to update assembly start
-router.put(
-    "/updateAssemblyStartsTechnicals/:assemblyStartTechnicalId", 
-    updateAssemblyStartTechnical
-);
+// router.put(
+//     "/updateAssemblyStartsTechnicals/:assemblyStartTechnicalId", 
+//     updateAssemblyStartTechnical
+// );
 //methos to updte assembly quality
 router.put(
     "/updateAssemblyStartQualitys/:assemblyStartQualityId", 
@@ -128,10 +128,10 @@ router.get(
     getAssemblyStartQuality
 );
 // method to get assembly Start
-router.get(
-    "/assemblyStartTechnical", 
-    getAssemblyStartTechnical
-);
+// router.get(
+//     "/assemblyStartTechnical", 
+//     getAssemblyStartTechnical
+// );
 // method to get assembly production
 router.get(
     "/assemblyStartProduction", 

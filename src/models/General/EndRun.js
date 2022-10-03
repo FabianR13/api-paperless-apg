@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const endRunSchema = new Schema(
+const endRunSchema = new mongoose.Schema(
     {
         verWatherMold:{
             type:String,
@@ -33,7 +34,7 @@ const endRunSchema = new Schema(
         employeeT:[
             {
                 ref:"User",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         dateT:{
@@ -55,7 +56,7 @@ const endRunSchema = new Schema(
         },
         employeeQ:[{
             ref:"User",
-            type:Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
         }],
         dateQ:{
             type:Date,
@@ -77,7 +78,7 @@ const endRunSchema = new Schema(
        
         employeeP:[{
             ref:"User",
-            type:Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
         }],
         
        
@@ -93,7 +94,7 @@ const endRunSchema = new Schema(
         company:[
             {
                 ref:"Company",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         noCheckValidation:{
@@ -101,4 +102,5 @@ const endRunSchema = new Schema(
         },
     }
 )
-export default model("EndRun", endRunSchema);
+// export default model("EndRun", endRunSchema);
+module.exports = mongoose.model("EndRun", endRunSchema);

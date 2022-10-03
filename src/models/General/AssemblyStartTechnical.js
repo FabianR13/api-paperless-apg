@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const assemblyStartTechnicalSchema = new Schema (
+const assemblyStartTechnicalSchema = new mongoose.Schema (
     {
         
         parameterSetting:{
@@ -68,7 +69,7 @@ const assemblyStartTechnicalSchema = new Schema (
         },
         employee:[{
             ref:"User",
-            type:Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
         }],
        
         noCheckValidation:{
@@ -79,8 +80,9 @@ const assemblyStartTechnicalSchema = new Schema (
         },
         company:[{
             ref:"Company",
-            type:Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
         }],
     }
 );
-export default model ("assemblyStartTechnical", assemblyStartTechnicalSchema);
+// export default model ("assemblyStartTechnical", assemblyStartTechnicalSchema);
+module.exports = mongoose.model("assemblyStartTechnical", assemblyStartTechnicalSchema);

@@ -1,9 +1,10 @@
-const {Schema, model} = require("mongoose");
+// const {Schema,} = require("mongoose");
+const mongoose = require('mongoose')
 const bcrypt = require("bcryptjs");
 // import { Schema, model } from "mongoose";
 // import bcrypt from "bcryptjs";
 
-const userSchema = new Schema(
+const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
@@ -23,32 +24,32 @@ const userSchema = new Schema(
     roles: [
       {
         ref: "Role",
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
       },
     ],
     rolesAxiom: [
       {
         ref: "Role",
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
       },
     ],
     employee: [
       {
         ref: "Employees",
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
       },
       
     ],
     companyAccess:[
       {
           ref: "Company",
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
       }
   ],
     company:[
       {
           ref: "Company",
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
       }
   ],
     
@@ -71,4 +72,5 @@ userSchema.statics.comparePassword = async (password, receivedPassword) => {
   return await bcrypt.compare(password, receivedPassword);
 };
 
-export default model("User",userSchema);
+// export default model("User",userSchema);
+module.exports = mongoose.model("User",userSchema);

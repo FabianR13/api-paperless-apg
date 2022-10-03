@@ -148,7 +148,7 @@ const updateEmployeeUser = async (req, res) => {
   });
 };
  // Updating employee
- export const updateEmployee = async (req, res) => {
+const updateEmployee = async (req, res) => {
   const newDepartment=req.body.department
   const newPosition=req.body.position
   const { employeeId } = req.params;
@@ -306,6 +306,7 @@ module.exports ={
   getPositions,
   getDepartments,
   getEmployees,
+  updateEmployee,
   updateEmployeeUser,
   modifyProfileImg
 };

@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const temnporalStopSchema = new Schema(
+const temnporalStopSchema = new mongoose.Schema(
     {
         date1:{
             type:Date,
@@ -34,7 +35,7 @@ const temnporalStopSchema = new Schema(
         },
         company:[{
             ref:"Company",
-            type:Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
         }],
         employeeT:{
             type:String,
@@ -52,4 +53,5 @@ const temnporalStopSchema = new Schema(
         
     }
 )
-export default model("TemporalStop", temnporalStopSchema);
+// export default model("TemporalStop", temnporalStopSchema);
+module.exports = mongoose.model("TemporalStop", temnporalStopSchema);

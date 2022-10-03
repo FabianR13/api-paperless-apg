@@ -1,7 +1,8 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import {Schema, model} from "mongoose";
 
-const assemblyStartQualitySchema = new Schema(
+const assemblyStartQualitySchema = new mongoose.Schema(
     {
         sheetVerification:{
             type:String,
@@ -9,7 +10,7 @@ const assemblyStartQualitySchema = new Schema(
         numberDevitaion:[
             {
                 ref:"DeviationRequest",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
         moldRepairs:{
@@ -43,7 +44,7 @@ const assemblyStartQualitySchema = new Schema(
        
        employee:[{
         ref:"Users",
-        type:Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
        }],
         status:{
             type:Boolean,
@@ -54,9 +55,10 @@ const assemblyStartQualitySchema = new Schema(
         company:[
             {
                 ref:"Company",
-                type:Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
             }
         ],
     }
 )
-export default model("AssemblyStartQuality",assemblyStartQualitySchema);
+// export default model("AssemblyStartQuality",assemblyStartQualitySchema);
+module.exports = mongoose.model("AssemblyStartQuality",assemblyStartQualitySchema);

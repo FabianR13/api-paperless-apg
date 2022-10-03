@@ -1,26 +1,27 @@
-const {Schema, model} = require("mongoose");
+const mongoose = require('mongoose')
+// const {Schema, model} = require("mongoose");
 // import { Schema, model } from "mongoose";
 
-export const ROLES = [
-  "user",
-  "admin",
-  "moderador",
-  "GeneralR",
-  "GeneralRW",
-  "SetupR",
-  "SetupRW",
-  "QualityR",
-  "QualityRW",
-  "ProductionR",
-  "ProductionRW",
-  "OtherR",
-  "OtherRW",
-  "KaizenR",
-  "KaizenRW",
-  "KaizenApproval",
-];
+// export const ROLES = [
+//   "user",
+//   "admin",
+//   "moderador",
+//   "GeneralR",
+//   "GeneralRW",
+//   "SetupR",
+//   "SetupRW",
+//   "QualityR",
+//   "QualityRW",
+//   "ProductionR",
+//   "ProductionRW",
+//   "OtherR",
+//   "OtherRW",
+//   "KaizenR",
+//   "KaizenRW",
+//   "KaizenApproval",
+// ];
 
-const roleSchema = new Schema(
+const roleSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -41,4 +42,5 @@ const roleSchema = new Schema(
   }
 );
 
-export default model("Role", roleSchema);
+// export default model("Role", roleSchema);
+module.exports = mongoose.model("Role", roleSchema);
