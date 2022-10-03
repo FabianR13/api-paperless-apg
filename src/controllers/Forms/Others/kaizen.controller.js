@@ -1,7 +1,18 @@
 // Controlador para el Kaizen
 const Kaizen = require( "../../../models/Others/Kaizen.js");
 const Company = require( "../../../models/Company.js");
+const S3 = require("aws-sdk/clients/s3");
 const fs = require("fs");
+
+const region = process.env.S3_BUCKET_REGION;
+const accessKeyId = process.env.S3_ACCESS_KEY;
+const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+
+const storage = new S3({
+  region,
+  accessKeyId,
+  secretAccessKey
+});
 // import fs from "fs";
 // import { nextTick } from "process";
 // import Kaizen from "../../../models/Others/Kaizen.js";
