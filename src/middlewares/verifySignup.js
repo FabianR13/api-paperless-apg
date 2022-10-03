@@ -1,5 +1,5 @@
 // Validator
-const {Role} = require("../models/Role.js");
+const Role = require("../models/Role.js");
 const User = require("../models/User.js");
 const Employees = require("../models/Employees.js");
 // import { ROLES } from "../models/Role.js";

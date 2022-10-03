@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config.js");
 const User = require("../models/User.js");
-const {Role} = ("../models/Role.js");
+const Role = ("../models/Role.js");
 const Company = require("../models/Company.js");
 // import jwt from "jsonwebtoken";
 // import config from "../config.js";
