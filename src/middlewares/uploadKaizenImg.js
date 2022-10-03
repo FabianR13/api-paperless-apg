@@ -28,7 +28,7 @@ function uploadKaizenImgs(file) {
       cb(null, shortid.generate() + ".jpeg");
     }
   }
-  return S3.upload(uploadParams).promise()
+  return s3.upload(uploadParams).promise()
 };
 
 
