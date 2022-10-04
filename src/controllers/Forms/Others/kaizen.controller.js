@@ -1,9 +1,21 @@
 // Controlador para el Kaizen
 const Kaizen = require( "../../../models/Others/Kaizen.js");
 const Company = require( "../../../models/Company.js");
-const S3 = require("aws-sdk/clients/s3");
 const fs = require("fs");
+const AWS = require('aws-sdk');
+const dotenv = require('dotenv')
+dotenv.config({path:"C:\\api-paperless-apg\\src\\.env"});
 
+AWS.config.update({
+  region: process.env.S3_BUCKET_REGION,
+  apiVersion: 'latest',
+  credentials: {
+  accessKeyId: process.env.S3_ACCESS_KEY,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
+  }
+})
+
+const s3 = new AWS.S3();
 // import fs from "fs";
 // import { nextTick } from "process";
 // import Kaizen from "../../../models/Others/Kaizen.js";
@@ -295,15 +307,15 @@ const updateKaizenStatus = async (req, res) => {
   });
 };
 
-// Function to modify the Images from a Kaizen
+// Function to modify the Images from a Kaizen/////////////////////////////////////////////////////////////////////
 const modifyKaizenImg = async (req, res) => {
   const { kaizenId } = req.params;
 
   //Getting Previous Images
   const foundPrevKaizen = await Kaizen.findById(kaizenId);
 
-  const path =
-    "C:\\Paperless\\PAPERLESS-APG\\public\\Uploads\\KaizenImgs\\";
+  // const path =
+  //   "C:\\Paperless\\PAPERLESS-APG\\public\\Uploads\\KaizenImgs\\";
     // "E:\\Paperless\\PAPERLESS-APG\\build\\Uploads\\KaizenImgs\\";
 
   // Deleting Images from Folder for KaizenB
@@ -313,16 +325,23 @@ const modifyKaizenImg = async (req, res) => {
     if (prevKaizenImagesB.length > 0) {
       prevKaizenImagesB.map((file) => {
         // Delete File from Folder
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+          Key: file.img        
+        };
         try {
-          fs.unlink(path + file.img, (err) => {
-            if (err) {
-              res.status(403).json({
-                status: "403",
-                message: "Error al eliminar Archivo: " + err,
-                body: "",
-              });
-            }
-          });
+          s3.deleteObject(params, function (err, data) {
+            if (err) console.log(err);
+           });
+          // fs.unlink(path + file.img, (err) => {
+          //   if (err) {
+          //     res.status(403).json({
+          //       status: "403",
+          //       message: "Error al eliminar Archivo: " + err,
+          //       body: "",
+          //     });
+          //   }
+          // });
         } catch (error) {
           res.status(403).json({
             status: "403",
@@ -341,17 +360,25 @@ const modifyKaizenImg = async (req, res) => {
     if (prevKaizenImagesA.length > 0) {
       prevKaizenImagesA.map((file) => {
         // Delete File from Folder
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+          Key: file.img        
+        };
         try {
-          fs.unlink(path + file.img, (err) => {
-            if (err) {
-              console.error(err);
-              res.status(403).json({
-                status: "403",
-                message: "Error al eliminar Archivo: " + err,
-                body: "",
-              });
-            }
-          });
+          s3.deleteObject(params, function (err, data) {
+            if (err) console.log(err);
+           });
+        // try {
+        //   fs.unlink(path + file.img, (err) => {
+        //     if (err) {
+        //       console.error(err);
+        //       res.status(403).json({
+        //         status: "403",
+        //         message: "Error al eliminar Archivo: " + err,
+        //         body: "",
+        //       });
+        //     }
+        //   });
         } catch (error) {
           res.status(403).json({
             status: "403",
@@ -382,7 +409,7 @@ const modifyKaizenImg = async (req, res) => {
   if (req.files["kaizenImagesB"]) {
     if (req.files["kaizenImagesB"].length > 0) {
       kaizenImagesB = req.files["kaizenImagesB"].map((file) => {
-        return { img: file.filename };
+        return { img: file.key };
       });
     }
   }
@@ -392,7 +419,7 @@ const modifyKaizenImg = async (req, res) => {
   if (req.files["kaizenImagesA"]) {
     if (req.files["kaizenImagesA"].length > 0) {
       kaizenImagesA = req.files["kaizenImagesA"].map((file) => {
-        return { img: file.filename };
+        return { img: file.key };
       });
     }
   }
@@ -421,12 +448,12 @@ const modifyKaizenImg = async (req, res) => {
 };
 
 
-//delete kaizen
+//delete kaizen//////////////////////////////////////////////////////////////////////////////////////////
 const deleteKaizen = async (req, res) => {
   //const updatedKaizen = await K
   const { kaizenId } = req.params;
-  const path =
-  "C:\\Paperless\\PAPERLESS-APG\\public\\Uploads\\KaizenImgs\\";
+  // const path =
+  // "C:\\Paperless\\PAPERLESS-APG\\public\\Uploads\\KaizenImgs\\";
   // "E:\\Paperless\\PAPERLESS-APG\\build\\Uploads\\KaizenImgs\\";
   const foundPrevKaizen = await Kaizen.findById(kaizenId);
 
@@ -437,16 +464,25 @@ if (prevKaizenImagesB) {
   if (prevKaizenImagesB.length > 0) {
     prevKaizenImagesB.map((file) => {
       // Delete File from Folder
+
+      const params = {
+        Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+        Key: file.img        
+      };
       try {
-        fs.unlink(path + file.img, (err) => {
-          if (err) {
-            res.status(403).json({
-              status: "403",
-              message: "Error al eliminar Archivo: " + err,
-              body: "",
-            });
-          }
-        });
+        s3.deleteObject(params, function (err, data) {
+          if (err) console.log(err);
+         });
+      // try {
+      //   fs.unlink(path + file.img, (err) => {
+      //     if (err) {
+      //       res.status(403).json({
+      //         status: "403",
+      //         message: "Error al eliminar Archivo: " + err,
+      //         body: "",
+      //       });
+      //     }
+      //   });
       } catch (error) {
         res.status(403).json({
           status: "403",
@@ -465,17 +501,25 @@ if (prevKaizenImagesA) {
   if (prevKaizenImagesA.length > 0) {
     prevKaizenImagesA.map((file) => {
       // Delete File from Folder
+      const params = {
+        Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+        Key: file.img        
+      };
       try {
-        fs.unlink(path + file.img, (err) => {
-          if (err) {
-            console.error(err);
-            res.status(403).json({
-              status: "403",
-              message: "Error al eliminar Archivo: " + err,
-              body: "",
-            });
-          }
-        });
+        s3.deleteObject(params, function (err, data) {
+          if (err) console.log(err);
+         });
+      // try {
+      //   fs.unlink(path + file.img, (err) => {
+      //     if (err) {
+      //       console.error(err);
+      //       res.status(403).json({
+      //         status: "403",
+      //         message: "Error al eliminar Archivo: " + err,
+      //         body: "",
+      //       });
+      //     }
+      //   });
       } catch (error) {
         res.status(403).json({
           status: "403",

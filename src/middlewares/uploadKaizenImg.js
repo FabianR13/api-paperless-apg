@@ -9,8 +9,8 @@ AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
   apiVersion: 'latest',
   credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
+  accessKeyId: process.env.S3_ACCESS_KEY,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
   }
 })
 
