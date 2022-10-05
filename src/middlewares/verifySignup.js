@@ -16,7 +16,7 @@ const checkDuplicateUsernameorEmail = async (req, res, next) => {
 const checkDuplicateEmployeeNo = async (req, res, next) => {
   const employee = await Employees.findOne({ numberEmployee: req.body.numberEmployee })
   if (employee) return res.status(400).json({ message: 'The number employee already exists' })
-
+  console.log("aqui")
   next();
 }
 //Metodo para verificar si el rol no esta duplicado//////////////////////////////////////////////////////////////////////////////
