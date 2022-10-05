@@ -9,32 +9,24 @@ const {
   isQualityR,
   isProductionR,
   isAutorized
-}= require("../middlewares/auth.Jwt.js");
+} = require("../middlewares/auth.Jwt.js");
 const {
-  createForms,
   getForms,
-  getDashboardById
+  getDashboardById,
+  getFormsbyGeneral
 } = require("../controllers/forms.controller.js")
-// import * as formsController from "../controllers/forms.controller.js";
-// import { authJwt } from "../middlewares/index.js";
-
-router.post(
-  "/",
-  [verifyToken, isAdmin],
-  createForms
+///Principal route///
+router.get("/",
+  verifyToken,
+  getForms);
+///
+router.get(
+  "/list/general",
+  verifyToken,
+  isAdmin,
+  getFormsbyGeneral
 );
-
-router.get("/", 
-verifyToken, 
-getForms);
-
-// router.get(
-//   "/list/general",
-//   authJwt.verifyToken,
-//   authJwt.isAdmin,
-//   formsController.getFormsbyGeneral
-// );
-
+///Route forms in General dashboard///
 router.get(
   "/General/:formsId/:CompanyId",
   verifyToken,
@@ -42,7 +34,7 @@ router.get(
   isGeneralR,
   getDashboardById
 );
-
+///Route forms in Setup dashboard///
 router.get(
   "/Setup/:formsId/:CompanyId",
   verifyToken,
@@ -50,15 +42,15 @@ router.get(
   isSetupR,
   getDashboardById
 );
-
+///Route forms in Other dashboard///
 router.get(
   "/Other/:formsId/:CompanyId",
-  verifyToken, 
+  verifyToken,
   isAutorized,
   isOtherR,
   getDashboardById
 );
-
+///Route forms in Quality dashboard///
 router.get(
   "/Quality/:formsId/:CompanyId",
   verifyToken,
@@ -66,7 +58,7 @@ router.get(
   isQualityR,
   getDashboardById
 );
-
+///Route forms in Production dashboard///
 router.get(
   "/Production/:formsId/:CompanyId",
   verifyToken,
@@ -74,11 +66,5 @@ router.get(
   isProductionR,
   getDashboardById
 );
-
-// router.get("/:formId", authJwt.verifyToken, formsController.getFormById);
-
-// router.put("/:formId", [authJwt.verifyToken, authJwt.isModerator], formsController.updateFormById);
-
-// router.delete("/:formId", [authJwt.verifyToken, authJwt.isAdmin], formsController.deleteFormById);
 
 module.exports = router;

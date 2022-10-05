@@ -1,27 +1,23 @@
 // Controlador para el Kaizen
-const Kaizen = require( "../../../models/Others/Kaizen.js");
-const Company = require( "../../../models/Company.js");
-const fs = require("fs");
+const Kaizen = require("../../../models/Others/Kaizen.js");
+const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv')
-dotenv.config({path:"C:\\api-paperless-apg\\src\\.env"});
+dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
   apiVersion: 'latest',
   credentials: {
-  accessKeyId: process.env.S3_ACCESS_KEY,
-  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
   }
 })
 
 const s3 = new AWS.S3();
-// import fs from "fs";
-// import { nextTick } from "process";
-// import Kaizen from "../../../models/Others/Kaizen.js";
-// import Company from "../../../models/Company.js";
 
-const  createKaizen = async (req, res) => {
+//Create new kaizen/////////////////////////////////////////////////////////////////////////////////////////////////////////
+const createKaizen = async (req, res) => {
   const {
     kaizenName,
     date,
@@ -51,7 +47,6 @@ const  createKaizen = async (req, res) => {
   } = req.body;
 
   //Retreiving the data for each Before Kaizen Image and adding to the schema
-
   let kaizenImagesB = [];
 
   if (req.files["kaizenImagesB"]) {
@@ -62,7 +57,6 @@ const  createKaizen = async (req, res) => {
     }
   }
   //Retreiving the data for each Before Kaizen Image and adding to the schema
-
   let kaizenImagesA = [];
 
   if (req.files["kaizenImagesA"]) {
@@ -103,47 +97,38 @@ const  createKaizen = async (req, res) => {
   });
   if (company) {
     const foundCompany = await Company.find({
-      _id: { $in: company},
+      _id: { $in: company },
     });
     kaizen.company = foundCompany.map((company) => company._id);
   }
-  
+
   const kaizens = await Kaizen.find({
     company: { $in: req.body.company },
   }).sort({ consecutive: -1 }).limit(1);
 
-  if(kaizens.length === 0){
+  if (kaizens.length === 0) {
     kaizen.consecutive = 1;
-  }else{
+  } else {
     kaizen.consecutive = kaizens[0].consecutive + 1
   }
 
-  
- 
   kaizen.save((error, kaizen) => {
     if (error) return res.status(400).json({ status: "400", message: error });
     if (kaizen) {
       res.json({ status: "200", message: "Kaizen Created", body: kaizen });
     }
   });
-/////////////////////////////////////////
-  // res.status(200).json({
-  //   KaizenB: req.files["kaizenImagesB"],
-  //   KaizenA: req.files["kaizenImagesA"],
-  //   body: req.body,
-  // });
 };
-
-// Getting all Kaizens
+// Getting all Kaizens//////////////////////////////////////////////////////////////////////////////////////////////////////
 const getKaizens = async (req, res) => {
-  const {CompanyId} = req.params
-  if(CompanyId.length !== 24){
+  const { CompanyId } = req.params
+  if (CompanyId.length !== 24) {
     return;
   }
   const company = await Company.find({
     _id: { $in: CompanyId },
   })
-  if(!company){
+  if (!company) {
     return;
   }
   const kaizens = await Kaizen.find({
@@ -151,8 +136,7 @@ const getKaizens = async (req, res) => {
   }).sort({ consecutive: -1 });
   res.json({ status: "200", message: "Kaizens Loaded", body: kaizens });
 };
-
-// Getting Kaizen by Id
+// Getting Kaizen by Id////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getKaizenById = async (req, res) => {
   const foundKaizen = await Kaizen.findById(req.params.kaizenId);
   if (!foundKaizen) {
@@ -165,10 +149,9 @@ const getKaizenById = async (req, res) => {
     .status(200)
     .json({ status: "200", message: "Kaizen Founded", body: foundKaizen });
 };
-
-// Getting Kaizens Filtered
+// Getting Kaizens Filtered///////////////////////////////////////////////////////////////////////////////////////////////////
 const getKaizensFiltered = async (req, res) => {
-  const {start, end, area, status, createdBy, montlyRank,company} = req.body
+  const { start, end, area, status, createdBy, montlyRank, company } = req.body
   let options = {};
 
   //Date range filter
@@ -178,39 +161,32 @@ const getKaizensFiltered = async (req, res) => {
     options["date"]["$gte"] = new Date(start);
     options["date"]["$lte"] = new Date(end);
   }
-
   // Filter by Area
   if (area) {
     options["area"] = area;
   }
-
   // Filter by Status
-  if(status) {
+  if (status) {
     options["status"] = status
   }
-
   // Filter Created By
-  if(createdBy) {
+  if (createdBy) {
     options["createdBy"] = createdBy
   }
   // Filter MontlyRank
-  if(montlyRank) {
+  if (montlyRank) {
     options["montlyRank"] = montlyRank
   }
   // Filter Company
-  if(company) {
+  if (company) {
     options["company"] = company
   }
-
-  console.log(options);
 
   const kaizens = await Kaizen.find(options).sort({ date: -1 });
   res.json({ status: "200", message: "Kaizens Loaded New", body: kaizens });
 };
-
-// Updating the Kaizen All data
+// Updating the Kaizen All data//////////////////////////////////////////////////////////////////////////////////////////////
 const updateKaizen = async (req, res) => {
-  //const updatedKaizen = await K
   const { kaizenId } = req.params;
   const {
     kaizenName,
@@ -275,12 +251,10 @@ const updateKaizen = async (req, res) => {
     .status(200)
     .json({ status: "200", message: "Kaizen Updated ", body: updatedKaizen });
 };
-
-// Updating the Kaizen All data
+// Updating the Kaizen status/////////////////////////////////////////////////////////////////////////////////
 const updateKaizenStatus = async (req, res) => {
-  //const updatedKaizen = await K
   const { kaizenId } = req.params;
-  const { status, observations,montlyRank,lastModifyBy } = req.body;
+  const { status, observations, montlyRank, lastModifyBy } = req.body;
 
   const updatedKaizenStatus = await Kaizen.updateOne(
     { _id: kaizenId },
@@ -306,17 +280,11 @@ const updateKaizenStatus = async (req, res) => {
     body: updatedKaizenStatus,
   });
 };
-
 // Function to modify the Images from a Kaizen/////////////////////////////////////////////////////////////////////
 const modifyKaizenImg = async (req, res) => {
   const { kaizenId } = req.params;
-
   //Getting Previous Images
   const foundPrevKaizen = await Kaizen.findById(kaizenId);
-
-  // const path =
-  //   "C:\\Paperless\\PAPERLESS-APG\\public\\Uploads\\KaizenImgs\\";
-    // "E:\\Paperless\\PAPERLESS-APG\\build\\Uploads\\KaizenImgs\\";
 
   // Deleting Images from Folder for KaizenB
   const prevKaizenImagesB = foundPrevKaizen.kaizenImagesB;
@@ -327,21 +295,12 @@ const modifyKaizenImg = async (req, res) => {
         // Delete File from Folder
         const params = {
           Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-          Key: file.img        
+          Key: file.img
         };
         try {
           s3.deleteObject(params, function (err, data) {
             if (err) console.log(err);
-           });
-          // fs.unlink(path + file.img, (err) => {
-          //   if (err) {
-          //     res.status(403).json({
-          //       status: "403",
-          //       message: "Error al eliminar Archivo: " + err,
-          //       body: "",
-          //     });
-          //   }
-          // });
+          });
         } catch (error) {
           res.status(403).json({
             status: "403",
@@ -352,7 +311,6 @@ const modifyKaizenImg = async (req, res) => {
       });
     }
   }
-
   // Deleting Images from Folder for KaizenA
   const prevKaizenImagesA = foundPrevKaizen.kaizenImagesA;
   if (prevKaizenImagesA) {
@@ -362,23 +320,12 @@ const modifyKaizenImg = async (req, res) => {
         // Delete File from Folder
         const params = {
           Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-          Key: file.img        
+          Key: file.img
         };
         try {
           s3.deleteObject(params, function (err, data) {
             if (err) console.log(err);
-           });
-        // try {
-        //   fs.unlink(path + file.img, (err) => {
-        //     if (err) {
-        //       console.error(err);
-        //       res.status(403).json({
-        //         status: "403",
-        //         message: "Error al eliminar Archivo: " + err,
-        //         body: "",
-        //       });
-        //     }
-        //   });
+          });
         } catch (error) {
           res.status(403).json({
             status: "403",
@@ -389,7 +336,6 @@ const modifyKaizenImg = async (req, res) => {
       });
     }
   }
-
   // Setting the Fields Empty in the DB
   const updateClearImgKaizen = await Kaizen.updateOne(
     { _id: kaizenId },
@@ -403,7 +349,6 @@ const modifyKaizenImg = async (req, res) => {
       body: "",
     });
   }
-
   //Retreiving the data for each Before Kaizen Image and adding to the schema
   let kaizenImagesB = [];
   if (req.files["kaizenImagesB"]) {
@@ -413,7 +358,6 @@ const modifyKaizenImg = async (req, res) => {
       });
     }
   }
-
   //Retreiving the data for each Before Kaizen Image and adding to the schema
   let kaizenImagesA = [];
   if (req.files["kaizenImagesA"]) {
@@ -423,7 +367,6 @@ const modifyKaizenImg = async (req, res) => {
       });
     }
   }
-
   // Updating the new Img Names in the fields from the DB
   const updateImgKaizen = await Kaizen.updateOne(
     { _id: kaizenId },
@@ -446,107 +389,76 @@ const modifyKaizenImg = async (req, res) => {
     body: foundKaizenNew,
   });
 };
-
-
-//delete kaizen//////////////////////////////////////////////////////////////////////////////////////////
+//delete kaizen/////////////////////////////////////////////////////////////////////////////////////////////////////
 const deleteKaizen = async (req, res) => {
-  //const updatedKaizen = await K
   const { kaizenId } = req.params;
-  // const path =
-  // "C:\\Paperless\\PAPERLESS-APG\\public\\Uploads\\KaizenImgs\\";
-  // "E:\\Paperless\\PAPERLESS-APG\\build\\Uploads\\KaizenImgs\\";
   const foundPrevKaizen = await Kaizen.findById(kaizenId);
 
-// Deleting Images from Folder for KaizenB
-const prevKaizenImagesB = foundPrevKaizen.kaizenImagesB;
-if (prevKaizenImagesB) {
-  // Validating if there are Images in the Field
-  if (prevKaizenImagesB.length > 0) {
-    prevKaizenImagesB.map((file) => {
-      // Delete File from Folder
-
-      const params = {
-        Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-        Key: file.img        
-      };
-      try {
-        s3.deleteObject(params, function (err, data) {
-          if (err) console.log(err);
-         });
-      // try {
-      //   fs.unlink(path + file.img, (err) => {
-      //     if (err) {
-      //       res.status(403).json({
-      //         status: "403",
-      //         message: "Error al eliminar Archivo: " + err,
-      //         body: "",
-      //       });
-      //     }
-      //   });
-      } catch (error) {
-        res.status(403).json({
-          status: "403",
-          message: error,
-          body: "",
-        });
-      }
-    });
+  // Deleting Images from Folder for KaizenB
+  const prevKaizenImagesB = foundPrevKaizen.kaizenImagesB;
+  if (prevKaizenImagesB) {
+    // Validating if there are Images in the Field
+    if (prevKaizenImagesB.length > 0) {
+      prevKaizenImagesB.map((file) => {
+        // Delete File from Folder
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+          Key: file.img
+        };
+        try {
+          s3.deleteObject(params, function (err, data) {
+            if (err) console.log(err);
+          });
+        } catch (error) {
+          res.status(403).json({
+            status: "403",
+            message: error,
+            body: "",
+          });
+        }
+      });
+    }
   }
-}
-
-// Deleting Images from Folder for KaizenA
-const prevKaizenImagesA = foundPrevKaizen.kaizenImagesA;
-if (prevKaizenImagesA) {
-  // Validating if there are Images in the Field
-  if (prevKaizenImagesA.length > 0) {
-    prevKaizenImagesA.map((file) => {
-      // Delete File from Folder
-      const params = {
-        Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-        Key: file.img        
-      };
-      try {
-        s3.deleteObject(params, function (err, data) {
-          if (err) console.log(err);
-         });
-      // try {
-      //   fs.unlink(path + file.img, (err) => {
-      //     if (err) {
-      //       console.error(err);
-      //       res.status(403).json({
-      //         status: "403",
-      //         message: "Error al eliminar Archivo: " + err,
-      //         body: "",
-      //       });
-      //     }
-      //   });
-      } catch (error) {
-        res.status(403).json({
-          status: "403",
-          message: error,
-          body: "",
-        });
-      }
-    });
+  // Deleting Images from Folder for KaizenA
+  const prevKaizenImagesA = foundPrevKaizen.kaizenImagesA;
+  if (prevKaizenImagesA) {
+    // Validating if there are Images in the Field
+    if (prevKaizenImagesA.length > 0) {
+      prevKaizenImagesA.map((file) => {
+        // Delete File from Folder
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+          Key: file.img
+        };
+        try {
+          s3.deleteObject(params, function (err, data) {
+            if (err) console.log(err);
+          });
+        } catch (error) {
+          res.status(403).json({
+            status: "403",
+            message: error,
+            body: "",
+          });
+        }
+      });
+    }
   }
-}
 
-  Kaizen.findById(kaizenId, function(err, kaizen){
-		if(err){
-			res.status(503).json({
+  Kaizen.findById(kaizenId, function (err, kaizen) {
+    if (err) {
+      res.status(503).json({
         status: "403",
         message: err,
       });
       return;
-		}
-				kaizen.remove(
-						res.status(200).json({
-              status: "200",
-              message: 'The kaizen has been deleted',
-            }));
-		
-	});
-
+    }
+    kaizen.remove(
+      res.status(200).json({
+        status: "200",
+        message: 'The kaizen has been deleted',
+      }));
+  });
 };
 
 module.exports = {

@@ -1,106 +1,94 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
 const endRunSchema = new mongoose.Schema(
     {
-        verWatherMold:{
-            type:String,
+        verWatherMold: {
+            type: String,
         },
-        temperatures:{
-            type:String,
+        temperatures: {
+            type: String,
         },
-        lastPieces:{
-            type:String,
+        lastPieces: {
+            type: String,
         },
-        cleanMold:{
-            type:String,
+        cleanMold: {
+            type: String,
         },
-        watherConection:{
-            type:String,
+        watherConection: {
+            type: String,
         },
-        machinePurge:{
-            type:String,
+        machinePurge: {
+            type: String,
         },
-        labelEnclosed:{
-            type:String,
+        labelEnclosed: {
+            type: String,
         },
-        numberOrder:{
-            type:String,
+        numberOrder: {
+            type: String,
         },
-        shootCounter:{
-            type:String,
+        shootCounter: {
+            type: String,
         },
-        employeeT:[
+        employeeT: [
             {
-                ref:"User",
+                ref: "User",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        dateT:{
-            type:Date,
+        dateT: {
+            type: Date,
         },
-        hours:{
-            type:String,
+        hours: {
+            type: String,
         },
-
-
-        lastPiecesTaken:{
-            type:String,
+        lastPiecesTaken: {
+            type: String,
         },
-        removeDocument:{
-            type:String,
+        removeDocument: {
+            type: String,
         },
-        motiveStopMachine:{
-            type:String,
+        motiveStopMachine: {
+            type: String,
         },
-        employeeQ:[{
-            ref:"User",
+        employeeQ: [{
+            ref: "User",
             type: mongoose.Schema.Types.ObjectId,
         }],
-        dateQ:{
-            type:Date,
+        dateQ: {
+            type: Date,
         },
-
-        tools:{
-            type:String,
+        tools: {
+            type: String,
         },
-        workStationClean:{
-            type:String,
+        workStationClean: {
+            type: String,
         },
-        formatAcumulation:{
-            type:String,
+        formatAcumulation: {
+            type: String,
         },
-        aditionalComments:{
-            type:String,
+        aditionalComments: {
+            type: String,
         },
-       
-       
-        employeeP:[{
-            ref:"User",
+        employeeP: [{
+            ref: "User",
             type: mongoose.Schema.Types.ObjectId,
         }],
-        
-       
-        dateP:{
-            type:Date,
+        dateP: {
+            type: Date,
         },
-       
-      
-   
-        status:{
-            type:Boolean,
+        status: {
+            type: Boolean,
         },
-        company:[
+        company: [
             {
-                ref:"Company",
+                ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        noCheckValidation:{
-            type:Number,
+        noCheckValidation: {
+            type: Number,
         },
     }
 )
-// export default model("EndRun", endRunSchema);
+
 module.exports = mongoose.model("EndRun", endRunSchema);

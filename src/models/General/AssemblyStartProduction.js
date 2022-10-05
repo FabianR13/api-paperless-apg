@@ -1,59 +1,54 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
+
 const assemblyStartProductionSchema = new mongoose.Schema(
     {
-        trainOperator:{
-            type:String,
+        trainOperator: {
+            type: String,
         },
-        materialsRemoved:{
-            type:String,
+        materialsRemoved: {
+            type: String,
         },
-        comments:{
-            type:String,
+        comments: {
+            type: String,
         },
-        packingComponents:{
-            type:String,
+        packingComponents: {
+            type: String,
         },
-        workStation:{
-            type:String,
+        workStation: {
+            type: String,
         },
-        containerScrap:{
-            type:String,
+        containerScrap: {
+            type: String,
         },
-        docEstation:{
-            type:String,
+        docEstation: {
+            type: String,
         },
-        correctComponent:{
-            type:String,
+        correctComponent: {
+            type: String,
         },
-        workCell:{
-            type:String,
+        workCell: {
+            type: String,
         },
-        aditionalComments:{
-            type:String,
+        aditionalComments: {
+            type: String,
         },
-      
-       
-        employee:[
+        employee: [
             {
-                ref:"User",
+                ref: "User",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-       
-        status:{
-            type:Boolean,
+        status: {
+            type: Boolean,
         },
-        noCheckValidation:{
-            type:Number,
+        noCheckValidation: {
+            type: Number,
         },
-        company:[{
-            ref:"Company",
+        company: [{
+            ref: "Company",
             type: mongoose.Schema.Types.ObjectId,
         }],
-
     }
 )
-// export default model ("AssemblyStartProduction", assemblyStartProductionSchema);
+
 module.exports = mongoose.model("AssemblyStartProduction", assemblyStartProductionSchema);

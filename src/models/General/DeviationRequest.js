@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
 const deviationRequestSchema = new mongoose.Schema(
     {
@@ -13,20 +11,19 @@ const deviationRequestSchema = new mongoose.Schema(
         deviationType: {
             type: String,
         },
-        
-        customer:[
+        customer: [
             {
                 ref: "Customer",
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
-        supplier:{
+        supplier: {
             type: String,
         },
         requestBy: [
             {
-                ref:"User",
-                type: mongoose.Schema.Types.ObjectId, 
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId,
             },
         ],
         implementationDate: {
@@ -41,7 +38,7 @@ const deviationRequestSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
-        sectionTwo:{
+        sectionTwo: {
             type: String,
         },
         termDevRequest: {
@@ -50,78 +47,75 @@ const deviationRequestSchema = new mongoose.Schema(
         quantity: {
             type: String,
         },
-        timePeriodStart:{
+        timePeriodStart: {
             type: Date,
         },
-        timePeriodEnd:{
+        timePeriodEnd: {
             type: Date,
         },
         other: {
             type: String,
         },
-        deviationGranted:{
-            type:String,
-        },
-       
-        otherGranted:{
+        deviationGranted: {
             type: String,
         },
-        qualitySign:{
+        otherGranted: {
             type: String,
         },
-        dateQualitySign:{
+        qualitySign: {
+            type: String,
+        },
+        dateQualitySign: {
             type: Date,
         },
-        seniorSign:{
+        seniorSign: {
             type: String,
         },
-        dateSeniorSign:{
-            type:Date,
+        dateSeniorSign: {
+            type: Date,
         },
         customerSign: {
             type: String,
         },
-        dateCustomerSign:{
+        dateCustomerSign: {
             type: Date,
         },
-        comments:{
+        comments: {
             type: String,
-        }, 
-        consecutive: {
-            type:Number,
         },
-        priority:{
+        consecutive: {
+            type: Number,
+        },
+        priority: {
             type: String,
-        }, 
-        qualitySignStatus:{
+        },
+        qualitySignStatus: {
             type: String,
-        }, 
-        seniorSignStatus:{
+        },
+        seniorSignStatus: {
             type: String,
-        }, 
-        customerSignStatus:{
+        },
+        customerSignStatus: {
             type: String,
-        }, 
-        deviationStatus:{
+        },
+        deviationStatus: {
             type: String,
-        }, 
-        deviationRisk:{
+        },
+        deviationRisk: {
             type: String,
-        }, 
-        company:[
+        },
+        company: [
             {
                 ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-
     },
     {
         timestamps: true,
-      }
+    }
 );
 
-// export default model ("DeviationRequest", deviationRequestSchema);
 module.exports = mongoose.model("DeviationRequest", deviationRequestSchema);
 
 

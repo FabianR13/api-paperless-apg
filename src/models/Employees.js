@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
 const employeesSchema = new mongoose.Schema(
     {
@@ -29,24 +27,22 @@ const employeesSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
-        active:{
+        active: {
             type: Boolean,
-
         },
-        picture:{
-            type:String
+        picture: {
+            type: String
         },
-        user:{
+        user: {
             type: Boolean
         },
-        company:[
+        company: [
             {
                 ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        
     }
 );
-    // export default model ("Employees", employeesSchema);
-    module.exports = mongoose.model("Employees", employeesSchema);
+
+module.exports = mongoose.model("Employees", employeesSchema);

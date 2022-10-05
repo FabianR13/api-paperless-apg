@@ -1,10 +1,10 @@
-const {Router} = require("express");
+const { Router } = require("express");
 const router = Router();
 const {
     createPart,
     udpateParts,
     getParts
-  } = require("../../controllers/Quality/parts.controller.js");
+} = require("../../controllers/Quality/parts.controller.js");
 const {
     verifyToken,
     isQualityR,
@@ -15,35 +15,33 @@ const {
     signPartsInfo,
     updatePartInfo
 } = require("../../controllers/Quality/partsInfo.controller.js");
-// import Router from "express";
-// import * as partsController from "../../controllers/Quality/parts.controller.js";
-// import { authJwt } from "../../middlewares/index.js";
-// import * as partsInfoController from "../../controllers/Quality/partsInfo.controller.js";
 
+///Route to create part info///
 router.post(
-    "/newpartesInfo", 
+    "/newpartesInfo",
     signPartsInfo
 );
-
+///Route to update part info///
 router.put(
-    "/actualizarPartInfo/:partInfoId", 
+    "/actualizarPartInfo/:partInfoId",
     updatePartInfo
 );
-
+///Route to create new part///
 router.post(
     "/NewPart/:CompanyId",
     verifyToken,
     isAutorized,
     isQualityRW,
     createPart
-    );
-    
+);
+///Route to get all part by company///
 router.get("/Parts/:CompanyId",
     verifyToken,
     isAutorized,
     isQualityR,
     getParts
 );
+///Route to update part number///
 router.put("/UpdatePart/:partId/:CompanyId",
     verifyToken,
     isAutorized,

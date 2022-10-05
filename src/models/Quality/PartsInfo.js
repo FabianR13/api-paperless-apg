@@ -1,60 +1,56 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
 const partsInfoSchema = new mongoose.Schema(
     {
-        machine:{
-            type:Number,
+        machine: {
+            type: Number,
         },
-        numberCavities:{
-            type:String,
+        numberCavities: {
+            type: String,
         },
-        shotWeight:{
-            type:String,
+        shotWeight: {
+            type: String,
         },
-        totalShotWeight:{
-            type:String,
+        totalShotWeight: {
+            type: String,
         },
-        avgPartWeight:{
-            type:String,
+        avgPartWeight: {
+            type: String,
         },
-        cycleTime:{
-            type:String,
+        cycleTime: {
+            type: String,
         },
-        partsPerHour:{
-            type:String,
+        partsPerHour: {
+            type: String,
         },
-        company:[
+        company: [
             {
                 ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        partnumber:[
+        partnumber: [
             {
-                ref:"Parts",
+                ref: "Parts",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        cushion:{
-            type:String,
+        cushion: {
+            type: String,
         },
-        recovery:{
-            type:String,
+        recovery: {
+            type: String,
         },
-        fillTime:{
-            type:String,
+        fillTime: {
+            type: String,
         },
-        peakPress:{
-            type:String,
+        peakPress: {
+            type: String,
         },
-        status:{
-            type:Boolean,
+        status: {
+            type: Boolean,
         },
-
-
     }
 )
-// export default model("PartsInfo", partsInfoSchema);
+
 module.exports = mongoose.model("PartsInfo", partsInfoSchema);

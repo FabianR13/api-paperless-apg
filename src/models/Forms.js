@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import { Schema, model } from "mongoose";
 
 const formsSchema = new mongoose.Schema(
   {
@@ -20,5 +18,4 @@ const formsSchema = new mongoose.Schema(
   }
 );
 
-// export default model("Forms", formsSchema);
 module.exports = mongoose.model("Forms", formsSchema);

@@ -1,5 +1,5 @@
-const {Router} = require("express");
-const router =  Router();
+const { Router } = require("express");
+const router = Router();
 const {
     createAssemblyStartTechnial,
     updateAssemblyStartTechnical,
@@ -30,111 +30,97 @@ const {
     updateEndRun,
     getEndRun
 } = require("../../controllers/Forms/General/endRun.controller.js");
-// import Router from "express";
-// import * as assemblyStartTechnicalController from "../../controllers/Forms/General/assemblyStartTechnical.controller.js";
-// import * as validationSettingsController from "../../controllers/Forms/General/validationSettings.controller.js";
-// import * as assemblyStartQualityController from "../../controllers/Forms/General/assmeblyStartQuality.controller.js";
-// import * as assemblyStartProductionController from "../../controllers/Forms/General/assemblyStartProduction.controller.js";
-// import * as temporalStopController from "../../controllers/Forms/General/temporalStop.controller.js";
-// import * as endRunController from "../../controllers/Forms/General/endRun.controller.js";
 
-
-
-//method to post assembly Start
-// router.post(
-//     "/newAssemblyStartTechnical", 
-//     createAssemblyStartTechnial
-// );
-//methos to post validations settings 
-router.post (
-    "/newValidationSettings", 
+///method to post assembly Start///
+router.post(
+    "/newAssemblyStartTechnical", 
+    createAssemblyStartTechnial
+);
+///methos to post validations settings ///
+router.post(
+    "/newValidationSettings",
     createValidationSettings
 );
-// method to post assmebly quality
+///method to post assmebly quality///
 router.post(
-    "/newAssemblyStartQuality", 
+    "/newAssemblyStartQuality",
     createAssemblyStartQuality
 );
-//method to post assembly production 
-router.post (
-    "/newAssemblyStartProduction", 
+//method to post assembly production ///
+router.post(
+    "/newAssemblyStartProduction",
     createAssemblyStartProduction
 );
-//methos to post run data 
+//methos to post run data ///
 router.post(
-    "/newTemporalStop", 
+    "/newTemporalStop",
     createTemporalStop
 );
-//method to post change mold
+//method to post change mold///
 router.post(
-    "/newEndRun", 
+    "/newEndRun",
     createEndRun
 );
-
-
 //IN HERE STARTS METHOD PUT 
-//method to update change validation setting
+//method to update change validation setting///
 router.put(
-    "/updateValidationSettings/:validationSettingId", 
+    "/updateValidationSettings/:validationSettingId",
     updateValidationSetting
 );
-//method to update assembly start
-// router.put(
-//     "/updateAssemblyStartsTechnicals/:assemblyStartTechnicalId", 
-//     updateAssemblyStartTechnical
-// );
-//methos to updte assembly quality
+//method to update assembly start///
 router.put(
-    "/updateAssemblyStartQualitys/:assemblyStartQualityId", 
+    "/updateAssemblyStartsTechnicals/:assemblyStartTechnicalId", 
+    updateAssemblyStartTechnical
+);
+//methos to updte assembly quality///
+router.put(
+    "/updateAssemblyStartQualitys/:assemblyStartQualityId",
     updateAssemblyStartQuality
 );
-//method to update assembly production
+//method to update assembly production///
 router.put(
-    "/updateAssemblySP/:assemblyStartProductionId", 
+    "/updateAssemblySP/:assemblyStartProductionId",
     updateAssemblyStartProduction
 );
-//mehod to update mold reset
+//mehod to update mold reset///
 router.put(
-    "/updateTemporalStops/:temporalStopId", 
+    "/updateTemporalStops/:temporalStopId",
     updateTemporalStop
 );
-//method to update Change Mold
+//method to update Change Mold///
 router.put(
-    "/updateEndRuns/:endRunId", 
+    "/updateEndRuns/:endRunId",
     updateEndRun
 );
-
-
-
 //IN HERE STARTS METHOD GET
-//method to get validation settings 
+//method to get validation settings ///
 router.get(
-    "/validationSetting", 
+    "/validationSetting",
     getValidationSetting
 );
-//method to get mold Reset 
+//method to get mold Reset ///
 router.get(
-    "/temporalStop", 
+    "/temporalStop",
     getTemporalStop
 );
-//method to get change mold 
+//method to get change mold ////
 router.get(
-    "/endRun", 
+    "/endRun",
     getEndRun
 );
-// method to get assembly quality
+// method to get assembly quality////
 router.get(
-    "/assemblyStartQuality", 
+    "/assemblyStartQuality",
     getAssemblyStartQuality
 );
-// method to get assembly Start
-// router.get(
-//     "/assemblyStartTechnical", 
-//     getAssemblyStartTechnical
-// );
-// method to get assembly production
+// method to get assembly Start///
 router.get(
-    "/assemblyStartProduction", 
+    "/assemblyStartTechnical", 
+    getAssemblyStartTechnical
+);
+// method to get assembly production///
+router.get(
+    "/assemblyStartProduction",
     getAssemblyStartProduction
 );
 

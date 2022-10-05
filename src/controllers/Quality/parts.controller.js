@@ -1,13 +1,8 @@
 const Parts = require( "../../models/Quality/Parts.js");
 const Customer = require( "../../models/General/Customer.js");
 const Company = require( "../../models/Company.js");
-// import Parts from "../../models/Quality/Parts.js";
-// import Customer from "../../models/General/Customer.js";
-// import Company from "../../models/Company.js";
 
-
-
-
+//Create new part number////////////////////////////////////////////////////////////////////////////////////////////
 const createPart = async (req, res) => {
     const{
         partnumber,
@@ -34,12 +29,10 @@ const createPart = async (req, res) => {
         newPart.company = foundCompany.map((company) => company._id);
       }
     const savedPart = await newPart.save();
-    // console.log(savedPart);
 
     res.json({status: "200", message: "Part created", savedPart});
 };
-
-//update parts
+//update parts//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const udpateParts = async (req, res) => {
   const {partId} = req.params;
   const UpdPart = [];
@@ -75,7 +68,7 @@ const udpateParts = async (req, res) => {
   }
   res.status(200).json({status:"200", message:"part updated", body:updatedPart});
 }
-//Getting all parts
+//Getting all parts///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getParts = async (req,res) => {
   const {CompanyId} = req.params
   if(CompanyId.length !== 24){
@@ -92,7 +85,6 @@ const getParts = async (req,res) => {
     }).populate({path:"customer"}).sort({partName: 1});
     res.json({status: "200", message: "Parts loaded", body: parts});
   }
-  
 
   module.exports = {
     createPart,

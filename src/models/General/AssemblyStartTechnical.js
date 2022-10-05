@@ -1,88 +1,79 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
-const assemblyStartTechnicalSchema = new mongoose.Schema (
+const assemblyStartTechnicalSchema = new mongoose.Schema(
     {
-        
-        parameterSetting:{
-            type:String,
+        parameterSetting: {
+            type: String,
         },
-        revisionDate:{
-            type:String,
+        revisionDate: {
+            type: String,
         },
-        repairMold:{
-            type:String,
+        repairMold: {
+            type: String,
         },
-        labelColor:{
-            type:String,
+        labelColor: {
+            type: String,
         },
-        ifRepair:{
-            type:String,
+        ifRepair: {
+            type: String,
         },
-        orderJob:{
-            type:String,
+        orderJob: {
+            type: String,
         },
-        resinVerifiedDried:{
-            type:String,
+        resinVerifiedDried: {
+            type: String,
         },
-        numberDryer:{
-            tyep:String,
+        numberDryer: {
+            tyep: String,
         },
-        switchConected:{
-            type:String,
+        switchConected: {
+            type: String,
         },
-        comments:{
-            type:String,
+        comments: {
+            type: String,
         },
-        purgeMachine:{
-            type:String,
+        purgeMachine: {
+            type: String,
         },
-        
-        containerRed:{
-            type:String,
+        containerRed: {
+            type: String,
         },
-        alarmsProgramed:{
-            type:String,
+        alarmsProgramed: {
+            type: String,
         },
-        
-      
-        moldWather:{
-            type:String,
+        moldWather: {
+            type: String,
         },
-        
-        temperatures:{
-            type:String,
+        temperatures: {
+            type: String,
         },
-      
-        transportBand:{
-            type:String,
+        transportBand: {
+            type: String,
         },
-        counterMachine:{
-            type:String,
+        counterMachine: {
+            type: String,
         },
-        settingRobot:{
-            type:String,
+        settingRobot: {
+            type: String,
         },
-        formatEmp:{
-            type:String,
+        formatEmp: {
+            type: String,
         },
-        employee:[{
-            ref:"User",
+        employee: [{
+            ref: "User",
             type: mongoose.Schema.Types.ObjectId,
         }],
-       
-        noCheckValidation:{
-            type:Number,
+        noCheckValidation: {
+            type: Number,
         },
-        status:{
-            type:Boolean,
+        status: {
+            type: Boolean,
         },
-        company:[{
-            ref:"Company",
+        company: [{
+            ref: "Company",
             type: mongoose.Schema.Types.ObjectId,
         }],
     }
 );
-// export default model ("assemblyStartTechnical", assemblyStartTechnicalSchema);
+
 module.exports = mongoose.model("assemblyStartTechnical", assemblyStartTechnicalSchema);

@@ -1,9 +1,6 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
-// import { stringify } from "uuid";
 
-const deviationRiskSchema = new mongoose.Schema (
+const deviationRiskSchema = new mongoose.Schema(
     {
         deviationNumber: {
             type: String,
@@ -14,53 +11,53 @@ const deviationRiskSchema = new mongoose.Schema (
         consequence: {
             type: String,
         },
-        productRisk:{
+        productRisk: {
             type: String,
         },
-        productMitigate:{
-            type:String,
-        },
-        productPerson:{
+        productMitigate: {
             type: String,
         },
-        productDueDate1:{
-            type:Date,
+        productPerson: {
+            type: String,
         },
-        productDueDate2:{
-            type:Date,
+        productDueDate1: {
+            type: Date,
         },
-        productDueDate3:{
-            type:Date,
+        productDueDate2: {
+            type: Date,
         },
-        productDueDate4:{
-            type:Date,
+        productDueDate3: {
+            type: Date,
         },
-        processRisk:{
-            type:String,
+        productDueDate4: {
+            type: Date,
+        },
+        processRisk: {
+            type: String,
         },
         processMitigate: {
             type: String,
         },
-        processPerson:{
+        processPerson: {
             type: String,
         },
-        processDueDate1:{
-            type:Date,
+        processDueDate1: {
+            type: Date,
         },
-        processDueDate2:{
-            type:Date,
+        processDueDate2: {
+            type: Date,
         },
-        processDueDate3:{
-            type:Date,
+        processDueDate3: {
+            type: Date,
         },
-        processDueDate4:{
-            type:Date,
+        processDueDate4: {
+            type: Date,
         },
-        correctiveEliminate:{
+        correctiveEliminate: {
             type: String,
         },
         correctivePerson: {
-            type:String,
+            type: String,
         },
         correctiveDueDate1: {
             type: Date,
@@ -74,144 +71,142 @@ const deviationRiskSchema = new mongoose.Schema (
         correctiveDueDate4: {
             type: Date,
         },
-        preventiveEliminate:{
+        preventiveEliminate: {
             type: String,
         },
         preventivePerson: {
             type: String,
         },
-        preventiveDueDate1:{
+        preventiveDueDate1: {
             type: Date,
         },
-        preventiveDueDate2:{
+        preventiveDueDate2: {
             type: Date,
         },
-        preventiveDueDate3:{
+        preventiveDueDate3: {
             type: Date,
         },
-        preventiveDueDate4:{
+        preventiveDueDate4: {
             type: Date,
         },
-        deviationGranted:{
-            type:String,
-        },
-        otherGranted:{
+        deviationGranted: {
             type: String,
         },
-        qualitySign:{
-            type:String,
-        },
-        dateQualitySign:{
-            type:Date,
-        },
-        qualitySignStatus:{
-            type: String,
-        }, 
-        productionSign:{
-            type:String,
-        },
-        dateProductionSign:{
-            type: Date,
-        },
-        productionSignStatus:{
+        otherGranted: {
             type: String,
         },
-        processSign:{
-            type:String,
+        qualitySign: {
+            type: String,
         },
-        dateProcessSign:{
+        dateQualitySign: {
             type: Date,
         },
-        processSignStatus:{
+        qualitySignStatus: {
+            type: String,
+        },
+        productionSign: {
+            type: String,
+        },
+        dateProductionSign: {
+            type: Date,
+        },
+        productionSignStatus: {
+            type: String,
+        },
+        processSign: {
+            type: String,
+        },
+        dateProcessSign: {
+            type: Date,
+        },
+        processSignStatus: {
             type: String,
         },
         automationSign: {
-            type:String,
+            type: String,
         },
         dateAutomationSign: {
             type: Date,
         },
-        automationSignStatus:{
+        automationSignStatus: {
             type: String,
         },
-        seniorSign:{
-            type:String,
+        seniorSign: {
+            type: String,
         },
-        dateSeniorSign:{
+        dateSeniorSign: {
             type: Date,
         },
-        seniorSignStatus:{
+        seniorSignStatus: {
             type: String,
         },
-        customerSign:{
-            type:String,
+        customerSign: {
+            type: String,
         },
         dateCustomerSign: {
             type: Date,
         },
-        customerSignStatus:{
+        customerSignStatus: {
             type: String,
         },
-        correctiveResults:{
+        correctiveResults: {
             type: String,
         },
-        correctivePersonFollow:{
+        correctivePersonFollow: {
             type: String,
         },
-        correctiveDateFollow1:{
+        correctiveDateFollow1: {
             type: Date,
         },
-        correctiveDateFollow2:{
+        correctiveDateFollow2: {
             type: Date,
         },
-        correctiveDateFollow3:{
+        correctiveDateFollow3: {
             type: Date,
         },
-        correctiveDateFollow4:{
+        correctiveDateFollow4: {
             type: Date,
         },
-        preventiveResults:{
+        preventiveResults: {
             type: String,
         },
-        preventivePersonFollow:{
+        preventivePersonFollow: {
             type: String,
         },
-        preventiveDateFollow1:{
+        preventiveDateFollow1: {
             type: Date,
         },
-        preventiveDateFollow2:{
+        preventiveDateFollow2: {
             type: Date,
         },
-        preventiveDateFollow3:{
+        preventiveDateFollow3: {
             type: Date,
         },
-        preventiveDateFollow4:{
+        preventiveDateFollow4: {
             type: Date,
         },
-        effectiveness:{
+        effectiveness: {
             type: String,
         },
-       
         approvedBy: [
             {
-                ref:"User",
-                type: mongoose.Schema.Types.ObjectId, 
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId,
             },
         ],
-      
         approvedByDate: {
             type: String,
         },
-        company:[
+        company: [
             {
                 ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-       },
-       {
+    },
+    {
         timestamps: true,
-      }
+    }
 );
-// export default model ("DeviationRiskAssessment",deviationRiskSchema);
-module.exports = mongoose.model("DeviationRiskAssessment",deviationRiskSchema);
+
+module.exports = mongoose.model("DeviationRiskAssessment", deviationRiskSchema);

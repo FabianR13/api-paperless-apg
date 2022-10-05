@@ -1,40 +1,36 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
-const partSchema =new mongoose.Schema(
- 
+const partSchema = new mongoose.Schema(
     {
         partnumber: [{ type: String },],
-        partName: { 
-            type: String, 
-        },
-        partEcl: { 
+        partName: {
             type: String,
         },
-        customer:[
+        partEcl: {
+            type: String,
+        },
+        customer: [
             {
                 ref: "Customer",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        company:[
+        company: [
             {
                 ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        mould:{ 
-            type:String,
+        mould: {
+            type: String,
         },
-        status:{
-            type:Boolean,
+        status: {
+            type: Boolean,
         },
-        documents:{
-            type:Array, 
+        documents: {
+            type: Array,
         },
-
     }
 );
-// export default model ("Parts", partSchema);
+
 module.exports = mongoose.model("Parts", partSchema);

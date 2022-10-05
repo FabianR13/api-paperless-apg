@@ -1,14 +1,14 @@
-const {Router} =require("express");
+const { Router } = require("express");
 const router = Router();
 const {
   checkDuplicateEmployeeNo
-} = require ("../middlewares/verifySignup.js");
+} = require("../middlewares/verifySignup.js");
 const {
   verifyToken,
   isModerator,
   isAdmin,
   isAutorized
-}= require ("../middlewares/auth.Jwt.js");
+} = require("../middlewares/auth.Jwt.js");
 const {
   signEmployee,
   getPositions,
@@ -18,42 +18,34 @@ const {
   modifyProfileImg,
   updateEmployee
 } = require("../controllers/employees.controller.js");
-const {uploadProfileImage} = require("../middlewares/uploadProfileImg.js");
-// import Router from "express";
-// import * as employeesController from "../controllers/employees.controller.js";
-// import { verifySignup, authJwt } from "../middlewares/index.js";
-// import  uploadProfileImage  from "../middlewares/uploadProfileImg.js";
+const uploadPicture = require("../middlewares/uploadProfileImg.js");
 
-// router.post(
-//     "/NewEmployee/:CompanyId",
-//     checkDuplicateEmployeeNo,
-//     verifyToken,
-//     isAutorized,
-//     isModerator,
-//     uploadProfileImage,
-//     signEmployee
-// );
-
-
-// Route to get All the positions
+///Route to create new employee///
+router.post(
+  "/NewEmployee/:CompanyId",
+  checkDuplicateEmployeeNo,
+  verifyToken,
+  isAutorized,
+  isModerator,
+  uploadPicture,
+  signEmployee
+);
+///Route to get All the positions///
 router.get(
-    "/Positions",
-    getPositions
-  );
-
-  // Route to get All the positions
+  "/Positions",
+  getPositions
+);
+/// Route to get All the departments///
 router.get(
   "/Departments",
   getDepartments
 );
-
+///Route to get employees///
 router.get(
   "/Employees/:CompanyId",
   getEmployees
 );
-
-
-//update if employee have user 
+///Route to update user field in employee///
 router.put(
   "/UpdateEmployee/User/:employeeId/:CompanyId",
   verifyToken,
@@ -61,25 +53,23 @@ router.put(
   isAdmin,
   updateEmployeeUser
 );
-
-//Update Employee
+///Route to update employee///
 router.put(
   "/UpdateEmployee/:employeeId/:CompanyId",
-  // verifySignup.checkDuplicateEmployeeNo,
+  checkDuplicateEmployeeNo,
   verifyToken,
   isAutorized,
   isModerator,
   updateEmployee
 );
-//Update employe image
-// router.put(
-//   "/UpdateEmployee/Picture/:employeeId/:CompanyId",
-//   verifyToken,
-//   isAutorized,
-//   isModerator,
-//   uploadProfileImage,
-//   modifyProfileImg
-// );
-
+///Route to update picture of employee///
+router.put(
+  "/UpdateEmployee/Picture/:employeeId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isModerator,
+  uploadPicture,
+  modifyProfileImg
+);
 
 module.exports = router;

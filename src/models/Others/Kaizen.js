@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import { Schema, model } from "mongoose";
 
 const kaizenSchema = new mongoose.Schema(
   {
@@ -76,18 +74,18 @@ const kaizenSchema = new mongoose.Schema(
     lastModifyBy: {
       type: String,
     },
-    consecutive:{
-      type:Number,
+    consecutive: {
+      type: Number,
     },
-    implementationCost:{
-      type:Number,
+    implementationCost: {
+      type: Number,
     },
-    company:[
+    company: [
       {
-          ref: "Company",
-          type: mongoose.Schema.Types.ObjectId,
+        ref: "Company",
+        type: mongoose.Schema.Types.ObjectId,
       }
-  ],
+    ],
     kaizenImagesB: [{ img: { type: String } }],
     kaizenImagesA: [{ img: { type: String } }],
   },
@@ -96,5 +94,4 @@ const kaizenSchema = new mongoose.Schema(
   }
 );
 
-// export default model("Kaizen", kaizenSchema);
 module.exports = mongoose.model("Kaizen", kaizenSchema);

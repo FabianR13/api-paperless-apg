@@ -1,89 +1,81 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
-
 
 const validationSettingsSchema = new mongoose.Schema(
     {
-     
-       
-        machine:[
+        machine: [
             {
-                ref:"Machine",
+                ref: "Machine",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        assemblyPartNumber:{
+        assemblyPartNumber: {
             type: String,
         },
-        date:{
-            type:Date,
+        date: {
+            type: Date,
         },
-        timeStart:{
-            type:String,
+        timeStart: {
+            type: String,
         },
-        turn:{
-            type:String,
+        turn: {
+            type: String,
         },
-       
-       
-        moldInstalledBy:[
+        moldInstalledBy: [
             {
-            ref:"User",
-            type: mongoose.Schema.Types.ObjectId
-        }
-            ],
-        resin:{
-            type:String,
-        },
-        timePrism:{
-            type:String,
-        },
-      
-        consecutive:{
-            type:Number,
-        },
-        assemblyStartTechnical:[
-            {
-                ref:"AssemblyStarTechnical",
-                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId
             }
         ],
-        assemblyStartQuality:[
-            {
-                ref:"AssemblyStartQuality",
-                type: mongoose.Schema.Types.ObjectId,
-            }
-        ],
+        resin: {
+            type: String,
+        },
+        timePrism: {
+            type: String,
+        },
 
-        assmeblyStartProduction:[
-            {
-                ref:"AssemblyStartProduction",
-                type: mongoose.Schema.Types.ObjectId,
-            }
-        ],
-        temporalStop:[
-            {
-                ref:"TemporalStop",
-                type: mongoose.Schema.Types.ObjectId,
-            }
-        ],
-        company:[
-            {
-                ref:"Company",
-                type: mongoose.Schema.Types.ObjectId,
-            }
-        ],
-        status:{
-            type:String,
+        consecutive: {
+            type: Number,
         },
-        endRun:[
+        assemblyStartTechnical: [
             {
-                ref:"EndRun",
+                ref: "AssemblyStarTechnical",
+                type: mongoose.Schema.Types.ObjectId,
+            }
+        ],
+        assemblyStartQuality: [
+            {
+                ref: "AssemblyStartQuality",
+                type: mongoose.Schema.Types.ObjectId,
+            }
+        ],
+        assmeblyStartProduction: [
+            {
+                ref: "AssemblyStartProduction",
+                type: mongoose.Schema.Types.ObjectId,
+            }
+        ],
+        temporalStop: [
+            {
+                ref: "TemporalStop",
+                type: mongoose.Schema.Types.ObjectId,
+            }
+        ],
+        company: [
+            {
+                ref: "Company",
+                type: mongoose.Schema.Types.ObjectId,
+            }
+        ],
+        status: {
+            type: String,
+        },
+        endRun: [
+            {
+                ref: "EndRun",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
     }
 )
-// export default model("ValidationSettings", validationSettingsSchema);
+
 module.exports = mongoose.model("ValidationSettings", validationSettingsSchema);

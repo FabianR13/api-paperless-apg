@@ -1,39 +1,35 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
-const machineSchema = new mongoose.Schema (
+const machineSchema = new mongoose.Schema(
     {
-        machineNumber:{
-            type:Number,
+        machineNumber: {
+            type: Number,
         },
-        machineZise:{
-            type:String,
+        machineZise: {
+            type: String,
         },
-        nozzleOrifice:{
-            type:String,
+        nozzleOrifice: {
+            type: String,
         },
-       
-        nozzleRadius:{
-            type:String,
+        nozzleRadius: {
+            type: String,
         },
-        nozzleType:{
-            type:String,
+        nozzleType: {
+            type: String,
         },
-        partInfo:[
+        partInfo: [
             {
-                ref:"PartsInfo",
+                ref: "PartsInfo",
                 type: mongoose.Schema.Types.ObjectId,
             }
-        ], 
-        company:[
+        ],
+        company: [
             {
                 ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-
     }
 )
-// export default model("Machine", machineSchema);
+
 module.exports = mongoose.model("Machine", machineSchema);

@@ -18,12 +18,8 @@ const {
   isKaizenAprroval,
   isAutorized
 } = require("../../middlewares/auth.Jwt.js");
-// import { Router } from "express";
-// import * as kaizenController from "../../controllers/Forms/Others/kaizen.controller.js";
-// import { uploadKaizenImgs } from "../../middlewares/uploadKaizenImg.js";
-// import { authJwt } from "../../middlewares/index.js";
 
-// Route to get All the kaizens
+///Route to get All the kaizens///
 router.get(
   "/Kaizens/:CompanyId",
   verifyToken,
@@ -31,8 +27,7 @@ router.get(
   isKaizenR,
   getKaizens,
 );
-
-// Route to get a Specific Kaizen by Id
+///Route to get a Specific Kaizen by Id///
 router.get(
   "/Kaizen/:kaizenId/:CompanyId",
   verifyToken,
@@ -40,13 +35,12 @@ router.get(
   isKaizenR,
   getKaizenById,
 );
-
-// Route to Post a New Kaizen
-router.post("/NewKaizen/:CompanyId", 
-uploadKaizenImgs, 
-createKaizen);
-
-// Route to modify all the fields in a specific kaizen
+///Route to Post a New Kaizen///
+router.post("/NewKaizen/:CompanyId",
+  uploadKaizenImgs,
+  createKaizen
+);
+///Route to modify all the fields in a specific kaizen///
 router.put(
   "/UpdateKaizen/:kaizenId/:CompanyId",
   verifyToken,
@@ -54,8 +48,7 @@ router.put(
   isKaizenRW,
   updateKaizen
 );
-
-//Route to modify just the Status of a Kaizen
+///Route to modify just the Status of a Kaizen///
 router.put(
   "/UpdateKaizen/Status/:kaizenId/:CompanyId",
   verifyToken,
@@ -63,8 +56,7 @@ router.put(
   isKaizenAprroval,
   updateKaizenStatus
 );
-
-//Route to modify Images from the Kaizen
+///Route to modify Images from the Kaizen///
 router.put(
   "/UpdateKaizen/Images/:kaizenId/:CompanyId",
   verifyToken,
@@ -73,7 +65,7 @@ router.put(
   uploadKaizenImgs,
   modifyKaizenImg
 );
-
+///Route to get kaizens filtered///
 router.post(
   "/KaizensFiltered/:CompanyId",
   verifyToken,
@@ -81,7 +73,7 @@ router.post(
   isKaizenR,
   getKaizensFiltered
 );
-// Route to delete kaizen
+///Route to delete kaizen///
 router.delete(
   "/DeleteKaizen/:kaizenId/:CompanyId",
   verifyToken,

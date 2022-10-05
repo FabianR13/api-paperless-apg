@@ -1,64 +1,57 @@
 const mongoose = require('mongoose')
-// const {Schema, model} = require("mongoose");
-// import {Schema, model} from "mongoose";
 
 const assemblyStartQualitySchema = new mongoose.Schema(
     {
-        sheetVerification:{
-            type:String,
+        sheetVerification: {
+            type: String,
         },
-        numberDevitaion:[
+        numberDevitaion: [
             {
-                ref:"DeviationRequest",
+                ref: "DeviationRequest",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
-        moldRepairs:{
-            type:String,
+        moldRepairs: {
+            type: String,
         },
-      
-        orderJob:{
-            type:String,
+        orderJob: {
+            type: String,
         },
-        materialVerified:{
-            type:String,
+        materialVerified: {
+            type: String,
         },
-        numberDryer:{
-            type:String,
+        numberDryer: {
+            type: String,
         },
-        technicalVal:{
-            type:String,
+        technicalVal: {
+            type: String,
         },
-        comments:{
-            type:String,
+        comments: {
+            type: String,
         },
-        alarms:{
-            type:String,
+        alarms: {
+            type: String,
         },
-        temperatures:{
-            type:String,
+        temperatures: {
+            type: String,
         },
-     
-       
-        
-       
-       employee:[{
-        ref:"Users",
-        type: mongoose.Schema.Types.ObjectId,
-       }],
-        status:{
-            type:Boolean,
+        employee: [{
+            ref: "Users",
+            type: mongoose.Schema.Types.ObjectId,
+        }],
+        status: {
+            type: Boolean,
         },
-        noCheckValidation:{
-            type:Number,
+        noCheckValidation: {
+            type: Number,
         },
-        company:[
+        company: [
             {
-                ref:"Company",
+                ref: "Company",
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
     }
 )
-// export default model("AssemblyStartQuality",assemblyStartQualitySchema);
-module.exports = mongoose.model("AssemblyStartQuality",assemblyStartQualitySchema);
+
+module.exports = mongoose.model("AssemblyStartQuality", assemblyStartQualitySchema);

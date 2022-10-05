@@ -1,8 +1,5 @@
-// const {Schema,} = require("mongoose");
 const mongoose = require('mongoose')
 const bcrypt = require("bcryptjs");
-// import { Schema, model } from "mongoose";
-// import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -18,8 +15,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    signature:{
-      type:String,
+    signature: {
+      type: String,
     },
     roles: [
       {
@@ -38,21 +35,21 @@ const userSchema = new mongoose.Schema(
         ref: "Employees",
         type: mongoose.Schema.Types.ObjectId,
       },
-      
+
     ],
-    companyAccess:[
+    companyAccess: [
       {
-          ref: "Company",
-          type: mongoose.Schema.Types.ObjectId,
+        ref: "Company",
+        type: mongoose.Schema.Types.ObjectId,
       }
-  ],
-    company:[
+    ],
+    company: [
       {
-          ref: "Company",
-          type: mongoose.Schema.Types.ObjectId,
+        ref: "Company",
+        type: mongoose.Schema.Types.ObjectId,
       }
-  ],
-    
+    ],
+
   },
   {
     timestamps: true,
@@ -66,11 +63,8 @@ userSchema.statics.encryptPassword = async (password) => {
   return await bcrypt.hash(password, salt);
 };
 
-
-
 userSchema.statics.comparePassword = async (password, receivedPassword) => {
   return await bcrypt.compare(password, receivedPassword);
 };
 
-// export default model("User",userSchema);
-module.exports = mongoose.model("User",userSchema);
+module.exports = mongoose.model("User", userSchema);
