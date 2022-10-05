@@ -56,7 +56,6 @@ router.put(
 ///Route to update employee///
 router.put(
   "/UpdateEmployee/:employeeId/:CompanyId",
-  checkDuplicateEmployeeNo,
   verifyToken,
   isAutorized,
   isModerator,
