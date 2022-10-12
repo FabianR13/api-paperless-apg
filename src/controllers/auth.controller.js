@@ -236,7 +236,7 @@ const signIn = async (req, res) => {
 };
 //Tener tarjetas de dashboard///////////////////////////////////////////////////////////////////////////////////////////////////
 const getDashboardCards = async (req, res) => {
-  const cardsFound = await Dashboard.find();
+  const cardsFound = await Dashboard.find().sort({ pos: 1 });
   res.json({ status: "200", message: "Dashboard Loaded", body: cardsFound });
 };
 // Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
