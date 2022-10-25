@@ -23,7 +23,7 @@ const verifyToken = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized", status: "401" });
+    return res.status(401).json({ message: "nO Unauthorized", status: "401" });
   }
 };
 //Verify Moderador Role (moderador role)////////////////////////////////////////////////////////////////////////////
