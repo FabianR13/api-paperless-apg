@@ -41,7 +41,7 @@ router.get(
   getDepartments
 );
 ///Route to get employees///
-router.get(
+router.post(
   "/Employees/:CompanyId",
   getEmployees
 );
