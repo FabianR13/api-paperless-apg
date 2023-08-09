@@ -5,6 +5,8 @@ const Role = require("../models/Role.js");
 const Dashboard = require("../models/Dashboard.js");
 const Employees = require("../models/Employees.js");
 const Company = require("../models/Company.js");
+const dotenv = require('dotenv')
+dotenv.config({ path: '../.env' });
 
 //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const signUp = async (req, res) => {

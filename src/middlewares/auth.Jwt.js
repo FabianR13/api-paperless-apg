@@ -3,6 +3,8 @@ const config = require("../config.js");
 const User = require("../models/User.js");
 const Role = require("../models/Role.js");
 const Company = require("../models/Company.js");
+const dotenv = require('dotenv')
+dotenv.config({ path: '../.env' });
 
 ///Verify the token provided in the Header/////////////////////////////////////////////////////////////////////////
 const verifyToken = async (req, res, next) => {
