@@ -17,7 +17,8 @@ const {
   createEmployees,
   createParts,
   createPartsInfo,
-  createMachine
+  createMachine,
+  updateEmployeesData
 } = require("./libs/initialSetup.js");
 
 ////Routes
@@ -50,6 +51,9 @@ const validationSettingsRoutes = require("./routes/General/validationSettings.ro
 
 // Cuarto inicio//////
 // createMachine();
+
+//Agregar camposn a empleados//
+// updateEmployeesData();
 
 app.set("pkg", pkg);
 app.use(morgan("dev"));

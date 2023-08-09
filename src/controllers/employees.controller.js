@@ -28,6 +28,8 @@ const signEmployee = async (req, res) => {
     department,
     position,
     active,
+    group,
+    visualWeakness,
     user,
     company,
   } = req.body;
@@ -43,6 +45,8 @@ const signEmployee = async (req, res) => {
     numberEmployee,
     active,
     picture,
+    group,
+    visualWeakness,
     user,
   });
 
@@ -172,6 +176,19 @@ const getEmployees = async (req, res) => {
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
   }
+  if (filter === "group") {
+    if (order === "acend") {
+      const employees = await Employees.find({
+        company: { $in: CompanyId },
+      }).sort({ group: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
+      res.json({ status: "200", message: "Employees Loaded", body: employees });
+    }else{
+      const employees = await Employees.find({
+        company: { $in: CompanyId },
+      }).sort({ group: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
+      res.json({ status: "200", message: "Employees Loaded", body: employees });
+    }
+  }
   if (filter === "active") {
     if (order === "acend"){
       const employees = await Employees.find({
@@ -221,6 +238,9 @@ const updateEmployee = async (req, res) => {
   empUpd.name = req.body.name;
   empUpd.lastName = req.body.lastName;
   empUpd.numberEmployee = req.body.numberEmployee;
+  empUpd.group = req.body.group;
+  empUpd.visualWeakness = req.body.visualWeakness;
+  empUpd.numberEmployee = req.body.numberEmployee;
 
   const employee = await Employees.findOne({ numberEmployee: req.body.numberEmployee })
   if (employee) {
@@ -251,6 +271,8 @@ const updateEmployee = async (req, res) => {
     department,
     position,
     active,
+    group,
+    visualWeakness,
   } = empUpd;
 
   const updatedEmployee = await Employees.updateOne(
@@ -263,6 +285,8 @@ const updateEmployee = async (req, res) => {
         department,
         position,
         active,
+        group,
+        visualWeakness,
       },
     }
   );

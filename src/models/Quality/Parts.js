@@ -3,9 +3,7 @@ const mongoose = require('mongoose')
 const partSchema = new mongoose.Schema(
     {
         partnumber: [{ type: String },],
-        partName: {
-            type: String,
-        },
+        partName: [{ type: String},],
         partEcl: {
             type: String,
         },

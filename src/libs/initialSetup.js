@@ -413,6 +413,36 @@ const createMachine = async () => {
   }
 }
 
+/////////////////////////Modificar empleados
+const updateEmployeesData = async () => {
+
+  try {
+    for (let i = 11033; i < 11034; i++) {
+      const employee = await Employees.findOne({ numberEmployee: i })
+      
+      if (employee) {
+        
+        const updatedEmployeeData = await Employees.updateOne(
+          { numberEmployee: i },
+          {
+            $set: {
+              "group": "A",
+              "visualWeakness": "No"
+            },
+          }
+        );
+        console.log("Update")
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  console.log("Terminado")
+};
+
+
+
+
 module.exports = {
   createCompanys,
   createDashboard,
@@ -424,6 +454,7 @@ module.exports = {
   createEmployees,
   createParts,
   createPartsInfo,
-  createMachine
+  createMachine,
+  updateEmployeesData
 }
 

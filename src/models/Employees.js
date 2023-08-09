@@ -33,6 +33,12 @@ const employeesSchema = new mongoose.Schema(
         picture: {
             type: String
         },
+        group: {
+            type: String
+        },
+        visualWeakness: {
+            type: String
+        },
         user: {
             type: Boolean
         },
