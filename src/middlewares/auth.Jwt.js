@@ -13,7 +13,7 @@ const verifyToken = async (req, res, next) => {
         .status(403)
         .json({ message: "No token provided", status: "403" });
 
-    const decoded = jwt.verify(token, config.SECRET);
+    const decoded = jwt.verify(token, process.env.SECRET);
     req.userId = decoded.id;
 
     const user = await User.findById(req.userId, { password: 0 });

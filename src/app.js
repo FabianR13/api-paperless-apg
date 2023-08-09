@@ -97,8 +97,10 @@ app.get("/api/mail", (req, res) => {
       host: "smtp.office365.com",
       port: 587,
       auth: {
-        user: config.MAIL_AUTH_USER,
-        pass: config.MAIL_AUTH_PASS,
+        // user: config.MAIL_AUTH_USER,
+        // pass: config.MAIL_AUTH_PASS,
+        user: process.env.MAIL_AUTH_USER,
+        pass: process.env.MAIL_AUTH_PASS,
       },
       secureConnection: false,
       tls: { ciphers: "SSLv3" },

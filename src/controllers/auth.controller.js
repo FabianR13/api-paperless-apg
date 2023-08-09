@@ -49,7 +49,7 @@ const signUp = async (req, res) => {
 
   const savedUser = await newUser.save();
 
-  const token = jwt.sign({ id: savedUser._id }, config.SECRET, {
+  const token = jwt.sign({ id: savedUser._id }, process.env.SECRET, {
     expiresIn: 86400, // 24 Horas
     // expiresIn: 5,
   });
@@ -102,7 +102,7 @@ const signIn = async (req, res) => {
       .status(404)
       .json({ token: null, message: "Invalid password", status: "404" });
 
-  const token = jwt.sign({ id: userFound._id }, config.SECRET, {
+  const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
     expiresIn: 86400,
     // expiresIn: 5,
   });
