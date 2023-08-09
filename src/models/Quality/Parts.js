@@ -25,9 +25,6 @@ const partSchema = new mongoose.Schema(
         status: {
             type: Boolean,
         },
-        documents: {
-            type: Array,
-        },
     }
 );
 

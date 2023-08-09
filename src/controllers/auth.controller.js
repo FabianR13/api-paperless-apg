@@ -5,6 +5,8 @@ const Role = require("../models/Role.js");
 const Dashboard = require("../models/Dashboard.js");
 const Employees = require("../models/Employees.js");
 const Company = require("../models/Company.js");
+const dotenv = require('dotenv')
+dotenv.config({ path: '../.env' });
 
 //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const signUp = async (req, res) => {
@@ -49,7 +51,7 @@ const signUp = async (req, res) => {
 
   const savedUser = await newUser.save();
 
-  const token = jwt.sign({ id: savedUser._id }, config.SECRET, {
+  const token = jwt.sign({ id: savedUser._id }, process.env.SECRET, {
     expiresIn: 86400, // 24 Horas
     // expiresIn: 5,
   });
@@ -102,7 +104,7 @@ const signIn = async (req, res) => {
       .status(404)
       .json({ token: null, message: "Invalid password", status: "404" });
 
-  const token = jwt.sign({ id: userFound._id }, config.SECRET, {
+  const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
     expiresIn: 86400,
     // expiresIn: 5,
   });

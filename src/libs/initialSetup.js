@@ -317,14 +317,13 @@ const createParts = async () => {
     const count = await Parts.estimatedDocumentCount();
 
     if (count > 0) return;
-
+    console.log(dataParts)
     for (let i = 0; i < parts.length; i++) {
       let newPart = new Parts({
         partnumber: parts[i].partnumber,
         partName: parts[i].partName,
         partEcl: parts[i].partEcl,
         mould: parts[i].mould,
-        documents: parts[i].documents,
         status: status,
         company: company,
       });

@@ -4,6 +4,7 @@ const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express().use("*", cors());
+const config = require('../src/config')
 
 /////Metodos initial setup/////
 const {
@@ -86,34 +87,36 @@ app.get("/api/cors", (req, res) => {
 module.exports = app;
 
 
-// // Send Mail Example
-// app.get("/api/mail", (req, res) => {
-//   const nodemailer = require("nodemailer");
-//   async function main() {
-//     let testAccount = await nodemailer.createTestAccount();
+// Send Mail Example
+app.get("/api/mail", (req, res) => {
+  const nodemailer = require("nodemailer");
+  async function main() {
+    let testAccount = await nodemailer.createTestAccount();
 
-//     let transporter = nodemailer.createTransport({
-//       host: "smtp.office365.com",
-//       port: 587,
-//       auth: {
-//         user: config.MAIL_AUTH_USER,
-//         pass: config.MAIL_AUTH_PASS,
-//       },
-//       secureConnection: false,
-//       tls: { ciphers: "SSLv3" },
-//     });
+    let transporter = nodemailer.createTransport({
+      host: "smtp.office365.com",
+      port: 587,
+      auth: {
+        // user: config.MAIL_AUTH_USER,
+        // pass: config.MAIL_AUTH_PASS,
+        user: process.env.MAIL_AUTH_USER,
+        pass: process.env.MAIL_AUTH_PASS,
+      },
+      secureConnection: false,
+      tls: { ciphers: "SSLv3" },
+    });
 
-//     let info = await transporter.sendMail({
-//       from: '"Mahonri Del Rincon" <mahonri.delrincon@apgmexico.mx>',
-//       to: "fabian.ramos@apgmexico.mx",
-//       subject: "Hello",
-//       text: "Hello world? Ixtapaluco 2",
-//       html: "<b>Hello world? Ixtapaluco</b>",
-//     });
+    let info = await transporter.sendMail({
+      from: '"Paperless" <paperless@apgmexico.mx>',
+      to: "fabian.ramos@apgmexico.mx",
+      subject: "Hello",
+      text: "Hello world? Ixtapaluco 2",
+      html: "<b>Hello world? Ixtapaluco</b>",
+    });
 
-//     console.log("Message sent:%s", info.messageId);
-//     res.status(200).json({ message: info.messageId });
-//   }
+    console.log("Message sent:%s", info.messageId);
+    res.status(200).json({ message: info.messageId });
+  }
 
-//   main().catch(console.error);
-// });
+  main().catch(console.error);
+});

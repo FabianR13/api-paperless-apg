@@ -3,6 +3,8 @@ const config = require("../config.js");
 const User = require("../models/User.js");
 const Role = require("../models/Role.js");
 const Company = require("../models/Company.js");
+const dotenv = require('dotenv')
+dotenv.config({ path: '../.env' });
 
 ///Verify the token provided in the Header/////////////////////////////////////////////////////////////////////////
 const verifyToken = async (req, res, next) => {
@@ -13,7 +15,7 @@ const verifyToken = async (req, res, next) => {
         .status(403)
         .json({ message: "No token provided", status: "403" });
 
-    const decoded = jwt.verify(token, config.SECRET);
+    const decoded = jwt.verify(token, process.env.SECRET);
     req.userId = decoded.id;
 
     const user = await User.findById(req.userId, { password: 0 });
