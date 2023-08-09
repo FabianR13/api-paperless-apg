@@ -10,11 +10,15 @@ const createPart = async (req, res) => {
         partEcl,
         customer,
         company,
+        mould,
+        status,
     } = req.body;
     const newPart = new Parts ({
         partnumber,
         partName,
         partEcl,
+        mould,
+        status,
     });
     if (customer) {
         const foundCustomers = await Customer.find({
