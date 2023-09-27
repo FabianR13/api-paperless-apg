@@ -30,6 +30,7 @@ const createDeviationRequest = async (req, res) => {
     implementationDate,
     implementationTime,
     parts,
+    applyTo,
     sectionTwo,
     termDevRequest,
     quantity,
@@ -45,7 +46,7 @@ const createDeviationRequest = async (req, res) => {
     customerSign,
     dateCustomerSign,
     comments,
-    priority,
+    severity,
     qualitySignStatus,
     seniorSignStatus,
     customerSignStatus,
@@ -60,6 +61,7 @@ const createDeviationRequest = async (req, res) => {
     requestBy,
     implementationDate,
     implementationTime,
+    applyTo,
     sectionTwo,
     termDevRequest,
     quantity,
@@ -75,7 +77,7 @@ const createDeviationRequest = async (req, res) => {
     customerSign,
     dateCustomerSign,
     comments,
-    priority,
+    severity,
     qualitySignStatus,
     seniorSignStatus,
     customerSignStatus,
@@ -209,6 +211,7 @@ const updateDeviationReq = async (req, res) => {
   newDeviation.supplier = req.body.supplier;
   newDeviation.implementationDate = req.body.implementationDate;
   newDeviation.implementationTime = req.body.implementationTime;
+  newDeviation.applyTo = req.body.applyTo;
   newDeviation.sectionTwo = req.body.sectionTwo;
   newDeviation.termDevRequest = req.body.termDevRequest;
   newDeviation.quantity = req.body.quantity;
@@ -219,7 +222,7 @@ const updateDeviationReq = async (req, res) => {
   newDeviation.seniorSign = req.body.seniorSign;
   newDeviation.customerSign = req.body.customerSign;
   newDeviation.comments = req.body.comments;
-  newDeviation.priority = req.body.priority;
+  newDeviation.severity = req.body.severity;
   newDeviation.qualitySignStatus = req.body.qualitySignStatus;
   newDeviation.seniorSignStatus = req.body.seniorSignStatus;
   newDeviation.customerSignStatus = req.body.customerSignStatus;
@@ -246,6 +249,7 @@ const updateDeviationReq = async (req, res) => {
     implementationDate,
     implementationTime,
     parts,
+    applyTo,
     sectionTwo,
     termDevRequest,
     quantity,
@@ -256,7 +260,7 @@ const updateDeviationReq = async (req, res) => {
     seniorSign,
     customerSign,
     comments,
-    priority,
+    severity,
     qualitySignStatus,
     seniorSignStatus,
     customerSignStatus,
@@ -273,6 +277,7 @@ const updateDeviationReq = async (req, res) => {
         implementationDate,
         implementationTime,
         parts,
+        applyTo,
         sectionTwo,
         termDevRequest,
         quantity,
@@ -283,7 +288,7 @@ const updateDeviationReq = async (req, res) => {
         seniorSign,
         customerSign,
         comments,
-        priority,
+        severity,
         qualitySignStatus,
         seniorSignStatus,
         customerSignStatus,

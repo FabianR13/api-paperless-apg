@@ -88,8 +88,10 @@ module.exports = app;
 
 
 // Send Mail Example
-app.get("/api/mail", (req, res) => {
+app.post("/api/mail", (req, res) => {
   const nodemailer = require("nodemailer");
+  const requestBy = req.body.requestBy;
+
   async function main() {
     let testAccount = await nodemailer.createTestAccount();
 
@@ -108,9 +110,9 @@ app.get("/api/mail", (req, res) => {
 
     let info = await transporter.sendMail({
       from: '"Paperless" <paperless@apgmexico.mx>',
-      to: "fabian.ramos@apgmexico.mx",
-      subject: "Hello",
-      text: "Hello world? Ixtapaluco 2",
+      to: "mahonri.delrincon@apgmexico.mx",
+      subject: "Hello " + requestBy + " a creado una nueva deviacion",
+      text: "Hello world? desde front",
       html: "<b>Hello world? Ixtapaluco</b>",
     });
 

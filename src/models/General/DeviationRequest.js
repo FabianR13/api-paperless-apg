@@ -38,6 +38,9 @@ const deviationRequestSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
+        applyTo: {
+            type: String,
+        },
         sectionTwo: {
             type: String,
         },
@@ -86,7 +89,7 @@ const deviationRequestSchema = new mongoose.Schema(
         consecutive: {
             type: Number,
         },
-        priority: {
+        severity: {
             type: String,
         },
         qualitySignStatus: {
