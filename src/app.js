@@ -33,6 +33,9 @@ const partsRoutes = require("./routes/Quality/parts.routes.js");
 const customersRoutes = require("./routes/General/customer.routes.js");
 const validationSettingsRoutes = require("./routes/General/validationSettings.routes.js");
 
+//// Calling Middlewares
+const sendEmailMiddleware = require("./middlewares/mailer");
+
 //Primer inicio de API/////
 // createCompanys();
 // createDashboard();
@@ -86,6 +89,13 @@ app.get("/api/cors", (req, res) => {
 
 module.exports = app;
 
+
+// Send Mail Example through Middleware
+app.post("/api/mailer", sendEmailMiddleware.sendEmailMiddlewareResponse, (req, res) => {
+  // Handle the contact form Submission
+  // ...
+  res.send('Email Sent successfully!');
+});
 
 // Send Mail Example
 app.get("/api/mail", (req, res) => {

@@ -20,6 +20,7 @@ const {
   isAutorized,
   isDeviationR
 } = require("../../middlewares/auth.Jwt.js");
+const {sendEmailMiddlewareResponse} = require("../../middlewares/mailer.js");
 
 //Deviation request/////////////////////////////////
 //Route to post new Deviation Request///
@@ -27,7 +28,8 @@ router.post("/NewDeviation/:CompanyId",
   verifyToken,
   isAutorized,
   isDeviationR,
-  createDeviationRequest
+  createDeviationRequest,
+  sendEmailMiddlewareResponse
 );
 //Route to update Deviation Request///
 router.put("/UpdateDeviation/:deviationId/:CompanyId",

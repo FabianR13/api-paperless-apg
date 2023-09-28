@@ -127,7 +127,8 @@ const createDeviationRequest = async (req, res) => {
       .status(403)
       .json({ status: "403", message: "Deviation not Saved", body: "" });
   }
-  res.json({ status: "200", message: "Deviation request created", savedDeviationRequest });
+  next ();
+  //res.json({ status: "200", message: "Deviation request created", savedDeviationRequest });
 };
 // Getting all deviations request/////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDeviationRequest = async (req, res) => {
