@@ -148,13 +148,13 @@ const signIn = async (req, res) => {
     if (roles[i].name === "KaizenR" || roles[i].name === "admin" || roles[i].name === "KaizenApproval" || roles[i].name === "KaizenRW") {
       userAccessApg[4] = "true";
     }
-    if (roles[i].name === "QualityASL" || roles[i].name === "QualityASM" || roles[i].name === "QualityASH" || roles[i].name === "SeniorManagement") {
+    if (roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
       userAccessApg[5] = "true";
     }
-    if (roles[i].name === "QualityASM") {
+    if (roles[i].name === "QualityASEng" || "QualityASGer") {
       userAccessApg[6] = "true";
     }
-    if (roles[i].name === "QualityASH") {
+    if (roles[i].name === "QualityASGer") {
       userAccessApg[7] = "true";
     }
     if (roles[i].name === "SeniorManagement") {
@@ -196,13 +196,13 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "KaizenR" || rolesAxiom[i].name === "admin" || rolesAxiom[i].name === "KaizenApproval" || rolesAxiom[i].name === "KaizenRW") {
       userAccessAXG[4] = "true";
     }
-    if (rolesAxiom[i].name === "QualityASL" || rolesAxiom[i].name === "QualityASM" || rolesAxiom[i].name === "QualityASH" || rolesAxiom[i].name === "SeniorManagement") {
+    if (rolesAxiom[i].name === "QualityASIns" || rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer" || rolesAxiom[i].name === "SeniorManagement") {
       userAccessAXG[5] = "true";
     }
-    if (rolesAxiom[i].name === "QualityASM") {
+    if (rolesAxiom[i].name === "QualityASEng") {
       userAccessAXG[6] = "true";
     }
-    if (rolesAxiom[i].name === "QualityASH") {
+    if (rolesAxiom[i].name === "QualityASGer") {
       userAccessAXG[7] = "true";
     }
     if (rolesAxiom[i].name === "SeniorManagement") {
