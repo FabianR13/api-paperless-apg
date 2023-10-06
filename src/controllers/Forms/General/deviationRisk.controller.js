@@ -271,6 +271,67 @@ const updateDeviationRisk = async (req, res) => {
   }
   res.status(200).json({ status: "200", message: "Deviation Risk updated", body: updatedDeviationRisk });
 }
+// Updating deviation status//////////////////////////////////////////////////////////////////////////////////////////////////////////
+const updateDeviationRiskSignature = async (req, res) => {
+  const { deviationRiskId } = req.params;
+  const {
+    deviationGranted,
+    otherGranted,
+    qualitySign,
+    qualitySignStatus,
+    dateQualitySign,
+    productionSign,
+    productionSignStatus,
+    dateProductionSign,
+    processSign,
+    processSignStatus,
+    dateProcessSign,
+    automationSign,
+    automationSignStatus,
+    dateAutomationSign,
+    seniorSign,
+    seniorSignStatus,
+    dateSeniorSign,
+  } = req.body;
+  const updatedDeviationRisk = await DeviationRiskAssesment.updateOne(
+    { _id: deviationRiskId },
+    {
+      $set: {
+        deviationGranted,
+        otherGranted,
+        qualitySign,
+        qualitySignStatus,
+        dateQualitySign,
+        productionSign,
+        productionSignStatus,
+        dateProductionSign,
+        processSign,
+        processSignStatus,
+        dateProcessSign,
+        automationSign,
+        automationSignStatus,
+        dateAutomationSign,
+        seniorSign,
+        seniorSignStatus,
+        dateSeniorSign,
+      },
+    }
+  );
+
+  if (!updatedDeviationRisk) {
+    res
+      .status(403)
+      .json({ status: "403", message: "Deviation not Updated", body: "" });
+  }
+
+  res.status(200).json({
+    status: "200",
+    message: "Deviation Risk Status Updated ",
+    body: updatedDeviationRisk,
+  });
+};
+
+
 // Getting deviation risk by Id ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDeviationRiskById = async (req, res) => {
   const foundDeviationRisk = await DeviationRiskAssesment.findById(req.params.deviationRiskId);
@@ -287,5 +348,6 @@ const getDeviationRiskById = async (req, res) => {
 module.exports = {
   createDeviationRisk,
   updateDeviationRisk,
-  getDeviationRiskById
+  getDeviationRiskById,
+  updateDeviationRiskSignature
 };

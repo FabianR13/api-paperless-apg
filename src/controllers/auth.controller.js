@@ -151,7 +151,7 @@ const signIn = async (req, res) => {
     if (roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
       userAccessApg[5] = "true";
     }
-    if (roles[i].name === "QualityASEng" || "QualityASGer") {
+    if (roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer") {
       userAccessApg[6] = "true";
     }
     if (roles[i].name === "QualityASGer") {
@@ -178,6 +178,9 @@ const signIn = async (req, res) => {
     if (roles[i].name === "AutomationSign") {
       userAccessApg[14] = "true";
     }
+    if (roles[i].name === "CloseDeviation") {
+      userAccessApg[15] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
@@ -199,7 +202,7 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "QualityASIns" || rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer" || rolesAxiom[i].name === "SeniorManagement") {
       userAccessAXG[5] = "true";
     }
-    if (rolesAxiom[i].name === "QualityASEng") {
+    if (rolesAxiom[i].name === "QualityASEng"|| roles[i].name === "QualityASGer") {
       userAccessAXG[6] = "true";
     }
     if (rolesAxiom[i].name === "QualityASGer") {
@@ -225,6 +228,9 @@ const signIn = async (req, res) => {
     }
     if (rolesAxiom[i].name === "AutomationSign") {
       userAccessAXG[14] = "true";
+    }
+    if (roles[i].name === "CloseDeviation") {
+      userAccessAXG[15] = "true";
     }
   }
 

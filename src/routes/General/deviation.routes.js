@@ -12,6 +12,7 @@ const {
 const {
   createDeviationRisk,
   updateDeviationRisk,
+  updateDeviationRiskSignature,
   getDeviationRiskById
 } = require("../../controllers/Forms/General/deviationRisk.controller.js");
 const uploadDeviationFile = require("../../middlewares/uploadDeviationFile.js");
@@ -92,6 +93,12 @@ router.put("/UpdateDeviationRisk/:deviationRiskId/:CompanyId",
   isAutorized,
   isDeviationR,
   updateDeviationRisk);
+//Route to update Deviation Risk Assesment Signature///
+router.put("/UpdateDeviationRisk/Signature/:deviationRiskId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationR,
+  updateDeviationRiskSignature);
 //Route to get a Deviation Risk Assesment by Id ///
 router.get("/DeviationRisk/:deviationRiskId/:CompanyId",
   verifyToken,
