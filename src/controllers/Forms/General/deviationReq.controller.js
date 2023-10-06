@@ -5,7 +5,8 @@ const User = require("../../../models/User.js");
 const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessment.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
+const { sendEmailMiddlewareResponse } = require("../../../middlewares/mailer.js");
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
@@ -20,7 +21,7 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 //create deviation request//////////////////////////////////////////////////////////////////////////////////////
-const createDeviationRequest = async (req, res) => {
+const createDeviationRequest = async (req, res, next) => {
   const {
     deviationDate,
     deviationType,
@@ -129,7 +130,8 @@ const createDeviationRequest = async (req, res) => {
       .status(403)
       .json({ status: "403", message: "Deviation not Saved", body: "" });
   }
-  res.json({ status: "200", message: "Deviation request created", savedDeviationRequest });
+  next ();
+  //res.json({ status: "200", message: "Deviation request created", savedDeviationRequest });
 };
 // Getting all deviations request/////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDeviationRequest = async (req, res) => {

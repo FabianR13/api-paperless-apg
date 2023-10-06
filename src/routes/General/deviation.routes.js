@@ -12,6 +12,7 @@ const {
 const {
   createDeviationRisk,
   updateDeviationRisk,
+  updateDeviationRiskSignature,
   getDeviationRiskById
 } = require("../../controllers/Forms/General/deviationRisk.controller.js");
 const uploadDeviationFile = require("../../middlewares/uploadDeviationFile.js");
@@ -20,6 +21,7 @@ const {
   isAutorized,
   isDeviationR
 } = require("../../middlewares/auth.Jwt.js");
+const {sendEmailMiddlewareResponse} = require("../../middlewares/mailer.js");
 
 //Deviation request/////////////////////////////////
 //Route to post new Deviation Request///
@@ -27,7 +29,8 @@ router.post("/NewDeviation/:CompanyId",
   verifyToken,
   isAutorized,
   isDeviationR,
-  createDeviationRequest
+  createDeviationRequest,
+  sendEmailMiddlewareResponse
 );
 //Route to update Deviation Request///
 router.put("/UpdateDeviation/:deviationId/:CompanyId",
@@ -90,6 +93,12 @@ router.put("/UpdateDeviationRisk/:deviationRiskId/:CompanyId",
   isAutorized,
   isDeviationR,
   updateDeviationRisk);
+//Route to update Deviation Risk Assesment Signature///
+router.put("/UpdateDeviationRisk/Signature/:deviationRiskId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationR,
+  updateDeviationRiskSignature);
 //Route to get a Deviation Risk Assesment by Id ///
 router.get("/DeviationRisk/:deviationRiskId/:CompanyId",
   verifyToken,
