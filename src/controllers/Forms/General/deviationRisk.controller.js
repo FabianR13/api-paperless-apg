@@ -147,8 +147,9 @@ const createDeviationRisk = async (req, res) => {
       .status(403)
       .json({ status: "403", message: "Deviation not Saved", body: "" });
   }
-  res.json({ status: "200", message: "Deviation risk assesmen is created", savedDeviationRisk });
-}
+  next();
+  //res.json({ status: "200", message: "Deviation risk assesmen is created", savedDeviationRisk });
+};
 //update all data deviation risk assessment/////////////////////////////////////////////////////////////////////////////////////////
 const updateDeviationRisk = async (req, res) => {
   const { deviationRiskId } = req.params;

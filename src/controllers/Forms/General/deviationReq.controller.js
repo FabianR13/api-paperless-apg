@@ -341,6 +341,13 @@ const updateRiskStatus = async (req, res) => {
 //close deviation////////////////////////////////////////////////////////////////////////////////////////////////////////
 const updateDeviationStatus = async (req, res) => {
   const { deviationId } = req.params;
+  const {
+    effectiveness,
+    user,
+    approvedByDate,
+    DeviationRiskID
+  } = req.body;
+
   //Getting Previous Images
   const foundPrevDeviation = await DeviationRequest.findById(deviationId);
   // Deleting Images from Folder
@@ -367,7 +374,11 @@ const updateDeviationStatus = async (req, res) => {
   // Setting the Fields Empty in the DB
   const updateClearFileDeviation = await DeviationRequest.updateOne(
     { _id: deviationId },
-    { $set: { deviationStatus: "" } }
+    { 
+      $set: { 
+        deviationStatus: "" 
+      } 
+    }
   );
   if (!updateClearFileDeviation) {
     res.status(403).json({
@@ -381,12 +392,36 @@ const updateDeviationStatus = async (req, res) => {
   if (req.file) {
     deviationStatus = req.file.filename;
   }
+
+  let approvedBy = "";
+  if (user) {
+    const foundUsers = await User.find({
+      username: { $in: user },
+    });
+    approvedBy = foundUsers.map((user) => user._id);
+  }
   // Updating the new Img Names in the fields from the DB
   const updateFileDeviation = await DeviationRequest.updateOne(
     { _id: deviationId },
-    { $set: { deviationStatus } }
+    { 
+      $set: { 
+        deviationStatus
+      } 
+    }
   );
-  if (!updateFileDeviation) {
+   // Updating the deviation risk assessment
+   const updateDeviationRiskClose = await DeviationRiskAssessment.updateOne(
+    { _id: DeviationRiskID },
+    { 
+      $set: { 
+        effectiveness,
+        approvedByDate,
+        approvedBy
+      } 
+    }
+  );
+
+  if ((!updateFileDeviation)||(!updateDeviationRiskClose)) {
     res.status(403).json({
       status: "403",
       message: "Deviation not Updated - updateFileDeviation",

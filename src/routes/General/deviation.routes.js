@@ -86,6 +86,7 @@ router.post("/NewDeviationRisk/:CompanyId",
   isAutorized,
   isDeviationR,
   createDeviationRisk,
+  sendEmailMiddlewareResponse
 );
 //Route to update a new Deviation Risk Assesment ///
 router.put("/UpdateDeviationRisk/:deviationRiskId/:CompanyId",
