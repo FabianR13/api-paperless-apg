@@ -114,7 +114,21 @@ const createDeviationRequest = async (req, res, next) => {
       .status(403)
       .json({ message: "Deviation not saved", status: "403" });
   }
-  const count = await DeviationRequest.estimatedDocumentCount();
+ 
+  var count = 1
+  const date = new Date();
+  const yearactual = date.getFullYear()
+
+  const foundDeviations = await DeviationRequest.find();
+
+  foundDeviations.map((deviationC) =>{
+    if (deviationC.deviationDate.getFullYear() === yearactual){
+      count = count + 1
+    }
+  })
+
+  // const count = await DeviationRequest.estimatedDocumentCount();
+
   if (count > 0) {
     const deviations = await DeviationRequest.find().sort({ consecutive: -1 }).limit(1);
     newDeviationReq.consecutive = deviations[0].consecutive + 1
@@ -122,7 +136,8 @@ const createDeviationRequest = async (req, res, next) => {
     newDeviationReq.consecutive = 1
   }
 
-  newDeviationReq.deviationNumber = "APG-" + 2022 + "-" + `${Number(newDeviationReq.consecutive)}`.padStart(3, "0")
+  // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${Number(newDeviationReq.consecutive)}`.padStart(3, "0")`
+  newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${count}`.padStart(3, "0")
 
   const savedDeviationRequest = await newDeviationReq.save();
   if (!savedDeviationRequest) {
@@ -345,7 +360,7 @@ const updateDeviationStatus = async (req, res) => {
     effectiveness,
     user,
     approvedByDate,
-    DeviationRiskID
+    deviationRiskID,
   } = req.body;
 
   //Getting Previous Images
@@ -371,6 +386,7 @@ const updateDeviationStatus = async (req, res) => {
       });
     }
   }
+
   // Setting the Fields Empty in the DB
   const updateClearFileDeviation = await DeviationRequest.updateOne(
     { _id: deviationId },
@@ -380,6 +396,7 @@ const updateDeviationStatus = async (req, res) => {
       } 
     }
   );
+
   if (!updateClearFileDeviation) {
     res.status(403).json({
       status: "403",
@@ -387,19 +404,14 @@ const updateDeviationStatus = async (req, res) => {
       body: "",
     });
   }
+
   //Retreiving the data for each profile Image and adding to the schema
   let deviationStatus = "";
+
   if (req.file) {
-    deviationStatus = req.file.filename;
+    deviationStatus = req.file.key;
   }
 
-  let approvedBy = "";
-  if (user) {
-    const foundUsers = await User.find({
-      username: { $in: user },
-    });
-    approvedBy = foundUsers.map((user) => user._id);
-  }
   // Updating the new Img Names in the fields from the DB
   const updateFileDeviation = await DeviationRequest.updateOne(
     { _id: deviationId },
@@ -409,9 +421,22 @@ const updateDeviationStatus = async (req, res) => {
       } 
     }
   );
+
+  let approvedBy = "";
+
+
+
+  if (user) {
+    const foundUsers = await User.find({
+      username: { $in: user },
+    });
+    approvedBy = foundUsers.map((user) => user._id);
+  }
+  
+
    // Updating the deviation risk assessment
    const updateDeviationRiskClose = await DeviationRiskAssessment.updateOne(
-    { _id: DeviationRiskID },
+    { _id: deviationRiskID },
     { 
       $set: { 
         effectiveness,
