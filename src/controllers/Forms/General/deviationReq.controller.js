@@ -129,7 +129,7 @@ const createDeviationRequest = async (req, res, next) => {
 
   // const count = await DeviationRequest.estimatedDocumentCount();
 
-  if (count > 0) {
+  if (count > 1) {
     const deviations = await DeviationRequest.find().sort({ consecutive: -1 }).limit(1);
     newDeviationReq.consecutive = deviations[0].consecutive + 1
   } else {
