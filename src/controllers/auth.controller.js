@@ -181,6 +181,18 @@ const signIn = async (req, res) => {
     if (roles[i].name === "CloseDeviation") {
       userAccessApg[15] = "true";
     }
+    if (roles[i].name === "ValidationCheckR" || roles[i].name === "admin") {
+      userAccessApg[16] = "true";
+    }
+    if (roles[i].name === "ValidationCheckQ") {
+      userAccessApg[17] = "true";
+    }
+    if (roles[i].name === "ValidationCheckT") {
+      userAccessApg[18] = "true";
+    }
+    if (roles[i].name === "ValidationCheckP") {
+      userAccessApg[19] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
@@ -231,6 +243,18 @@ const signIn = async (req, res) => {
     }
     if (roles[i].name === "CloseDeviation") {
       userAccessAXG[15] = "true";
+    }
+    if (roles[i].name === "ValidationCheckR" || rolesAxiom[i].name === "admin") {
+      userAccessAXG[16] = "true";
+    }
+    if (roles[i].name === "ValidationCheckQ") {
+      userAccessAXG[17] = "true";
+    }
+    if (roles[i].name === "ValidationCheckT") {
+      userAccessAXG[18] = "true";
+    }
+    if (roles[i].name === "ValidationCheckP") {
+      userAccessAXG[19] = "true";
     }
   }
 
