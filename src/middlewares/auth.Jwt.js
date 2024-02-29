@@ -685,7 +685,119 @@ const isDeviationR = async (req, res, next) => {
     .status(403)
     .json({ message: "Deviation Role Required", status: "403" });
 };
+// Verify TraininT (Create)///////////////////////////////////////////////////////////////////////////////////////////
+const isTrainingT = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
 
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "TrainingT") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "TrainingT") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Trainer Role Required", status: "403" });
+};
+
+// Verify TraininR (Read)///////////////////////////////////////////////////////////////////////////////////////////
+const isTrainingR = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if ((roles[i].name === "TrainingR") || (roles[i].name === "TrainingT") || (roles[i].name === "TrainingL")) {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if ((rolesAxiom[i].name === "TrainingR") || (rolesAxiom[i].name === "TrainingT") || (rolesAxiom[i].name === "TrainingL")) {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Training Read Role Required", status: "403" });
+};
+
+// Verify TraininL (permiso para calificar)///////////////////////////////////////////////////////////////////////////////////////////
+const isTrainingL = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "TrainingL") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "TrainingL") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Training Read Role Required", status: "403" });
+};
 
 module.exports = {
   verifyToken,
@@ -705,5 +817,8 @@ module.exports = {
   isProductionR,
   isProductionRW,
   isAutorized,
-  isDeviationR
+  isDeviationR,
+  isTrainingT,
+  isTrainingR,
+  isTrainingL
 };
