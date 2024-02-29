@@ -127,8 +127,10 @@ const signIn = async (req, res) => {
   let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id;
   let userAccessApg = [
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
   let userAccessAXG = [
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
   //Crear variable con los roles que tiene en apg
@@ -181,6 +183,27 @@ const signIn = async (req, res) => {
     if (roles[i].name === "CloseDeviation") {
       userAccessApg[15] = "true";
     }
+    if (roles[i].name === "ValidationCheckR" || roles[i].name === "admin") {
+      userAccessApg[16] = "true";
+    }
+    if (roles[i].name === "ValidationCheckQ") {
+      userAccessApg[17] = "true";
+    }
+    if (roles[i].name === "ValidationCheckT") {
+      userAccessApg[18] = "true";
+    }
+    if (roles[i].name === "ValidationCheckP") {
+      userAccessApg[19] = "true";
+    }
+    if (roles[i].name === "TrainingR" || roles[i].name === "admin") {
+      userAccessApg[20] = "true";
+    }
+    if (roles[i].name === "TrainingT" || roles[i].name === "admin") {
+      userAccessApg[21] = "true";
+    }
+    if (roles[i].name === "TrainingL" || roles[i].name === "admin") {
+      userAccessApg[22] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
@@ -229,8 +252,29 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "AutomationSign") {
       userAccessAXG[14] = "true";
     }
-    if (roles[i].name === "CloseDeviation") {
+    if (rolesAxiom[i].name === "CloseDeviation") {
       userAccessAXG[15] = "true";
+    }
+    if (rolesAxiom[i].name === "ValidationCheckR" || rolesAxiom[i].name === "admin") {
+      userAccessAXG[16] = "true";
+    }
+    if (rolesAxiom[i].name === "ValidationCheckQ") {
+      userAccessAXG[17] = "true";
+    }
+    if (rolesAxiom[i].name === "ValidationCheckT") {
+      userAccessAXG[18] = "true";
+    }
+    if (rolesAxiom[i].name === "ValidationCheckP") {
+      userAccessAXG[19] = "true";
+    }
+    if (rolesAxiom[i].name === "TrainingR" || rolesAxiom[i].name === "admin") {
+      userAccessAXG[20] = "true";
+    }
+    if (rolesAxiom[i].name === "TrainingT" || rolesAxiom[i].name === "admin") {
+      userAccessAXG[21] = "true";
+    }
+    if (rolesAxiom[i].name === "TrainingL" || rolesAxiom[i].name === "admin") {
+      userAccessAXG[22] = "true";
     }
   }
 

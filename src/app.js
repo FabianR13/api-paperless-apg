@@ -32,6 +32,7 @@ const deviationRoutes = require("./routes/General/deviation.routes.js");
 const partsRoutes = require("./routes/Quality/parts.routes.js");
 const customersRoutes = require("./routes/General/customer.routes.js");
 const validationSettingsRoutes = require("./routes/General/validationSettings.routes.js");
+const trainingRoutes = require("./routes/Others/training.routes.js")
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -82,6 +83,7 @@ app.use("/api/parts", partsRoutes);
 app.use("/api/customers", customersRoutes);
 app.use("/api/deviations", deviationRoutes);
 app.use("/api/validationSettings", validationSettingsRoutes);
+app.use("/api/training", trainingRoutes);
 
 app.get("/api/cors", (req, res) => {
   res.status(200).json({ message: "Esta entrando" });
