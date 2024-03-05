@@ -14,6 +14,7 @@ const createTrainingEvaluation = async (req, res) => {
         evaluationStatus,
         evaluationDate,
         evaluationType,
+        operationType,
         qualification,
         qualifiedBy,
         trainer,
@@ -37,6 +38,7 @@ const createTrainingEvaluation = async (req, res) => {
         evaluationStatus,
         evaluationDate,
         evaluationType,
+        operationType,
         qualification,
         question1,
         question2,
@@ -110,13 +112,13 @@ const getEvaluations = async (req, res) => {
     }
     const evaluations = await TrainingEvaluation.find({
         company: { $in: CompanyId },
-    }).populate({ path: 'numberEmployee' }).populate({ path: 'partNumber', populate: { path: "customer", model: "Customer"}  }).populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } }).sort({ createdAt: -1 });
+    }).populate({ path: 'numberEmployee' }).populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } }).populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } }).sort({ createdAt: -1 });
     res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
 };
 
 // Getting Evaluation by Id////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getEvaluationById = async (req, res) => {
-    const foundEvaluation = await TrainingEvaluation.findById(req.params.evaluationId).populate({ path: 'numberEmployee' }).populate({ path: 'partNumber', populate: { path: "customer", model: "Customer"} }).populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } }).populate({ path: 'qualifiedBy', populate: { path: "employee", model: "Employees" } });;
+    const foundEvaluation = await TrainingEvaluation.findById(req.params.evaluationId).populate({ path: 'numberEmployee' }).populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } }).populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } }).populate({ path: 'qualifiedBy', populate: { path: "employee", model: "Employees" } });;
     if (!foundEvaluation) {
         res
             .status(403)
@@ -199,9 +201,33 @@ const updateTrainingEvaluation = async (req, res) => {
     });
 };
 
+//delete evaluation/////////////////////////////////////////////////////////////////////////////////////////////////////
+const deleteTrainingEvaluation = async (req, res) => {
+    const { evaluationId } = req.params;
+
+    TrainingEvaluation.findById(evaluationId, function (err, TrainingEvaluation) {
+        if (err) {
+            res.status(503).json({
+                status: "403",
+                message: err,
+            });
+            return;
+        }
+        TrainingEvaluation.remove(
+            res.status(200).json({
+                status: "200",
+                message: 'The evaluation has been deleted',
+            }));
+    });
+};
+
+
+
+
 module.exports = {
     createTrainingEvaluation,
     getEvaluations,
     getEvaluationById,
-    updateTrainingEvaluation
+    updateTrainingEvaluation,
+    deleteTrainingEvaluation
 };

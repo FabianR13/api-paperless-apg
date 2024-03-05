@@ -11,6 +11,9 @@ const trainingEvaluationSchema = new mongoose.Schema(
         evaluationType: {
             type: String,
         },
+        operationType: {
+            type: String,
+        },
         qualification: {
             type: Number,
         },
