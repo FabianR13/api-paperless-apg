@@ -7,7 +7,7 @@ const {
     isTrainingR,
     isTrainingL
 } = require("../../middlewares/auth.Jwt.js");
-const { createTrainingEvaluation, getEvaluations, getEvaluationById, updateTrainingEvaluation } = require("../../controllers/Forms/Others/training.controller.js");
+const { createTrainingEvaluation, getEvaluations, getEvaluationById, updateTrainingEvaluation, deleteTrainingEvaluation } = require("../../controllers/Forms/Others/training.controller.js");
 const {sendEmailMiddlewareResponse} = require("../../middlewares/mailer.js");
 
 //Route to post new Training Evaluation///
@@ -53,5 +53,14 @@ router.post(
     isTrainingT,
     sendEmailMiddlewareResponse,
 );
+
+///Route to delete evaluation///
+router.delete(
+    "/DeleteTrainingEvaluation/:evaluationId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isTrainingT,
+    deleteTrainingEvaluation
+  );
 
 module.exports = router;
