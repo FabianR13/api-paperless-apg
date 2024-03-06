@@ -59,7 +59,7 @@ router.delete(
     "/DeleteTrainingEvaluation/:evaluationId/:CompanyId",
     verifyToken,
     isAutorized,
-    isTrainingT,
+    isTrainingL,
     deleteTrainingEvaluation
   );
 
