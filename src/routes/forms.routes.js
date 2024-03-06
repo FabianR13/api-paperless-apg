@@ -74,5 +74,13 @@ router.get(
   isProductionR,
   getDashboardById
 );
+///Route forms in IT dashboard///
+router.get(
+  "/IT/:formsId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isAdmin,
+  getDashboardById
+);
 
 module.exports = router;
