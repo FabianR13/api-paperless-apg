@@ -225,7 +225,7 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "QualityASIns" || rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer" || rolesAxiom[i].name === "SeniorManagement") {
       userAccessAXG[5] = "true";
     }
-    if (rolesAxiom[i].name === "QualityASEng"|| roles[i].name === "QualityASGer") {
+    if (rolesAxiom[i].name === "QualityASEng"|| rolesAxiom[i].name === "QualityASGer") {
       userAccessAXG[6] = "true";
     }
     if (rolesAxiom[i].name === "QualityASGer") {
