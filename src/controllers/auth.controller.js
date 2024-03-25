@@ -204,6 +204,9 @@ const signIn = async (req, res) => {
     if (roles[i].name === "TrainingL" || roles[i].name === "admin") {
       userAccessApg[22] = "true";
     }
+    if (roles[i].name === "PersonalReqR" || roles[i].name === "PersonalReqC" || roles[i].name === "PersonalReqE" || roles[i].name === "PersonalReqS" || roles[i].name === "PersonalReqSRH" || roles[i].name === "admin") {
+      userAccessApg[23] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
@@ -225,7 +228,7 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "QualityASIns" || rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer" || rolesAxiom[i].name === "SeniorManagement") {
       userAccessAXG[5] = "true";
     }
-    if (rolesAxiom[i].name === "QualityASEng"|| roles[i].name === "QualityASGer") {
+    if (rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer") {
       userAccessAXG[6] = "true";
     }
     if (rolesAxiom[i].name === "QualityASGer") {
@@ -276,6 +279,9 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "TrainingL" || rolesAxiom[i].name === "admin") {
       userAccessAXG[22] = "true";
     }
+    if (rolesAxiom[i].name === "PersonalReqR" || rolesAxiom[i].name === "PersonalReqC" || rolesAxiom[i].name === "PersonalReqE" || rolesAxiom[i].name === "PersonalReqS" || rolesAxiom[i].name === "PersonalReqSRH" || rolesAxiom[i].name === "admin") {
+      userAccessAXG[23] = "true";
+    }
   }
 
   res.json({
@@ -306,7 +312,7 @@ const getUsers = async (req, res) => {
   }
   const users = await User.find({
     company: { $in: CompanyId },
-  }).populate({ path: 'employee' }).populate({ path: "roles" }).populate({ path: "rolesAxiom" }).populate({ path: "companyAccess" });
+  }).populate({ path: 'employee', populate: [{ path: "department" }, { path: "position" }] }).populate({ path: "roles" }).populate({ path: "rolesAxiom" }).populate({ path: "companyAccess" });
   res.json({ status: "200", message: "Users Loaded", body: users });
 };
 // Getting all Roles//////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -13,6 +13,8 @@ const partSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
+        assemblyPartNumber: [{ type: String },],
+        assemblyPartDesc: [{ type: String},],
         company: [
             {
                 ref: "Company",

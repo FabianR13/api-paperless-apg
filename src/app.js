@@ -5,6 +5,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express().use("*", cors());
 const config = require('../src/config')
+const { whatsapp } = require("../src/middlewares/whatsapp.js")
+const  mongoose = require("mongoose");
 
 /////Metodos initial setup/////
 const {
@@ -33,9 +35,13 @@ const partsRoutes = require("./routes/Quality/parts.routes.js");
 const customersRoutes = require("./routes/General/customer.routes.js");
 const validationSettingsRoutes = require("./routes/General/validationSettings.routes.js");
 const trainingRoutes = require("./routes/Others/training.routes.js")
+const PersonalRequisition = require("./routes/General/personalRequisition.routes.js");
+const whatsappRoutes = require("./routes/whatsapp.routes.js");
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
+const { autoSendMessage } = require("./controllers/whatsapp.controller.js");
+
 
 //Primer inicio de API/////
 // createCompanys();
@@ -84,6 +90,10 @@ app.use("/api/customers", customersRoutes);
 app.use("/api/deviations", deviationRoutes);
 app.use("/api/validationSettings", validationSettingsRoutes);
 app.use("/api/training", trainingRoutes);
+app.use("/api/personalrequisition", PersonalRequisition);
+app.use("/api/whatsapp", whatsappRoutes);
+
+setInterval(autoSendMessage, 3600000);//Tiempo de ejecucion de 1Hora
 
 app.get("/api/cors", (req, res) => {
   res.status(200).json({ message: "Esta entrando" });
@@ -92,45 +102,3 @@ app.get("/api/cors", (req, res) => {
 module.exports = app;
 
 
-// Send Mail Example through Middleware
-app.post("/api/mailer", sendEmailMiddleware.sendEmailMiddlewareResponse, (req, res) => {
-  // Handle the contact form Submission
-  // ...
-  res.send('Email Sent successfully!');
-});
-
-// Send Mail Example
-app.post("/api/mail", (req, res) => {
-  const nodemailer = require("nodemailer");
-  const requestBy = req.body.requestBy;
-
-  async function main() {
-    let testAccount = await nodemailer.createTestAccount();
-
-    let transporter = nodemailer.createTransport({
-      host: "smtp.office365.com",
-      port: 587,
-      auth: {
-        // user: config.MAIL_AUTH_USER,
-        // pass: config.MAIL_AUTH_PASS,
-        user: process.env.MAIL_AUTH_USER,
-        pass: process.env.MAIL_AUTH_PASS,
-      },
-      secureConnection: false,
-      tls: { ciphers: "SSLv3" },
-    });
-
-    let info = await transporter.sendMail({
-      from: '"Paperless" <paperless@apgmexico.mx>',
-      to: "mahonri.delrincon@apgmexico.mx",
-      subject: "Hello " + requestBy + " a creado una nueva deviacion",
-      text: "Hello world? desde front",
-      html: "<b>Hello world? Ixtapaluco</b>",
-    });
-
-    console.log("Message sent:%s", info.messageId);
-    res.status(200).json({ message: info.messageId });
-  }
-
-  main().catch(console.error);
-});
