@@ -799,6 +799,44 @@ const isTrainingL = async (req, res, next) => {
     .json({ message: "Training Read Role Required", status: "403" });
 };
 
+// Verify PersonalReqC (permiso para crear requisiciones de personal)///////////////////////////////////////////////////////////////////////////////////////////
+const isPersonalReqC = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "PersonalReqC") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "PersonalReqC") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Personal Requisition Create Role Required", status: "403" });
+};
+
 module.exports = {
   verifyToken,
   isModerator,
@@ -820,5 +858,6 @@ module.exports = {
   isDeviationR,
   isTrainingT,
   isTrainingR,
-  isTrainingL
+  isTrainingL,
+  isPersonalReqC
 };
