@@ -2,7 +2,11 @@
 const { Client, NoAuth } = require('whatsapp-web.js');
 
 const whatsapp = new Client({
-    authStrategy: new NoAuth()
+    authStrategy: new NoAuth(),
+     puppeteer: {
+        headless: true,
+        args: ['--no-sandbox']
+    }
 });
 
 whatsapp.on('loading_screen', (percent, message) => {
