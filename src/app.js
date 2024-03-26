@@ -93,7 +93,7 @@ app.use("/api/training", trainingRoutes);
 app.use("/api/personalrequisition", PersonalRequisition);
 app.use("/api/whatsapp", whatsappRoutes);
 
-setInterval(autoSendMessage, 3600000);//Tiempo de ejecucion de 1Hora
+//setInterval(autoSendMessage, 3600000);//Tiempo de ejecucion de 1Hora
 
 app.get("/api/cors", (req, res) => {
   res.status(200).json({ message: "Esta entrando" });
