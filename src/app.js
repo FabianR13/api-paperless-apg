@@ -96,6 +96,10 @@ app.use("/api/whatsapp", whatsappRoutes);
 setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
 
+const date = new Date();
+    const horaActual = date.getHours()
+console.log(horaActual)
+
 app.get("/api/cors", (req, res) => {
   res.status(200).json({ message: "Esta entrando" });
 });
