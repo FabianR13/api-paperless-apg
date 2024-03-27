@@ -40,7 +40,7 @@ const whatsappRoutes = require("./routes/whatsapp.routes.js");
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
-const { autoSendMessage } = require("./controllers/whatsapp.controller.js");
+const { autoSendMessage, autoSendEmail } = require("./controllers/whatsapp.controller.js");
 
 
 //Primer inicio de API/////
@@ -93,7 +93,8 @@ app.use("/api/training", trainingRoutes);
 app.use("/api/personalrequisition", PersonalRequisition);
 app.use("/api/whatsapp", whatsappRoutes);
 
-//setInterval(autoSendMessage, 3600000);//Tiempo de ejecucion de 1Hora
+setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
+//setInterval(autoSendEmail, 10000);
 
 app.get("/api/cors", (req, res) => {
   res.status(200).json({ message: "Esta entrando" });
