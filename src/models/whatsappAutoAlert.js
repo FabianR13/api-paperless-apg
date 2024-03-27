@@ -16,6 +16,9 @@ const whatsappAutoAlertSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    subject: {
+      type: String,
+    },
     message: {
       type: String,
       required: true,
