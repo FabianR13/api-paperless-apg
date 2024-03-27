@@ -93,7 +93,7 @@ app.use("/api/training", trainingRoutes);
 app.use("/api/personalrequisition", PersonalRequisition);
 app.use("/api/whatsapp", whatsappRoutes);
 
-setInterval(autoSendEmail, 1860000);//Tiempo de ejecucion de 1Hora
+setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
 
 const date = new Date();
