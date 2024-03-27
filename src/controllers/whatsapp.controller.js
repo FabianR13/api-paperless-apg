@@ -218,12 +218,13 @@ const autoSendEmail = async (req, res) => {
     //const message = "*Mensaje autogenerado* \nMensaje de prueba"
     const date = new Date();
     const diaActual = date.getDay()
-    const horaActual = date.getHours()
+    const horaActual = (date.getHours() - 6)
     const emails = whatsappAutoAlertData[1].receivers
     const subject = whatsappAutoAlertData[1].subject
     const message = whatsappAutoAlertData[1].message
     const days = whatsappAutoAlertData[1].notificationDays
     const hours = whatsappAutoAlertData[1].timeAlert
+    console.log(horaActual)
 
     if (whatsappAutoAlertData[1].alertStatus === "Active") {
         for (let i = 0; i < days.length; i++) {
