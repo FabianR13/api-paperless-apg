@@ -261,10 +261,10 @@ const autoSendEmail = async (req, res) => {
                             }
                         });
 
+                        console.log("Envio de mensajes terminado")
                     }
                 }
             }
-            console.log("Envio de mensajes terminado")
         }
     }
 
