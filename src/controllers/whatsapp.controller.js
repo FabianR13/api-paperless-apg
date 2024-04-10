@@ -231,7 +231,6 @@ const autoSendEmail = async (req, res) => {
             if (diaActual === days[i]) {
                 for (let j = 0; j < hours.length; j++) {
                     if (horaActual === hours[j]) {
-
                         const mailOptions = {
                             from: 'paperless@apgmexico.mx',
                             to: emails.join(', '), // Join the receivers array into a comma-separated string

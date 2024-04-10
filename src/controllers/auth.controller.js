@@ -195,7 +195,7 @@ const signIn = async (req, res) => {
     if (roles[i].name === "ValidationCheckP") {
       userAccessApg[19] = "true";
     }
-    if (roles[i].name === "TrainingR" || roles[i].name === "admin") {
+    if (roles[i].name === "TrainingR" || roles[i].name === "admin" || roles[i].name === "TrainingT" || roles[i].name === "TrainingL") {
       userAccessApg[20] = "true";
     }
     if (roles[i].name === "TrainingT" || roles[i].name === "admin") {
@@ -270,7 +270,7 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "ValidationCheckP") {
       userAccessAXG[19] = "true";
     }
-    if (rolesAxiom[i].name === "TrainingR" || rolesAxiom[i].name === "admin") {
+    if (rolesAxiom[i].name === "TrainingR" || rolesAxiom[i].name === "admin" || rolesAxiom[i].name === "TrainingT" || rolesAxiom[i].name === "TrainingL") {
       userAccessAXG[20] = "true";
     }
     if (rolesAxiom[i].name === "TrainingT" || rolesAxiom[i].name === "admin") {

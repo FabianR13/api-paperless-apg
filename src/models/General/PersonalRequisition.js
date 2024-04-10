@@ -29,6 +29,12 @@ const pesonalRequisitionSchema = new mongoose.Schema(
         salary: {
             type: Number,
         },
+        priority: {
+            type: String,
+        },
+        hiring: {
+            type: String,
+        },
         hiring: {
             type: String,
         },
@@ -124,6 +130,12 @@ const pesonalRequisitionSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
+        peopleInvolved: [
+            {
+                ref: "Employees",
+                type: mongoose.Schema.Types.ObjectId,
+            },
+        ],
         autorizedBy: [
             {
                 ref: "User",
@@ -145,9 +157,6 @@ const pesonalRequisitionSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
-        priority: {
-            type: String
-        },
         tentativeCoverageDate: {
             type: Date,
         },

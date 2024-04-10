@@ -221,6 +221,38 @@ const deleteTrainingEvaluation = async (req, res) => {
     });
 };
 
+// Actualizar calificacion de evaluacion/////////////////////////////////////////////////////////////////////////////////
+const updateEvaluationRegister = async (req, res) => {
+    const { evaluationId } = req.params;
+
+    const {
+        isChecked
+    } = req.body;
+
+    const updatedTrainingEvaluation = await TrainingEvaluation.updateOne(
+        { _id: evaluationId },
+        {
+            $set: {
+                isChecked
+            },
+        }
+    );
+
+    if (!updatedTrainingEvaluation) {
+       // console.log("Evaluation not Updated",)
+        res
+            .status(403)
+            .json({ status: "403", message: "Evaluation not Updated", body: "" });
+    }
+
+    //console.log("Evaluation updated")
+    res.status(200).json({
+        status: "200",
+        message: "Evaluation Updated ",
+        body: updatedTrainingEvaluation,
+    });
+};
+
 
 
 
@@ -229,5 +261,6 @@ module.exports = {
     getEvaluations,
     getEvaluationById,
     updateTrainingEvaluation,
-    deleteTrainingEvaluation
+    deleteTrainingEvaluation,
+    updateEvaluationRegister
 };

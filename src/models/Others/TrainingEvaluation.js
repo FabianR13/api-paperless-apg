@@ -2,6 +2,9 @@ const mongoose = require('mongoose')
 
 const trainingEvaluationSchema = new mongoose.Schema(
     {
+        isChecked: {
+            type: Boolean,
+        },
         evaluationStatus: {
             type: String,
         },
