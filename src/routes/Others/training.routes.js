@@ -7,8 +7,8 @@ const {
     isTrainingR,
     isTrainingL
 } = require("../../middlewares/auth.Jwt.js");
-const { createTrainingEvaluation, getEvaluations, getEvaluationById, updateTrainingEvaluation, deleteTrainingEvaluation, updateEvaluationRegister } = require("../../controllers/Forms/Others/training.controller.js");
-const {sendEmailMiddlewareResponse} = require("../../middlewares/mailer.js");
+const { createTrainingEvaluation, getEvaluations, getEvaluationById, updateTrainingEvaluation, deleteTrainingEvaluation, updateEvaluationRegister, countEvaluations } = require("../../controllers/Forms/Others/training.controller.js");
+const { sendEmailMiddlewareResponse } = require("../../middlewares/mailer.js");
 
 //Route to post new Training Evaluation///
 router.post("/NewEvaluation/:CompanyId",
@@ -25,7 +25,16 @@ router.post(
     isAutorized,
     isTrainingR,
     getEvaluations,
-  );
+);
+
+///Route to get All the evaluations count///
+router.get(
+    "/TrainingEvaluations/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isTrainingR,
+    countEvaluations,
+);
 
 ///Route to get especific evaluation//
 router.get(
@@ -61,7 +70,7 @@ router.delete(
     isAutorized,
     isTrainingL,
     deleteTrainingEvaluation
-  );
+);
 
 
 ///Ruta para actualizar rewgistro de evaluaciones
