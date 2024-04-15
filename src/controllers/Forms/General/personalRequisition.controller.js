@@ -154,36 +154,82 @@ const getAllPersonalRequisitions = async (req, res) => {
     const personalRequisitions = await PersonalRequisition.find({
         company: { $in: CompanyId },
     }).sort({ createdAt: -1 })
-    .populate({ path: 'requestBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
-    .populate({ path: 'internalPromotion', populate: { path: "department position", select: "name" } })
-    .populate({ path: 'employeeCopy', populate: { path: "department position", select: "name" } })
-    .populate({ path: 'peopleInvolved', populate: { path: "department position", select: "name" } })
-    .populate({ path: 'autorizedBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
-    .populate({ path: 'hrSignature', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } });
+        .populate({ path: 'requestBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
+        .populate({ path: 'internalPromotion', populate: { path: "department position", select: "name" } })
+        .populate({ path: 'employeeCopy', populate: { path: "department position", select: "name" } })
+        .populate({ path: 'peopleInvolved', populate: { path: "department position", select: "name" } })
+        .populate({ path: 'autorizedBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
+        .populate({ path: 'hrSignature', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } });
     res.json({ status: "200", message: "Requisitions Loaded", body: personalRequisitions });
 };
 
 // Getting requisition by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getRequisitionById = async (req, res) => {
     const foundRequisition = await PersonalRequisition.findById(req.params.requisitionId)
-    .populate({ path: 'requestBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
-    .populate({ path: 'internalPromotion', populate: { path: "department position", select: "name" } })
-    .populate({ path: 'employeeCopy', populate: { path: "department position", select: "name" } })
-    .populate({ path: 'peopleInvolved', populate: { path: "department position", select: "name" } })
-    .populate({ path: 'autorizedBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
-    .populate({ path: 'hrSignature', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } });
+        .populate({ path: 'requestBy', select: "username signature email", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
+        .populate({ path: 'internalPromotion', populate: { path: "department position", select: "name" } })
+        .populate({ path: 'employeeCopy', populate: { path: "department position", select: "name" } })
+        .populate({ path: 'peopleInvolved', populate: { path: "department position", select: "name" } })
+        .populate({ path: 'autorizedBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
+        .populate({ path: 'hrSignature', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } });
     if (!foundRequisition) {
-      res
-        .status(403)
-        .json({ status: "403", message: "Requisition not Founded", body: "" });
+        res
+            .status(403)
+            .json({ status: "403", message: "Requisition not Founded", body: "" });
     }
     res
-      .status(200)
-      .json({ status: "200", message: "Requisition Founded", body: foundRequisition });
-  };
+        .status(200)
+        .json({ status: "200", message: "Requisition Founded", body: foundRequisition });
+};
+
+//method to update deviation request //////////////////////////////////////////////////////////////////////////////////////
+const UpdateRequisitionSignature = async (req, res, next) => {
+    const { requisitionId } = req.params;
+    const newApprovedBy = req.body.autorizedBy;
+    const newHrSignature = req.body.hrSignature;
+    const status =req.body.status;
+    const autorizedBy = [];
+    let hrSignature = [];
+
+    if (newApprovedBy) {
+        for (let i = 0; i < newApprovedBy.length; i++) {
+            const foundUser = await User.find({
+                username: { $in: newApprovedBy[i]},
+            });
+            autorizedBy.push(foundUser.map((user) => user._id));
+        }
+    }
+
+    if (newHrSignature) {
+        const foundUser = await User.find({
+            username: { $in: newHrSignature },
+        });
+        hrSignature = foundUser.map((user) => user._id);
+    }
+
+    const updatedPersonalRequisition = await PersonalRequisition.updateOne(
+        { _id: requisitionId },
+        {
+            $set: {
+                autorizedBy,
+                hrSignature,
+                status
+            },
+        }
+    );
+
+    if (!updatedPersonalRequisition) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Personal requisition not Updated", body: "" });
+    }
+    
+    next();
+};
 
 module.exports = {
     createPersonalRequisition,
     getAllPersonalRequisitions,
-    getRequisitionById
+    getRequisitionById,
+    UpdateRequisitionSignature
 };

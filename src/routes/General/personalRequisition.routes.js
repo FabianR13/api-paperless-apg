@@ -4,10 +4,11 @@ const {
     verifyToken,
     isAutorized,
     isPersonalReqC,
-    isPersonalReqR
+    isPersonalReqR,
+    isPersonalReqS
 } = require("../../middlewares/auth.Jwt.js");
 const {sendEmailMiddlewareResponse} = require("../../middlewares/mailer.js");
-const { createPersonalRequisition, getAllPersonalRequisitions, getRequisitionById } = require("../../controllers/Forms/General/personalRequisition.controller.js");
+const { createPersonalRequisition, getAllPersonalRequisitions, getRequisitionById, UpdateRequisitionSignature } = require("../../controllers/Forms/General/personalRequisition.controller.js");
 
 //Ruta para postear una nueva requisicion
 router.post("/NewPersonalRequisition/:CompanyId",
@@ -35,5 +36,16 @@ router.get(
     isPersonalReqR,
     getRequisitionById
   );
+
+// Ruta para firmas de aprovado o denegado en una requisicion
+router.put(
+  "/PersonalRequisitionSignature/:requisitionId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isPersonalReqS,
+  UpdateRequisitionSignature,
+  sendEmailMiddlewareResponse
+);
+
 
 module.exports = router;
