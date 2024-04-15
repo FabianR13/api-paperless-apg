@@ -100,6 +100,9 @@ const createTrainingEvaluation = async (req, res) => {
 
 // Getting all Evaluations/////////////////////////////////////////////////////////////////////////////////////////////////////
 const getEvaluations = async (req, res) => {
+    const { filter, order } = req.body
+    console.log(order)
+    console.log(filter)
     const { CompanyId } = req.params
     if (CompanyId.length !== 24) {
         return;
@@ -110,10 +113,70 @@ const getEvaluations = async (req, res) => {
     if (!company) {
         return;
     }
-    const evaluations = await TrainingEvaluation.find({
-        company: { $in: CompanyId },
-    }).populate({ path: 'numberEmployee' }).populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } }).populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } }).sort({ createdAt: -1 });
-    res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+
+    if (filter === "numberEmployee") {
+        const evaluations = await TrainingEvaluation.find({
+            company: { $in: CompanyId },
+        }).populate({ path: 'numberEmployee' })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ numberEmployee: order });
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    }
+    if (filter === "createdAt") {
+        const evaluations = await TrainingEvaluation.find({
+            company: { $in: CompanyId },
+        }).populate({ path: 'numberEmployee' })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ createdAt: order });
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    }
+    if (filter === "partNumber") {
+        const evaluations = await TrainingEvaluation.find({
+            company: { $in: CompanyId },
+        }).populate({ path: 'numberEmployee' })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ partNumber: order });
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    }
+    if (filter === "operationType") {
+        const evaluations = await TrainingEvaluation.find({
+            company: { $in: CompanyId },
+        }).populate({ path: 'numberEmployee' })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ operationType: order });
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    }
+    if (filter === "evaluationType") {
+        const evaluations = await TrainingEvaluation.find({
+            company: { $in: CompanyId },
+        }).populate({ path: 'numberEmployee' })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ evaluationType: order });
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    }
+    if (filter === "qualification") {
+        const evaluations = await TrainingEvaluation.find({
+            company: { $in: CompanyId },
+        }).populate({ path: 'numberEmployee' })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ qualification: order });
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    }
+    if (filter === "trainer") {
+        const evaluations = await TrainingEvaluation.find({
+            company: { $in: CompanyId },
+        }).populate({ path: 'numberEmployee' })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy' }).populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ trainer: order });
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    }
 };
 
 // Getting Evaluation by Id////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,7 +302,7 @@ const updateEvaluationRegister = async (req, res) => {
     );
 
     if (!updatedTrainingEvaluation) {
-       // console.log("Evaluation not Updated",)
+        // console.log("Evaluation not Updated",)
         res
             .status(403)
             .json({ status: "403", message: "Evaluation not Updated", body: "" });

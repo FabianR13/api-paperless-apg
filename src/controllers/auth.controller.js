@@ -207,6 +207,18 @@ const signIn = async (req, res) => {
     if (roles[i].name === "PersonalReqR" || roles[i].name === "PersonalReqC" || roles[i].name === "PersonalReqE" || roles[i].name === "PersonalReqS" || roles[i].name === "PersonalReqSRH" || roles[i].name === "admin") {
       userAccessApg[23] = "true";
     }
+    if (roles[i].name === "PersonalReqS" || roles[i].name === "admin") {
+      userAccessApg[26] = "true";
+    }
+    if (roles[i].name === "PersonalReqSRH" || roles[i].name === "admin") {
+      userAccessApg[27] = "true";
+    }
+    if (roles[i].name === "PersonalReqE" || roles[i].name === "admin") {
+      userAccessApg[25] = "true";
+    }
+    if (roles[i].name === "PersonalReqC" || roles[i].name === "admin") {
+      userAccessApg[24] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
@@ -281,6 +293,18 @@ const signIn = async (req, res) => {
     }
     if (rolesAxiom[i].name === "PersonalReqR" || rolesAxiom[i].name === "PersonalReqC" || rolesAxiom[i].name === "PersonalReqE" || rolesAxiom[i].name === "PersonalReqS" || rolesAxiom[i].name === "PersonalReqSRH" || rolesAxiom[i].name === "admin") {
       userAccessAXG[23] = "true";
+    }
+    if (rolesAxiom[i].name === "PersonalReqS" || rolesAxiom[i].name === "admin") {
+      userAccessApg[26] = "true";
+    }
+    if (rolesAxiom[i].name === "PersonalReqSRH" || rolesAxiom[i].name === "admin") {
+      userAccessApg[27] = "true";
+    }
+    if (rolesAxiom[i].name === "PersonalReqE" || rolesAxiom[i].name === "admin") {
+      userAccessApg[25] = "true";
+    }
+    if (rolesAxiom[i].name === "PersonalReqC" || rolesAxiom[i].name === "admin") {
+      userAccessApg[24] = "true";
     }
   }
 

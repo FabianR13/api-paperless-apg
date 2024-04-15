@@ -19,7 +19,7 @@ router.post("/NewEvaluation/:CompanyId",
 );
 
 ///Route to get All the evaluations///
-router.get(
+router.post(
     "/TrainingEvaluations/:CompanyId",
     verifyToken,
     isAutorized,

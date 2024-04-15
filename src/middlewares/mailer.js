@@ -43,7 +43,6 @@ const sendEmailMiddlewareNext = (req, res, next) => {
 const sendEmailMiddlewareResponse = (req, res, next) => {
 
     const receivers = req.body.receivers
-
     const mailOptions = {
         from: 'paperless@apgmexico.mx',
         to: receivers.join(', '), // Join the receivers array into a comma-separated string
