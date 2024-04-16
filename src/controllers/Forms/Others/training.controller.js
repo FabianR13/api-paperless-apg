@@ -32,7 +32,8 @@ const createTrainingEvaluation = async (req, res) => {
         question10,
         question11,
         question12,
-        question13
+        question13,
+        version
     } = req.body;
     const newTrainingEvaluation = new TrainingEvaluation({
         evaluationStatus,
@@ -52,7 +53,8 @@ const createTrainingEvaluation = async (req, res) => {
         question10,
         question11,
         question12,
-        question13
+        question13,
+        version
     });
 
     if (qualifiedBy) {
@@ -97,7 +99,7 @@ const createTrainingEvaluation = async (req, res) => {
         }
     });
 };
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const countEvaluations = async (req, res) => {
     const { CompanyId } = req.params
     if (CompanyId.length !== 24) {
