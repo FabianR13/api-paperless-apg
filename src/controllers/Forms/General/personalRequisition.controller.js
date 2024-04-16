@@ -39,7 +39,8 @@ const createPersonalRequisition = async (req, res, next) => {
         recluiter,
         tentativeCoverageDate,
         closingDate,
-        comments
+        comments,
+        version
     } = req.body;
 
     const newPersonalRequisition = new PersonalRequisition({
@@ -65,7 +66,8 @@ const createPersonalRequisition = async (req, res, next) => {
         status,
         tentativeCoverageDate,
         closingDate,
-        comments
+        comments,
+        version
     });
 
     if (requestBy) {

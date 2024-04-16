@@ -86,6 +86,9 @@ const kaizenSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
       }
     ],
+    version: {
+      type: Number,
+    },
     kaizenImagesB: [{ img: { type: String } }],
     kaizenImagesA: [{ img: { type: String } }],
   },
