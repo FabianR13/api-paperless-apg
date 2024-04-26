@@ -26,6 +26,7 @@ const verifyToken = async (req, res, next) => {
     next();
   } catch (error) {
     return res.status(401).json({ message: "nO Unauthorized", status: "401" });
+    
   }
 };
 //Verify Moderador Role (moderador role)////////////////////////////////////////////////////////////////////////////
@@ -852,7 +853,7 @@ const isPersonalReqR = async (req, res, next) => {
         next();
         return;
       }
-      if ((roles[i].name === "PersonalReqR") ||(roles[i].name === "PersonalReqC") || (roles[i].name === "PersonalReqE") || (roles[i].name === "PersonalReqS") || (roles[i].name === "PersonalReqSRH")) {
+      if ((roles[i].name === "PersonalReqR") || (roles[i].name === "PersonalReqC") || (roles[i].name === "PersonalReqE") || (roles[i].name === "PersonalReqS") || (roles[i].name === "PersonalReqSRH") || (roles[i].name === "PersonalReqReclu")) {
         next();
         return;
       }
@@ -864,7 +865,7 @@ const isPersonalReqR = async (req, res, next) => {
         next();
         return;
       }
-      if ((rolesAxiom[i].name === "PersonalReqR") ||(rolesAxiom[i].name === "PersonalReqC") || (rolesAxiom[i].name === "PersonalReqE") || (rolesAxiom[i].name === "PersonalReqS") || (rolesAxiom[i].name === "PersonalReqSRH")) {
+      if ((rolesAxiom[i].name === "PersonalReqR") || (rolesAxiom[i].name === "PersonalReqC") || (rolesAxiom[i].name === "PersonalReqE") || (rolesAxiom[i].name === "PersonalReqS") || (rolesAxiom[i].name === "PersonalReqSRH") || (rolesAxiom[i].name === "PersonalReqReclu")) {
         next();
         return;
       }
@@ -913,6 +914,82 @@ const isPersonalReqS = async (req, res, next) => {
     .json({ message: "Personal Requisition Read Role Required", status: "403" });
 };
 
+// Verify PersonalReqR (permiso para crear requisiciones de personal)///////////////////////////////////////////////////////////////////////////////////////////
+const isPersonalReqE = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "PersonalReqE") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "PersonalReqE") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Personal Requisition Edit Role Required", status: "403" });
+};
+
+// Verify PersonalReqR (permiso para crear requisiciones de personal)///////////////////////////////////////////////////////////////////////////////////////////
+const isPersonalReqReclu = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "PersonalReqE" || roles[i].name === "PersonalReqReclu") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "PersonalReqE" || rolesAxiom[i].name === "PersonalReqReclu") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Personal Requisition Edit Role Required", status: "403" });
+};
+
 module.exports = {
   verifyToken,
   isModerator,
@@ -937,5 +1014,7 @@ module.exports = {
   isTrainingL,
   isPersonalReqC,
   isPersonalReqR,
-  isPersonalReqS
+  isPersonalReqS,
+  isPersonalReqE,
+  isPersonalReqReclu
 };

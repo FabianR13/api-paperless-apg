@@ -41,7 +41,6 @@ const sendEmailMiddlewareNext = (req, res, next) => {
 
 // Middleware to send email NEXT
 const sendEmailMiddlewareResponse = (req, res, next) => {
-
     const receivers = req.body.receivers
     const mailOptions = {
         from: 'paperless@apgmexico.mx',

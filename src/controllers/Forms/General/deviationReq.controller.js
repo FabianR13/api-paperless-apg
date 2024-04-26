@@ -114,15 +114,15 @@ const createDeviationRequest = async (req, res, next) => {
       .status(403)
       .json({ message: "Deviation not saved", status: "403" });
   }
- 
+
   var count = 1
   const date = new Date();
   const yearactual = date.getFullYear()
 
   const foundDeviations = await DeviationRequest.find();
 
-  foundDeviations.map((deviationC) =>{
-    if (deviationC.deviationDate.getFullYear() === yearactual){
+  foundDeviations.map((deviationC) => {
+    if (deviationC.deviationDate.getFullYear() === yearactual) {
       count = count + 1
     }
   })
@@ -145,7 +145,7 @@ const createDeviationRequest = async (req, res, next) => {
       .status(403)
       .json({ status: "403", message: "Deviation not Saved", body: "" });
   }
-  next ();
+  next();
   //res.json({ status: "200", message: "Deviation request created", savedDeviationRequest });
 };
 // Getting all deviations request/////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +167,13 @@ const getDeviationRequest = async (req, res) => {
 };
 // Getting deviation by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDeviationById = async (req, res) => {
-  const foundDeviation = await DeviationRequest.findById(req.params.deviationId).populate({ path: 'customer' }).populate({ path: 'requestBy' }).populate({ path: 'requestBy', populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } }).populate({ path: 'parts' });
+  const foundDeviation = await DeviationRequest.findById(req.params.deviationId)
+    .populate({ path: 'customer' })
+    .populate({ path: 'requestBy' })
+    .populate({ path: 'requestBy', populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
+    .populate({ path: 'parts' });
+
+
   if (!foundDeviation) {
     res
       .status(403)
@@ -367,7 +373,7 @@ const updateDeviationStatus = async (req, res) => {
   const foundPrevDeviation = await DeviationRequest.findById(deviationId);
   // Deleting Images from Folder
   const prevClosingFile = foundPrevDeviation.deviationStatus;
-// Validating if there are Images in the Field
+  // Validating if there are Images in the Field
   if (prevClosingFile !== "Open") {
     // Delete File from Folder
     const params = {
@@ -390,10 +396,10 @@ const updateDeviationStatus = async (req, res) => {
   // Setting the Fields Empty in the DB
   const updateClearFileDeviation = await DeviationRequest.updateOne(
     { _id: deviationId },
-    { 
-      $set: { 
-        deviationStatus: "" 
-      } 
+    {
+      $set: {
+        deviationStatus: ""
+      }
     }
   );
 
@@ -415,10 +421,10 @@ const updateDeviationStatus = async (req, res) => {
   // Updating the new Img Names in the fields from the DB
   const updateFileDeviation = await DeviationRequest.updateOne(
     { _id: deviationId },
-    { 
-      $set: { 
+    {
+      $set: {
         deviationStatus
-      } 
+      }
     }
   );
 
@@ -432,21 +438,21 @@ const updateDeviationStatus = async (req, res) => {
     });
     approvedBy = foundUsers.map((user) => user._id);
   }
-  
 
-   // Updating the deviation risk assessment
-   const updateDeviationRiskClose = await DeviationRiskAssessment.updateOne(
+
+  // Updating the deviation risk assessment
+  const updateDeviationRiskClose = await DeviationRiskAssessment.updateOne(
     { _id: deviationRiskID },
-    { 
-      $set: { 
+    {
+      $set: {
         effectiveness,
         approvedByDate,
         approvedBy
-      } 
+      }
     }
   );
 
-  if ((!updateFileDeviation)||(!updateDeviationRiskClose)) {
+  if ((!updateFileDeviation) || (!updateDeviationRiskClose)) {
     res.status(403).json({
       status: "403",
       message: "Deviation not Updated - updateFileDeviation",
