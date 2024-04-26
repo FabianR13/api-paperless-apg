@@ -136,7 +136,13 @@ const pesonalRequisitionSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
-        autorizedBy: [
+        autorizedByGeneral: [
+            {
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId,
+            },
+        ],
+        autorizedByFinances: [
             {
                 ref: "User",
                 type: mongoose.Schema.Types.ObjectId,

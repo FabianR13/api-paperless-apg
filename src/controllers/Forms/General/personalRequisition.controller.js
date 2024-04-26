@@ -33,7 +33,8 @@ const createPersonalRequisition = async (req, res, next) => {
         permissions,
         employeeCopy,
         peopleInvolved,
-        autorizedBy,
+        autorizedByGeneral,
+        autorizedByFinances,
         hrSignature,
         status,
         recluiter,
@@ -102,11 +103,18 @@ const createPersonalRequisition = async (req, res, next) => {
         }
     }
 
-    if (autorizedBy) {
+    if (autorizedByGeneral) {
         const foundUsers = await User.find({
-            username: { $in: autorizedBy },
+            username: { $in: autorizedByGeneral },
         });
-        newPersonalRequisition.autorizedBy = foundUsers.map((user) => user._id);
+        newPersonalRequisition.autorizedByGeneral = foundUsers.map((user) => user._id);
+    }
+
+    if (autorizedByFinances) {
+        const foundUsers = await User.find({
+            username: { $in: autorizedByFinances },
+        });
+        newPersonalRequisition.autorizedByFinances = foundUsers.map((user) => user._id);
     }
 
     if (hrSignature) {
@@ -157,10 +165,12 @@ const getAllPersonalRequisitions = async (req, res) => {
         company: { $in: CompanyId },
     }).sort({ createdAt: -1 })
         .populate({ path: 'requestBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
+        .populate({ path: 'recluiter', select: "username signature email", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
         .populate({ path: 'internalPromotion', populate: { path: "department position", select: "name" } })
         .populate({ path: 'employeeCopy', populate: { path: "department position", select: "name" } })
         .populate({ path: 'peopleInvolved', populate: { path: "department position", select: "name" } })
-        .populate({ path: 'autorizedBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
+        .populate({ path: 'autorizedByFinances', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
+        .populate({ path: 'autorizedByGeneral', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
         .populate({ path: 'hrSignature', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } });
     res.json({ status: "200", message: "Requisitions Loaded", body: personalRequisitions });
 };
@@ -169,10 +179,12 @@ const getAllPersonalRequisitions = async (req, res) => {
 const getRequisitionById = async (req, res) => {
     const foundRequisition = await PersonalRequisition.findById(req.params.requisitionId)
         .populate({ path: 'requestBy', select: "username signature email", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
+        .populate({ path: 'recluiter', select: "username signature email", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department position", select: "name" } } })
         .populate({ path: 'internalPromotion', populate: { path: "department position", select: "name" } })
         .populate({ path: 'employeeCopy', populate: { path: "department position", select: "name" } })
         .populate({ path: 'peopleInvolved', populate: { path: "department position", select: "name" } })
-        .populate({ path: 'autorizedBy', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
+        .populate({ path: 'autorizedByFinances', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
+        .populate({ path: 'autorizedByGeneral', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } })
         .populate({ path: 'hrSignature', select: "username signature", populate: { path: "employee", select: ("name lastName numberEmployee"), populate: { path: "department", select: "name" } } });
     if (!foundRequisition) {
         res
@@ -187,19 +199,26 @@ const getRequisitionById = async (req, res) => {
 //method to update deviation request //////////////////////////////////////////////////////////////////////////////////////
 const UpdateRequisitionSignature = async (req, res, next) => {
     const { requisitionId } = req.params;
-    const newApprovedBy = req.body.autorizedBy;
+    const newAutorizedByFinances = req.body.autorizedByFinances;
+    const newAutorizedByGeneral = req.body.autorizedByGeneral;
     const newHrSignature = req.body.hrSignature;
-    const status =req.body.status;
-    const autorizedBy = [];
+    const status = req.body.status;
+    let autorizedByFinances = [];
+    let autorizedByGeneral = [];
     let hrSignature = [];
 
-    if (newApprovedBy) {
-        for (let i = 0; i < newApprovedBy.length; i++) {
-            const foundUser = await User.find({
-                username: { $in: newApprovedBy[i]},
-            });
-            autorizedBy.push(foundUser.map((user) => user._id));
-        }
+    if (newAutorizedByFinances) {
+        const foundUser = await User.find({
+            username: { $in: newAutorizedByFinances },
+        });
+        autorizedByFinances = foundUser.map((user) => user._id);
+    }
+
+    if (newAutorizedByGeneral) {
+        const foundUser = await User.find({
+            username: { $in: newAutorizedByGeneral },
+        });
+        autorizedByGeneral = foundUser.map((user) => user._id);
     }
 
     if (newHrSignature) {
@@ -213,7 +232,8 @@ const UpdateRequisitionSignature = async (req, res, next) => {
         { _id: requisitionId },
         {
             $set: {
-                autorizedBy,
+                autorizedByFinances,
+                autorizedByGeneral,
                 hrSignature,
                 status
             },
@@ -225,7 +245,198 @@ const UpdateRequisitionSignature = async (req, res, next) => {
             .status(403)
             .json({ status: "403", message: "Personal requisition not Updated", body: "" });
     }
-    
+
+    next();
+};
+
+//method to update deviation request //////////////////////////////////////////////////////////////////////////////////////
+const UpdatePersonalRequisition = async (req, res, next) => {
+    const { requisitionId } = req.params;
+    const newRecluiter = req.body.recluiter;
+    const salary = req.body.salary;
+    const priority = req.body.priority;
+    const status = req.body.status;
+    const tentativeCoverageDate = req.body.tentativeCoverageDate;
+    const closingDate = req.body.closingDate;
+    const comments = req.body.comments;
+    let recluiter = [];
+
+    if (newRecluiter) {
+        const foundUser = await User.find({
+            username: { $in: newRecluiter },
+        });
+        recluiter = foundUser.map((user) => user._id);
+    }
+
+    const updatedPersonalRequisition = await PersonalRequisition.updateOne(
+        { _id: requisitionId },
+        {
+            $set: {
+                recluiter,
+                salary,
+                priority,
+                status,
+                tentativeCoverageDate,
+                closingDate,
+                comments
+            },
+        }
+    );
+
+    if (!updatedPersonalRequisition) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Personal requisition not Updated", body: "" });
+    }
+
+    if (!req.body.receivers) {
+        return res
+            .status(200)
+            .json({ status: "200", message: "Personal requisition Updated" })
+    }
+    next();
+};
+
+//method to update deviation request All data //////////////////////////////////////////////////////////////////////////////////////
+const UpdatePersonalRequisitionAllData = async (req, res, next) => {
+    const { requisitionId } = req.params;
+
+    const {
+        positionRequested,
+        department,
+        reportTo,
+        startDate,
+        vancancies,
+        salary,
+        priority,
+        hiring,
+        hiringType,
+        reasonVacancy,
+        reasonVacancySpecification,
+        requiredCompetencies,
+        scholarship,
+        minimunExperience,
+        experienceDetail,
+        electronicDevices,
+        software,
+        permissions,
+        status,
+        tentativeCoverageDate,
+        closingDate,
+        comments
+    } = req.body;
+
+    const newhrSignature = req.body.hrSignature;
+    const newautorizedByFinances = req.body.autorizedByFinances;
+    const newautorizedByGeneral = req.body.autorizedByGeneral;
+    const newpeopleInvolved = req.body.peopleInvolved;
+    const newEmployeeCopy = req.body.employeeCopyM;
+    const newInternalPromotion = req.body.internalPromotion;
+    const newRecluiter = req.body.recluiter;
+    let recluiter = [];
+    let internalPromotion = [];
+    let employeeCopy = [];
+    let peopleInvolved = [];
+    let autorizedByGeneral = [];
+    let autorizedByFinances = [];
+    let hrSignature = [];
+
+    if (newhrSignature) {
+        const foundUsers = await User.find({
+            username: { $in: newhrSignature },
+        });
+        hrSignature = foundUsers.map((user) => user._id);
+    }
+
+    if (newautorizedByFinances) {
+        const foundUsers = await User.find({
+            username: { $in: newautorizedByFinances },
+        });
+        autorizedByFinances = foundUsers.map((user) => user._id);
+    }
+
+    if (newautorizedByGeneral) {
+        const foundUsers = await User.find({
+            username: { $in: newautorizedByGeneral },
+        });
+        autorizedByGeneral = foundUsers.map((user) => user._id);
+    }
+
+    if (newpeopleInvolved) {
+        for (let i = 0; i < newpeopleInvolved.length; i++) {
+            const foundEmployee = await Employees.find({
+                numberEmployee: { $in: newpeopleInvolved[i] },
+            });
+            peopleInvolved.push(foundEmployee.map((employee) => employee._id));
+        }
+    }
+
+    if (newEmployeeCopy) {
+        const foundEmployee = await Employees.find({
+            numberEmployee: { $in: newEmployeeCopy },
+        });
+        employeeCopy = foundEmployee.map((employee) => employee._id);
+    }
+
+    if (newInternalPromotion) {
+        for (let i = 0; i < newInternalPromotion.length; i++) {
+            const foundEmployee = await Employees.find({
+                numberEmployee: { $in: newInternalPromotion[i] },
+            });
+            internalPromotion.push(foundEmployee.map((employee) => employee._id));
+        }
+    }
+
+    if (newRecluiter) {
+        const foundUser = await User.find({
+            username: { $in: newRecluiter },
+        });
+        recluiter = foundUser.map((user) => user._id);
+    }
+
+    const updatedPersonalRequisition = await PersonalRequisition.updateOne(
+        { _id: requisitionId },
+        {
+            $set: {
+                positionRequested,
+                department,
+                reportTo,
+                startDate,
+                vancancies,
+                salary,
+                priority,
+                hiring,
+                hiringType,
+                reasonVacancy,
+                reasonVacancySpecification,
+                requiredCompetencies,
+                scholarship,
+                minimunExperience,
+                experienceDetail,
+                internalPromotion,
+                electronicDevices,
+                software,
+                permissions,
+                employeeCopy,
+                peopleInvolved,
+                autorizedByFinances,
+                autorizedByGeneral,
+                hrSignature,
+                status,
+                recluiter,
+                tentativeCoverageDate,
+                closingDate,
+                comments,
+            },
+        }
+    );
+
+    if (!updatedPersonalRequisition) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Personal requisition not Updated", body: "" });
+    }
+
     next();
 };
 
@@ -233,5 +444,7 @@ module.exports = {
     createPersonalRequisition,
     getAllPersonalRequisitions,
     getRequisitionById,
-    UpdateRequisitionSignature
+    UpdateRequisitionSignature,
+    UpdatePersonalRequisition,
+    UpdatePersonalRequisitionAllData
 };
