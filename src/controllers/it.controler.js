@@ -126,7 +126,7 @@ const getAllLaptops = async (req, res) => {
     }
     const laptops = await Laptops.find({
         company: { $in: CompanyId },
-    }).sort({ laptopName: -1 })
+    }).sort({ createdAt: -1 })
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
