@@ -6,6 +6,8 @@ const Deparment = require("../models/Deparment.js");
 const User = require("../models/User.js");
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
+const Lines = require("../models/Lines.js");
+const Cellphones = require("../models/Cellphones.js");
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
@@ -422,6 +424,17 @@ const updateGenericAccount = async (req, res) => {
         );
     }
 
+    if (modified) {
+        const updateCellphone = await Cellphones.updateOne(
+            { responsibleGroup: accountId },
+            {
+                $set: {
+                    modified
+                },
+            }
+        );
+    }
+
     const updatedGenericAccount = await GenericAccount.updateOne(
         { _id: accountId },
         {
@@ -447,6 +460,406 @@ const updateGenericAccount = async (req, res) => {
     });
 };
 
+
+//create new line//////////////////////////////////////////////////////////////////////////////////////
+const createNewLine = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        number,
+        iccid,
+        planName,
+        status,
+        startDate,
+        endDate,
+        modifiedBy,
+        modified,
+        version
+    } = req.body;
+
+    const newLine = new Lines({
+        number,
+        iccid,
+        planName,
+        status,
+        startDate,
+        endDate,
+        modified,
+        version
+    });
+
+    if (modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: modifiedBy },
+        });
+        newLine.modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (CompanyId) {
+        const foundCompany = await Company.find({
+            _id: { $in: CompanyId },
+        });
+        newLine.company = foundCompany.map((company) => company._id);
+    }
+
+    const saveLine = await newLine.save();
+
+    if (!saveLine) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Line not Saved", body: "" });
+    }
+
+    return res
+        .status(200)
+        .json({ status: "200", message: "Line Saved" })
+};
+
+// Getting all Lines/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllLines = async (req, res) => {
+
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+    const lines = await Lines.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .populate({ path: "modifiedBy", select: "username" })
+    res.json({ status: "200", message: "Lines Loaded", body: lines });
+};
+
+//update line//////////////////////////////////////////////////////////////////////////////////////
+const updateLine = async (req, res) => {
+    const { lineId } = req.params;
+    let modifiedBy;
+
+    const {
+        number,
+        iccid,
+        planName,
+        status,
+        startDate,
+        endDate,
+        modified,
+    } = req.body;
+
+    if (req.body.modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: req.body.modifiedBy },
+        });
+        modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    const updatedLine = await Lines.updateOne(
+        { _id: lineId },
+        {
+            $set: {
+                number,
+                iccid,
+                planName,
+                status,
+                startDate,
+                endDate,
+                modified,
+                modifiedBy
+            },
+        }
+    );
+
+    if (!updatedLine) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Line not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Line Updated ",
+        body: updatedLine,
+    });
+};
+
+//create deviation request//////////////////////////////////////////////////////////////////////////////////////
+const createNewCellphone = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        cellphoneName,
+        responsible,
+        location,
+        marca,
+        model,
+        serialNo,
+        imei,
+        macAddress,
+        initialCost,
+        number,
+        protection,
+        status,
+        responsibeLetter,
+        modifiedBy,
+        modified,
+        version
+    } = req.body;
+
+    const newCellphone = new Cellphones({
+        cellphoneName,
+        responsible,
+        location,
+        marca,
+        model,
+        serialNo,
+        imei,
+        macAddress,
+        initialCost,
+        protection,
+        status,
+        responsibeLetter,
+        modified,
+        version
+    });
+
+    newCellphone.responsibleAlt = "";
+
+    if (modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: modifiedBy },
+        });
+        newCellphone.modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (number) {
+        const foundLine = await Lines.find({
+            number: { $in: number },
+        });
+        newCellphone.number = foundLine.map((line) => line._id);
+    }
+
+    if (responsible) {
+        const foundEmployee = await Employees.find({
+            numberEmployee: { $in: responsible },
+        });
+        newCellphone.responsible = foundEmployee.map((employee) => employee._id);
+    }
+
+    if (newCellphone.responsible.length === 0) {
+        const foundAccounts = await GenericAccount.find({
+            groupName: { $in: responsible },
+        });
+        newCellphone.responsibleGroup = foundAccounts.map((account) => account._id);
+    }
+
+    if ((newCellphone.responsible.length === 0) && (newCellphone.responsibleGroup.length === 0)) {
+        newCellphone.responsibleAlt = responsible;
+    }
+
+    if (CompanyId) {
+        const foundCompany = await Company.find({
+            _id: { $in: CompanyId },
+        });
+        newCellphone.company = foundCompany.map((company) => company._id);
+    }
+
+    const saveCellphone = await newCellphone.save();
+
+    if (!saveCellphone) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Cellphone not Saved", body: "" });
+    }
+
+    return res
+        .status(200)
+        .json({ status: "200", message: "Cellphone Saved" })
+};
+
+// Getting all Lines/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllCellphones = async (req, res) => {
+
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+    const cellphones = await Cellphones.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+        .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+        .populate({ path: "modifiedBy", select: "username" })
+        .populate({ path: "number" })
+    res.json({ status: "200", message: "Cellphones Loaded", body: cellphones });
+};
+
+//create deviation request//////////////////////////////////////////////////////////////////////////////////////
+const updateCellphone = async (req, res) => {
+    const { cellphoneId } = req.params;
+    let responsible;
+    let responsibleAlt = "";
+    let number;
+    let responsibleGroup;
+    let modifiedBy;
+
+    const {
+        cellphoneName,
+        location,
+        marca,
+        model,
+        serialNo,
+        imei,
+        macAddress,
+        initialCost,
+        protection,
+        status,
+        modified
+    } = req.body;
+
+    if (req.body.modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: req.body.modifiedBy },
+        });
+        modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (req.body.number) {
+        const foundLine = await Lines.find({
+            number: { $in: req.body.number },
+        });
+        number = foundLine.map((line) => line._id);
+    }
+
+    if (req.body.responsible) {
+        const foundEmployee = await Employees.find({
+            numberEmployee: { $in: req.body.responsible },
+        });
+        responsible = foundEmployee.map((employee) => employee._id);
+    }
+
+    if (responsible.length === 0) {
+        const foundAccounts = await GenericAccount.find({
+            groupName: { $in: req.body.responsible },
+        });
+        responsibleGroup = foundAccounts.map((account) => account._id);
+    }
+
+    if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
+        responsibleAlt = req.body.responsible;
+    }
+
+    const updatedCellphoneDevice = await Cellphones.updateOne(
+        { _id: cellphoneId },
+        {
+            $set: {
+                cellphoneName,
+                location,
+                marca,
+                model,
+                serialNo,
+                imei,
+                macAddress,
+                initialCost,
+                protection,
+                status,
+                responsible,
+                responsibleAlt,
+                responsibleGroup,
+                modifiedBy,
+                modified
+            },
+        }
+    );
+
+    if (!updatedCellphoneDevice) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Cellphone not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Cellphone Updated ",
+        body: updatedCellphoneDevice,
+    });
+};
+
+//subir carta responsiba cellphone////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const uploadCellphoneLetter = async (req, res) => {
+    const { cellphoneId } = req.params;
+    //Getting Previous document
+    const foundPrevCellphone = await Cellphones.findById(cellphoneId);
+    // Deleting Images from Folder
+    const prevCellphoneLetter = foundPrevCellphone.responsibeLetter;
+    // Validating if there are Images in the Field
+    if (prevCellphoneLetter !== "") {
+        // Delete File from Folder
+        const params = {
+            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/CellphonesResposibeLetter",
+            Key: prevCellphoneLetter
+        };
+        try {
+            s3.deleteObject(params, function (err, data) {
+                if (err) console.log(err);
+            });
+        } catch (error) {
+            console.log("error" + error)
+            res.status(403).json({
+                status: "403",
+                message: error,
+                body: "",
+            });
+        }
+    }
+
+    //Retreiving the data for each profile Image and adding to the schema
+    let responsibeLetter = "";
+
+    if (req.file) {
+        responsibeLetter = req.file.key;
+    }
+
+    let modified = req.body.modified
+
+    // Updating the new Img Names in the fields from the DB
+    const updateFileCellphone = await Cellphones.updateOne(
+        { _id: cellphoneId },
+        {
+            $set: {
+                modified,
+                responsibeLetter
+            }
+        }
+    );
+
+    if ((!updateFileCellphone)) {
+        res.status(403).json({
+            status: "403",
+            message: "Cellphone not Updated - updateFileCellphone",
+            body: "",
+        });
+    }
+    const foundCellphoneNew = await Cellphones.findById(cellphoneId);
+
+    res.status(200).json({
+        status: "200",
+        message: "Cellphone Updated",
+        body: foundCellphoneNew,
+    });
+};
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -454,5 +867,12 @@ module.exports = {
     uploadLaptopLetter,
     createNewGenericAccount,
     getAllGenericAccounts,
-    updateGenericAccount
+    updateGenericAccount,
+    createNewLine,
+    getAllLines,
+    updateLine,
+    createNewCellphone,
+    getAllCellphones,
+    updateCellphone,
+    uploadCellphoneLetter
 };
