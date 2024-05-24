@@ -76,6 +76,8 @@ router.delete(
 ///Ruta para actualizar rewgistro de evaluaciones
 router.put(
     "/UpdateEvaluationRegister/:evaluationId/:CompanyId",
+    verifyToken,
+    isAutorized,
     isTrainingT,
     updateEvaluationRegister,
 );

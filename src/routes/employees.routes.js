@@ -42,7 +42,7 @@ router.get(
 );
 ///Route to get employees///
 router.post(
-  "/Employees/:CompanyId",
+  "/Employees/:employeeStatus/:CompanyId",
   getEmployees
 );
 ///Route to update user field in employee///
