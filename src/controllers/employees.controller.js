@@ -98,6 +98,7 @@ const getDepartments = async (req, res) => {
 // Getting all employees///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getEmployees = async (req, res) => {
   const { filter, order } = req.body
+  const { employeeStatus } = req.params
   const { CompanyId } = req.params
   if (CompanyId.length !== 24) {
     return;
@@ -113,11 +114,13 @@ const getEmployees = async (req, res) => {
     if (order === "acend") {
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ name: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
         res.json({ status: "200", message: "Employees Loaded", body: employees });
     }else{
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ name: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
@@ -127,11 +130,13 @@ const getEmployees = async (req, res) => {
     if (order === "acend") {
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ lastName: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }else{
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ lastName: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
@@ -141,11 +146,13 @@ const getEmployees = async (req, res) => {
     if (order === "acend") {
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ numberEmployee: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }else{
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ numberEmployee: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
@@ -154,11 +161,13 @@ const getEmployees = async (req, res) => {
     if (order === "acend") {
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ department: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }else{
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ department: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
@@ -167,11 +176,13 @@ const getEmployees = async (req, res) => {
     if (order === "acend") {
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ position: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }else{
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ position: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
@@ -180,25 +191,14 @@ const getEmployees = async (req, res) => {
     if (order === "acend") {
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ group: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }else{
       const employees = await Employees.find({
         company: { $in: CompanyId },
+        active: { $in: employeeStatus },
       }).sort({ group: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }
-  }
-  if (filter === "active") {
-    if (order === "acend"){
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-      }).sort({ active: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }else{
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-      }).sort({ active: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
   }

@@ -14,10 +14,15 @@ const {
     createNewCellphone,
     getAllCellphones,
     updateCellphone,
-    uploadCellphoneLetter
+    uploadCellphoneLetter,
+    createNewAccounts,
+    getAllAccounts,
+    updateAccounts,
+    uploadAccountsLetter
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
-const uploadCellphoneFile = require("../middlewares/uploadLaptopFile.js");
+const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
+const uploadAccountsFile = require("../middlewares/uploadAccountsFile.js");
 const router = Router();
 
 // Route to save new laptop///
@@ -146,6 +151,43 @@ router.put(
     isAdmin,
     uploadCellphoneFile,
     uploadCellphoneLetter
+);
+
+// Route to save new accounts///
+router.post(
+    "/NewAccounts/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    createNewAccounts
+);
+
+// Route to get All the accounts///
+router.get(
+    "/Accounts/:accountStatus/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    getAllAccounts
+);
+
+// Route to update accounts///
+router.put(
+    "/UpdateAccounts/:accountsId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    updateAccounts
+);
+
+//upload cellphone responsibe letter///
+router.put(
+    "/UploadAccountsLetter/:accountsId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    uploadAccountsFile,
+    uploadAccountsLetter
 );
 
 module.exports = router;

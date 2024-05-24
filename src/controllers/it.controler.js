@@ -8,6 +8,7 @@ const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 const Lines = require("../models/Lines.js");
 const Cellphones = require("../models/Cellphones.js");
+const Accounts = require("../models/Accounts.js");
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
@@ -860,6 +861,252 @@ const uploadCellphoneLetter = async (req, res) => {
     });
 };
 
+//create accounts//////////////////////////////////////////////////////////////////////////////////////
+const createNewAccounts = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        responsible,
+        prismUser,
+        email,
+        windowsUser,
+        paperlessUser,
+        printerUser,
+        ext,
+        status,
+        responsibeLetter,
+        modifiedBy,
+        modified,
+        version
+    } = req.body;
+
+    const newAccounts = new Accounts({
+        prismUser,
+        email,
+        windowsUser,
+        paperlessUser,
+        printerUser,
+        ext,
+        status,
+        responsibeLetter,
+        modifiedBy,
+        modified,
+        version
+    });
+
+    newAccounts.responsibleAlt = "";
+
+    if (modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: modifiedBy },
+        });
+        newAccounts.modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (responsible) {
+        const foundEmployee = await Employees.find({
+            numberEmployee: { $in: responsible },
+        });
+        newAccounts.responsible = foundEmployee.map((employee) => employee._id);
+    }
+
+    if (newAccounts.responsible.length === 0) {
+        const foundAccounts = await GenericAccount.find({
+            groupName: { $in: responsible },
+        });
+        newAccounts.responsibleGroup = foundAccounts.map((account) => account._id);
+    }
+
+    if ((newAccounts.responsible.length === 0) && (newAccounts.responsibleGroup.length === 0)) {
+        newAccounts.responsibleAlt = responsible;
+    }
+
+    if (CompanyId) {
+        const foundCompany = await Company.find({
+            _id: { $in: CompanyId },
+        });
+        newAccounts.company = foundCompany.map((company) => company._id);
+    }
+
+    const saveAccounts = await newAccounts.save();
+
+    if (!saveAccounts) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Acccounts not Saved", body: "" });
+    }
+
+    return res
+        .status(200)
+        .json({ status: "200", message: "Acccounts Saved" })
+};
+
+// Getting all Accounts/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllAccounts = async (req, res) => {
+    const { accountStatus } = req.params
+    const { CompanyId } = req.params
+    
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId},
+    })
+
+    if (!company) {
+        return;
+    }
+    const accounts = await Accounts.find({
+        company: { $in: CompanyId },
+        status: { $in: accountStatus},
+    }).sort({ responsible: -1 })
+        .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+        .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+        .populate({ path: "modifiedBy", select: "username" })
+    res.json({ status: "200", message: "Accounts Loaded", body: accounts });
+};
+
+//create deviation request//////////////////////////////////////////////////////////////////////////////////////
+const updateAccounts = async (req, res) => {
+    const { accountsId } = req.params;
+    let responsible;
+    let responsibleAlt = "";
+    let responsibleGroup;
+    let modifiedBy;
+
+    const {
+        prismUser,
+        email,
+        windowsUser,
+        paperlessUser,
+        printerUser,
+        ext,
+        status,
+        modified
+    } = req.body;
+
+    if (req.body.modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: req.body.modifiedBy },
+        });
+        modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (req.body.responsible) {
+        const foundEmployee = await Employees.find({
+            numberEmployee: { $in: req.body.responsible },
+        });
+        responsible = foundEmployee.map((employee) => employee._id);
+    }
+
+    if (responsible.length === 0) {
+        const foundAccounts = await GenericAccount.find({
+            groupName: { $in: req.body.responsible },
+        });
+        responsibleGroup = foundAccounts.map((account) => account._id);
+    }
+
+    if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
+        responsibleAlt = req.body.responsible;
+    }
+
+    const updatedAccounts = await Accounts.updateOne(
+        { _id: accountsId },
+        {
+            $set: {
+                prismUser,
+                email,
+                windowsUser,
+                paperlessUser,
+                printerUser,
+                ext,
+                status,
+                responsible,
+                responsibleAlt,
+                responsibleGroup,
+                modifiedBy,
+                modified
+            },
+        }
+    );
+
+    if (!updatedAccounts) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Accounts not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Accounts Updated ",
+        body: updatedAccounts,
+    });
+};
+
+//subir carta responsiba cellphone////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const uploadAccountsLetter = async (req, res) => {
+    const { accountsId } = req.params;
+    //Getting Previous document
+    const foundPrevAccounts = await Accounts.findById(accountsId);
+    // Deleting Images from Folder
+    const prevAccountsLetter = foundPrevAccounts.responsibeLetter;
+    // Validating if there are Images in the Field
+    if (prevAccountsLetter !== "") {
+        // Delete File from Folder
+        const params = {
+            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/AccountsResposibeLetter",
+            Key: prevAccountsLetter
+        };
+        try {
+            s3.deleteObject(params, function (err, data) {
+                if (err) console.log(err);
+            });
+        } catch (error) {
+            console.log("error" + error)
+            res.status(403).json({
+                status: "403",
+                message: error,
+                body: "",
+            });
+        }
+    }
+
+    //Retreiving the data for each profile Image and adding to the schema
+    let responsibeLetter = "";
+
+    if (req.file) {
+        responsibeLetter = req.file.key;
+    }
+
+    let modified = req.body.modified
+
+    // Updating the new Img Names in the fields from the DB
+    const updateFileAccounts = await Accounts.updateOne(
+        { _id: accountsId },
+        {
+            $set: {
+                modified,
+                responsibeLetter
+            }
+        }
+    );
+
+    if ((!updateFileAccounts)) {
+        res.status(403).json({
+            status: "403",
+            message: "Accounts not Updated - updateFileCellphone",
+            body: "",
+        });
+    }
+    const foundAccountsNew = await Accounts.findById(accountsId);
+
+    res.status(200).json({
+        status: "200",
+        message: "Accounts Updated",
+        body: foundAccountsNew,
+    });
+};
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -874,5 +1121,9 @@ module.exports = {
     createNewCellphone,
     getAllCellphones,
     updateCellphone,
-    uploadCellphoneLetter
+    uploadCellphoneLetter,
+    createNewAccounts,
+    getAllAccounts,
+    updateAccounts,
+    uploadAccountsLetter
 };
