@@ -9,6 +9,7 @@ const createNewEncuestaComedor = async (req, res) => {
     const {
         encuestaDate,
         qualification,
+        turno,
         comments,
         version
     } = req.body;
@@ -16,6 +17,7 @@ const createNewEncuestaComedor = async (req, res) => {
     const newEncuestaComedor = new EncuestaComedor({
         encuestaDate,
         qualification,
+        turno,
         comments,
         version
     });
