@@ -38,6 +38,7 @@ const trainingRoutes = require("./routes/Others/training.routes.js")
 const PersonalRequisition = require("./routes/General/personalRequisition.routes.js");
 const whatsappRoutes = require("./routes/whatsapp.routes.js");
 const itRoutes = require("./routes/it.routes.js");
+const encuestasRoutes = require("./routes/encuestas.routes.js");
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -94,6 +95,7 @@ app.use("/api/training", trainingRoutes);
 app.use("/api/personalrequisition", PersonalRequisition);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/it",itRoutes);
+app.use("/api/encuestas",encuestasRoutes);
 
 //setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
