@@ -20,6 +20,16 @@ const createNewEncuestaComedor = async (req, res) => {
         version
     });
 
+    const encuestas = await EncuestaComedor.find({
+        company: { $in: CompanyId },
+      }).sort({ consecutive: -1 }).limit(1);
+    
+      if (encuestas.length === 0) {
+        newEncuestaComedor.consecutive = 1;
+      } else {
+        newEncuestaComedor.consecutive = encuestas[0].consecutive + 1
+      }
+
     if (CompanyId) {
         const foundCompany = await Company.find({
             _id: { $in: CompanyId },
