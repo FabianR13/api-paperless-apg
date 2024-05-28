@@ -14,6 +14,9 @@ const encuestaComedorSchema = new mongoose.Schema(
         comments: {
             type: String,
         },
+        consecutive: {
+            type: Number,
+          },
         version: {
             type: Number,
         },
