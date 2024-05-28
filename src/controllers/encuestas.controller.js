@@ -9,6 +9,7 @@ const createNewEncuestaComedor = async (req, res) => {
     const {
         encuestaDate,
         qualification,
+        turno,
         comments,
         version
     } = req.body;
@@ -16,19 +17,20 @@ const createNewEncuestaComedor = async (req, res) => {
     const newEncuestaComedor = new EncuestaComedor({
         encuestaDate,
         qualification,
+        turno,
         comments,
         version
     });
 
     const encuestas = await EncuestaComedor.find({
         company: { $in: CompanyId },
-      }).sort({ consecutive: -1 }).limit(1);
-    
-      if (encuestas.length === 0) {
+    }).sort({ consecutive: -1 }).limit(1);
+
+    if (encuestas.length === 0) {
         newEncuestaComedor.consecutive = 1;
-      } else {
+    } else {
         newEncuestaComedor.consecutive = encuestas[0].consecutive + 1
-      }
+    }
 
     if (CompanyId) {
         const foundCompany = await Company.find({

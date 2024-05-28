@@ -8,6 +8,9 @@ const encuestaComedorSchema = new mongoose.Schema(
         qualification: {
             type: Number,
         },
+        turno: {
+            type: Number,
+        },
         comments: {
             type: String,
         },
