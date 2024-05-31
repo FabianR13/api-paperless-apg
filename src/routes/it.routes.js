@@ -18,7 +18,8 @@ const {
     createNewAccounts,
     getAllAccounts,
     updateAccounts,
-    uploadAccountsLetter
+    uploadAccountsLetter,
+    getDirectory
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
@@ -188,6 +189,12 @@ router.put(
     isAdmin,
     uploadAccountsFile,
     uploadAccountsLetter
+);
+
+// Route to get All the accounts///
+router.get(
+    "/Directory/:CompanyId",
+    getDirectory
 );
 
 module.exports = router;

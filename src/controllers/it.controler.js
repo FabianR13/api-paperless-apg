@@ -945,12 +945,12 @@ const createNewAccounts = async (req, res) => {
 const getAllAccounts = async (req, res) => {
     const { accountStatus } = req.params
     const { CompanyId } = req.params
-    
+
     if (CompanyId.length !== 24) {
         return;
     }
     const company = await Company.find({
-        _id: { $in: CompanyId},
+        _id: { $in: CompanyId },
     })
 
     if (!company) {
@@ -958,7 +958,7 @@ const getAllAccounts = async (req, res) => {
     }
     const accounts = await Accounts.find({
         company: { $in: CompanyId },
-        status: { $in: accountStatus},
+        status: { $in: accountStatus },
     }).sort({ responsible: -1 })
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
@@ -1107,6 +1107,45 @@ const uploadAccountsLetter = async (req, res) => {
     });
 };
 
+// Getting all Accounts/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getDirectory = async (req, res) => {
+    const { CompanyId } = req.params
+
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+
+    const cellphones = await Cellphones.find({
+        company: { $in: CompanyId },
+        number: { $ne: null }
+    }).sort({ createdAt: -1 })
+        .select("cellphoneName")
+        .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+        .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+        .populate({ path: "number" })
+    //res.json({ status: "200", message: "Cellphones Loaded", body: cellphones });
+
+
+    const Directory = await Accounts.find({
+        company: { $in: CompanyId },
+        email: { $ne: "" }
+    }).sort({ email: 1 })
+        .select("ext email")
+        .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+        .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+
+    Directory.push(cellphones)
+
+    res.json({ status: "200", message: "Accounts Loaded", body: Directory });
+};
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -1125,5 +1164,6 @@ module.exports = {
     createNewAccounts,
     getAllAccounts,
     updateAccounts,
-    uploadAccountsLetter
+    uploadAccountsLetter,
+    getDirectory
 };
