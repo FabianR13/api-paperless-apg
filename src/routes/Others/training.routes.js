@@ -21,18 +21,12 @@ router.post("/NewEvaluation/:CompanyId",
 ///Route to get All the evaluations///
 router.post(
     "/TrainingEvaluations/:CompanyId",
-    verifyToken,
-    isAutorized,
-    isTrainingR,
     getEvaluations,
 );
 
 ///Route to get All the evaluations count///
 router.get(
     "/TrainingEvaluations/:CompanyId",
-    verifyToken,
-    isAutorized,
-    isTrainingR,
     countEvaluations,
 );
 
