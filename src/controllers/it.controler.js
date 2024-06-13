@@ -775,6 +775,7 @@ const updateCellphone = async (req, res) => {
                 initialCost,
                 protection,
                 status,
+                number,
                 responsible,
                 responsibleAlt,
                 responsibleGroup,
