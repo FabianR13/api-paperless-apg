@@ -9,6 +9,7 @@ const dotenv = require('dotenv');
 const Lines = require("../models/Lines.js");
 const Cellphones = require("../models/Cellphones.js");
 const Accounts = require("../models/Accounts.js");
+const Monitors = require("../models/Monitors.js");
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
@@ -1147,6 +1148,181 @@ const getDirectory = async (req, res) => {
     res.json({ status: "200", message: "Accounts Loaded", body: Directory });
 };
 
+//create deviation request//////////////////////////////////////////////////////////////////////////////////////
+const createNewMonitor = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        monitorName,
+        responsible,
+        location,
+        marca,
+        model,
+        serialNo,
+        status,
+        modifiedBy,
+        modified,
+        version
+    } = req.body;
+
+    const newMonitor = new Monitors({
+        monitorName,
+        responsible,
+        location,
+        marca,
+        model,
+        serialNo,
+        status,
+        modified,
+        version
+    });
+
+    newMonitor.responsibleAlt = "";
+
+    if (modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: modifiedBy },
+        });
+        newMonitor.modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (responsible) {
+        const foundEmployee = await Employees.find({
+            numberEmployee: { $in: responsible },
+        });
+        newMonitor.responsible = foundEmployee.map((employee) => employee._id);
+    }
+
+    if (newMonitor.responsible.length === 0) {
+        const foundAccounts = await GenericAccount.find({
+            groupName: { $in: responsible },
+        });
+        newMonitor.responsibleGroup = foundAccounts.map((account) => account._id);
+    }
+
+    if ((newMonitor.responsible.length === 0) && (newMonitor.responsibleGroup.length === 0)) {
+        newMonitor.responsibleAlt = responsible;
+    }
+
+    if (CompanyId) {
+        const foundCompany = await Company.find({
+            _id: { $in: CompanyId },
+        });
+        newMonitor.company = foundCompany.map((company) => company._id);
+    }
+
+    const saveMonitor = await newMonitor.save();
+
+    if (!saveMonitor) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Monitor not Saved", body: "" });
+    }
+
+    return res
+        .status(200)
+        .json({ status: "200", message: "Monitor Saved" })
+};
+
+
+// Getting all Monitors/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllMonitors = async (req, res) => {
+
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+    const monitors = await Monitors.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+        .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+        .populate({ path: "modifiedBy", select: "username" })
+    res.json({ status: "200", message: "Cellphones Loaded", body: monitors });
+};
+
+//update monitor data//////////////////////////////////////////////////////////////////////////////////////
+const updateMonitor = async (req, res) => {
+    const { monitorId } = req.params;
+    let responsible;
+    let responsibleAlt = "";
+    let responsibleGroup;
+    let modifiedBy;
+
+    const {
+        monitorName,
+        location,
+        marca,
+        model,
+        serialNo,
+        status,
+        modified
+    } = req.body;
+
+    if (req.body.modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: req.body.modifiedBy },
+        });
+        modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (req.body.responsible) {
+        const foundEmployee = await Employees.find({
+            numberEmployee: { $in: req.body.responsible },
+        });
+        responsible = foundEmployee.map((employee) => employee._id);
+    }
+
+    if (responsible.length === 0) {
+        const foundAccounts = await GenericAccount.find({
+            groupName: { $in: req.body.responsible },
+        });
+        responsibleGroup = foundAccounts.map((account) => account._id);
+    }
+
+    if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
+        responsibleAlt = req.body.responsible;
+    }
+
+    const updatedMonitorDevice = await Monitors.updateOne(
+        { _id: monitorId },
+        {
+            $set: {
+                monitorName,
+                location,
+                marca,
+                model,
+                serialNo,
+                status,
+                responsible,
+                responsibleAlt,
+                responsibleGroup,
+                modifiedBy,
+                modified
+            },
+        }
+    );
+
+    if (!updatedMonitorDevice) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Monitor not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Monitor Updated ",
+        body: updatedMonitorDevice,
+    });
+};
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -1166,5 +1342,8 @@ module.exports = {
     getAllAccounts,
     updateAccounts,
     uploadAccountsLetter,
-    getDirectory
+    getDirectory,
+    createNewMonitor,
+    getAllMonitors,
+    updateMonitor
 };
