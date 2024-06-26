@@ -19,7 +19,10 @@ const {
     getAllAccounts,
     updateAccounts,
     uploadAccountsLetter,
-    getDirectory
+    getDirectory,
+    createNewMonitor,
+    getAllMonitors,
+    updateMonitor
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
@@ -195,6 +198,33 @@ router.put(
 router.get(
     "/Directory/:CompanyId",
     getDirectory
+);
+
+// Route to save new monitor///
+router.post(
+    "/NewMonitor/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    createNewMonitor
+);
+
+// Route to get All the Monitors///
+router.get(
+    "/Monitors/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    getAllMonitors
+);
+
+// Route to update cellphone///
+router.put(
+    "/UpdateMonitor/:monitorId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    updateMonitor
 );
 
 module.exports = router;
