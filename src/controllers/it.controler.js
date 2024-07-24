@@ -1137,6 +1137,7 @@ const getDirectory = async (req, res) => {
 
     const Directory = await Accounts.find({
         company: { $in: CompanyId },
+        status: { $in: "Active" },
         email: { $ne: "" }
     }).sort({ email: 1 })
         .select("ext email")
