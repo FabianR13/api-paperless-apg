@@ -81,7 +81,7 @@ router.post(
     "/TrainingEvaluationsFiltered/:CompanyId",
     verifyToken,
     isAutorized,
-    isTrainingT,
+    isTrainingR,
     getEvaluationsFiltered
   );
 
