@@ -1,8 +1,8 @@
 const Customer = require("../../../models/General/Customer.js");
 const Parts = require("../../../models/Quality/Parts.js");
-const DeviationRequest = require("../../../models/General/DeviationRequest.js");
+const DeviationRequestTemp = require("../../../models/General/DeviationRequestTemp.js");
 const User = require("../../../models/User.js");
-const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessment.js");
+const DeviationRiskAssessmentTemp = require("../../../models/General/DeviationRiskAssessmentTemp.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
@@ -55,7 +55,7 @@ const createDeviationRequest = async (req, res, next) => {
     deviationRisk,
     company,
   } = req.body;
-  const newDeviationReq = new DeviationRequest({
+  const newDeviationReq = new DeviationRequestTemp({
     deviationDate,
     deviationType,
     supplier,
@@ -119,7 +119,7 @@ const createDeviationRequest = async (req, res, next) => {
   const date = new Date();
   const yearactual = date.getFullYear()
 
-  const foundDeviations = await DeviationRequest.find();
+  const foundDeviations = await DeviationRequestTemp.find();
 
   foundDeviations.map((deviationC) => {
     if (deviationC.deviationDate.getFullYear() === yearactual) {
@@ -130,7 +130,7 @@ const createDeviationRequest = async (req, res, next) => {
   // const count = await DeviationRequest.estimatedDocumentCount();
 
   if (count > 1) {
-    const deviations = await DeviationRequest.find().sort({ consecutive: -1 }).limit(1);
+    const deviations = await DeviationRequestTemp.find().sort({ consecutive: -1 }).limit(1);
     newDeviationReq.consecutive = deviations[0].consecutive + 1
   } else {
     newDeviationReq.consecutive = 1
@@ -160,14 +160,14 @@ const getDeviationRequest = async (req, res) => {
   if (!company) {
     return;
   }
-  const deviations = await DeviationRequest.find({
+  const deviations = await DeviationRequestTemp.find({
     company: { $in: CompanyId },
   }).sort({ consecutive: -1 }).populate({ path: 'customer' }).populate({ path: 'requestBy' }).populate({ path: 'requestBy', populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } }).populate({ path: 'parts' });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
 // Getting deviation by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDeviationById = async (req, res) => {
-  const foundDeviation = await DeviationRequest.findById(req.params.deviationId)
+  const foundDeviation = await DeviationRequestTemp.findById(req.params.deviationId)
     .populate({ path: 'customer' })
     .populate({ path: 'requestBy' })
     .populate({ path: 'requestBy', populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
@@ -195,7 +195,7 @@ const updateDeviation = async (req, res) => {
     dateSeniorSign,
     seniorSignStatus,
   } = req.body;
-  const updatedDeviation = await DeviationRequest.updateOne(
+  const updatedDeviation = await DeviationRequestTemp.updateOne(
     { _id: deviationId },
     {
       $set: {
@@ -289,7 +289,7 @@ const updateDeviationReq = async (req, res) => {
     customerSignStatus,
   } = newDeviation;
 
-  const updatedDeviationRequest = await DeviationRequest.updateOne(
+  const updatedDeviationRequest = await DeviationRequestTemp.updateOne(
     { _id: deviationId },
     {
       $set: {
@@ -337,13 +337,13 @@ const updateRiskStatus = async (req, res) => {
   const { deviationId } = req.params;
   const update = [];
   if (newDeviationNumber) {
-    const foundDevRisk = await DeviationRiskAssessment.find({
+    const foundDevRisk = await DeviationRiskAssessmentTemp.find({
       deviationNumber: { $in: newDeviationNumber },
     });
     update.deviationRisk = foundDevRisk.map((devRisk) => devRisk._id);
   }
   const deviationRisk = update.deviationRisk.toString();
-  const updatedDeviationRequest = await DeviationRequest.updateOne(
+  const updatedDeviationRequest = await DeviationRequestTemp.updateOne(
     { _id: deviationId },
     {
       $set: {
@@ -370,7 +370,7 @@ const updateDeviationStatus = async (req, res) => {
   } = req.body;
 
   //Getting Previous Images
-  const foundPrevDeviation = await DeviationRequest.findById(deviationId);
+  const foundPrevDeviation = await DeviationRequestTemp.findById(deviationId);
   // Deleting Images from Folder
   const prevClosingFile = foundPrevDeviation.deviationStatus;
   // Validating if there are Images in the Field
@@ -394,7 +394,7 @@ const updateDeviationStatus = async (req, res) => {
   }
 
   // Setting the Fields Empty in the DB
-  const updateClearFileDeviation = await DeviationRequest.updateOne(
+  const updateClearFileDeviation = await DeviationRequestTemp.updateOne(
     { _id: deviationId },
     {
       $set: {
@@ -419,7 +419,7 @@ const updateDeviationStatus = async (req, res) => {
   }
 
   // Updating the new Img Names in the fields from the DB
-  const updateFileDeviation = await DeviationRequest.updateOne(
+  const updateFileDeviation = await DeviationRequestTemp.updateOne(
     { _id: deviationId },
     {
       $set: {
@@ -441,7 +441,7 @@ const updateDeviationStatus = async (req, res) => {
 
 
   // Updating the deviation risk assessment
-  const updateDeviationRiskClose = await DeviationRiskAssessment.updateOne(
+  const updateDeviationRiskClose = await DeviationRiskAssessmentTemp.updateOne(
     { _id: deviationRiskID },
     {
       $set: {
@@ -460,7 +460,7 @@ const updateDeviationStatus = async (req, res) => {
     });
   }
 
-  const foundDeviationNew = await DeviationRequest.findById(deviationId);
+  const foundDeviationNew = await DeviationRequestTemp.findById(deviationId);
 
   res.status(200).json({
     status: "200",

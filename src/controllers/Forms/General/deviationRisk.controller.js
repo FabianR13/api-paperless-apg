@@ -1,4 +1,4 @@
-const DeviationRiskAssesment = require("../../../models/General/DeviationRiskAssessment.js");
+const DeviationRiskAssesmentTemp = require("../../../models/General/DeviationRiskAssessmentTemp.js");
 const Company = require("../../../models/Company.js");
 
 //create new devition risk//////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ const createDeviationRisk = async (req, res,next) => {
     approvedByDate,
     company,
   } = req.body;
-  const deviationriskassessment = new DeviationRiskAssesment({
+  const deviationriskassessment = new DeviationRiskAssesmentTemp({
     deviationNumber,
     reason,
     consequence,
@@ -210,7 +210,7 @@ const updateDeviationRisk = async (req, res) => {
     preventiveDateFollow4,
   } = req.body;
 
-  const updatedDeviationRisk = await DeviationRiskAssesment.updateOne(
+  const updatedDeviationRisk = await DeviationRiskAssesmentTemp.updateOne(
     { _id: deviationRiskId },
     {
       $set: {
@@ -296,7 +296,7 @@ const updateDeviationRiskSignature = async (req, res) => {
     seniorSignStatus,
     dateSeniorSign,
   } = req.body;
-  const updatedDeviationRisk = await DeviationRiskAssesment.updateOne(
+  const updatedDeviationRisk = await DeviationRiskAssesmentTemp.updateOne(
     { _id: deviationRiskId },
     {
       $set: {
@@ -337,7 +337,7 @@ const updateDeviationRiskSignature = async (req, res) => {
 
 // Getting deviation risk by Id ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDeviationRiskById = async (req, res) => {
-  const foundDeviationRisk = await DeviationRiskAssesment.findById(req.params.deviationRiskId);
+  const foundDeviationRisk = await DeviationRiskAssesmentTemp.findById(req.params.deviationRiskId);
   if (!foundDeviationRisk) {
     res
       .status(403)
