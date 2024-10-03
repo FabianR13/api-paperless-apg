@@ -41,6 +41,9 @@ const deviationRequestSchema = new mongoose.Schema(
         applyTo: {
             type: String,
         },
+        machineNo: {
+            type: String,
+        },
         sectionTwo: {
             type: String,
         },

@@ -32,6 +32,7 @@ const createDeviationRequest = async (req, res, next) => {
     implementationTime,
     parts,
     applyTo,
+    machineNo,
     sectionTwo,
     termDevRequest,
     quantity,
@@ -63,6 +64,7 @@ const createDeviationRequest = async (req, res, next) => {
     implementationDate,
     implementationTime,
     applyTo,
+    machineNo,
     sectionTwo,
     termDevRequest,
     quantity,
@@ -235,6 +237,7 @@ const updateDeviationReq = async (req, res) => {
   newDeviation.implementationDate = req.body.implementationDate;
   newDeviation.implementationTime = req.body.implementationTime;
   newDeviation.applyTo = req.body.applyTo;
+  newDeviation.machineNo = req.body.machineNo;
   newDeviation.sectionTwo = req.body.sectionTwo;
   newDeviation.termDevRequest = req.body.termDevRequest;
   newDeviation.quantity = req.body.quantity;
@@ -273,6 +276,7 @@ const updateDeviationReq = async (req, res) => {
     implementationTime,
     parts,
     applyTo,
+    machineNo,
     sectionTwo,
     termDevRequest,
     quantity,
@@ -301,6 +305,7 @@ const updateDeviationReq = async (req, res) => {
         implementationTime,
         parts,
         applyTo,
+        machineNo,
         sectionTwo,
         termDevRequest,
         quantity,
