@@ -3,10 +3,18 @@ const morgan = require("morgan");
 const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const app = express().use("*", cors());
+
 const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
 const  mongoose = require("mongoose");
+
+const corsOptions = {
+  origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com'], // Lista de dominios permitidos
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
+  credentials: true, // Habilitar envío de cookies
+};
+const app = express().use("*", cors(corsOptions));
+//app.use(cors(corsOptions));
 
 /////Metodos initial setup/////
 const {
@@ -39,6 +47,7 @@ const PersonalRequisition = require("./routes/General/personalRequisition.routes
 const whatsappRoutes = require("./routes/whatsapp.routes.js");
 const itRoutes = require("./routes/it.routes.js");
 const encuestasRoutes = require("./routes/encuestas.routes.js");
+const processRoutes = require("./routes/Setup/process.routes.js")
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -96,6 +105,7 @@ app.use("/api/personalrequisition", PersonalRequisition);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/it",itRoutes);
 app.use("/api/encuestas",encuestasRoutes);
+app.use("/api/process",processRoutes);
 
 //setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
