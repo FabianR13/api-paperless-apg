@@ -3,7 +3,7 @@ const morgan = require("morgan");
 const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-
+const app = express().use("*", cors());
 const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
 const  mongoose = require("mongoose");
@@ -13,8 +13,8 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
   credentials: true, // Habilitar envío de cookies
 };
-const app = express().use("*", cors(corsOptions));
-//app.use(cors(corsOptions));
+
+app.use(cors(corsOptions));
 
 /////Metodos initial setup/////
 const {
