@@ -712,8 +712,8 @@ const updateCellphone = async (req, res) => {
     const { cellphoneId } = req.params;
     let responsible;
     let responsibleAlt = "";
-    let number = [];
-    let responsibleGroup;
+    let number;
+    let responsibleGroup="";
     let modifiedBy;
 
     const {
