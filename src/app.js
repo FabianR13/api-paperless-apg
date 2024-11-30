@@ -3,18 +3,19 @@ const morgan = require("morgan");
 const pkg = require("../package.json");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const app = express().use("*", cors());
+const app = express();
 const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
 const  mongoose = require("mongoose");
 
-const corsOptions = {
+
+app.use(cors());
+app.use(cors({
   origin: ['https://paperless-apg.s3-website-us-east-1.amazonaws.com', 'https://localhost:3000'], // Lista de dominios permitidos
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
   credentials: true, // Habilitar envío de cookies
-};
+}));
 
-app.use(cors(corsOptions));
 
 /////Metodos initial setup/////
 const {
