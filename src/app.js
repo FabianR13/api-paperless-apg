@@ -11,7 +11,7 @@ const  mongoose = require("mongoose");
 
 app.use(cors());
 app.use(cors({
-  origin: ['https://paperless-apg.s3-website-us-east-1.amazonaws.com', 'https://localhost:3000'], // Lista de dominios permitidos
+  origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com', 'http://localhost:3000'], // Lista de dominios permitidos
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
   credentials: true, // Habilitar envío de cookies
 }));
