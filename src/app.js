@@ -22,6 +22,16 @@ app.get('/api/data', (req, res) => {
     res.json({ message: 'CORS configurado correctamente' });
 });
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://paperless-apg.s3-website-us-east-1.amazonaws.com');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+
+
 /////Metodos initial setup/////
 const {
   createCompanys,
