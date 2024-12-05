@@ -8,6 +8,21 @@ const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
 const  mongoose = require("mongoose");
 
+// Configuración básica (permitir todas las solicitudes)
+app.use(cors());
+
+// Configuración avanzada (especificar orígenes permitidos)
+const corsOptions = {
+    origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com','http://localhost:3000'], // Cambia a tu dominio frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+    credentials: true // Permitir cookies
+};
+app.use(cors(corsOptions));
+
+app.get('/api/data', (req, res) => {
+    res.json({ message: 'CORS configurado correctamente' });
+});
+
 /////Metodos initial setup/////
 const {
   createCompanys,
