@@ -13,7 +13,7 @@ app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
 const corsOptions = {
-    origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com','http://localhost:3000'], // Cambia a tu dominio frontend
+    origin: ['http://localhost:3000'], // Cambia a tu dominio frontend
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
 };
 app.use(cors(corsOptions));
@@ -23,14 +23,14 @@ app.get('/api/data', (req, res) => {
 });
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://paperless-apg.s3-website-us-east-1.amazonaws.com');
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');
   next();
 });
 
-
+app.options('*', cors(corsOptions));
 
 /////Metodos initial setup/////
 const {
@@ -93,6 +93,10 @@ const { autoSendMessage, autoSendEmail } = require("./controllers/whatsapp.contr
 //Agregar camposn a empleados//
 // updateEmployeesData();
 
+app.get("/api/cors", (req, res) => {
+  res.status(200).json({ message: "Esta entrando" });
+});
+
 app.set("pkg", pkg);
 app.use(morgan("dev"));
 app.use(express.json({ limit: '25mb' }));
@@ -130,9 +134,7 @@ const date = new Date();
     const horaActual = date.getHours()
 console.log(horaActual)
 
-app.get("/api/cors", (req, res) => {
-  res.status(200).json({ message: "Esta entrando" });
-});
+
 
 module.exports = app;
 
