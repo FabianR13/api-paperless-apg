@@ -12,28 +12,28 @@ const  mongoose = require("mongoose");
 app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
-const corsOptions = {
-    origin: ['*'], // Dominio AWS
+//const corsOptions = {
+   // origin: ['*'], // Dominio AWS
     //origin: ['http://localhost:3000'], // Dominio Local
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-};
-app.use(cors(corsOptions));
+   //// methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+//};
+//app.use(cors(corsOptions));
 
-app.get('/api/data', (req, res) => {
-    res.json({ message: 'CORS configurado correctamente' });
-});
+//app.get('/api/data', (req, res) => {
+   // res.json({ message: 'CORS configurado correctamente' });
+//});
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  res.header('Access-Control-Allow-Origin', origin);
-  //res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
-});
+//app.use((req, res, next) => {
+  //const origin = req.headers.origin;
+ // res.header('Access-Control-Allow-Origin', origin);
+  //res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+  //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  //res.header('Access-Control-Allow-Credentials', 'true');
+ // next();
+//});
 
-app.options('*', cors(corsOptions));
+//app.options('*', cors(corsOptions));
 
 /////Metodos initial setup/////
 const {
