@@ -330,7 +330,8 @@ const getDashboardCards = async (req, res) => {
 };
 // Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getUsers = async (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  res.header('Access-Control-Allow-Origin', origin);
   //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -351,7 +352,8 @@ const getUsers = async (req, res) => {
 };
 // Getting all Roles//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getRoles = async (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  res.header('Access-Control-Allow-Origin', origin);
   //res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
