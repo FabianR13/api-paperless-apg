@@ -13,8 +13,8 @@ app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
 const corsOptions = {
-    origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com'], // Dominio AWS
-   // origin: ['http://localhost:3000'], // Dominio Local
+    origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com/'], // Dominio AWS
+    //origin: ['http://localhost:3000'], // Dominio Local
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
 };
 app.use(cors(corsOptions));
@@ -24,7 +24,7 @@ app.get('/api/data', (req, res) => {
 });
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://paperless-apg.s3-website-us-east-1.amazonaws.com');
+  res.header('Access-Control-Allow-Origin', 'http://paperless-apg.s3-website-us-east-1.amazonaws.com/');
   //res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
