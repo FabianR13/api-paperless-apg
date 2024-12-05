@@ -15,7 +15,6 @@ app.use(cors());
 const corsOptions = {
     origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com','http://localhost:3000'], // Cambia a tu dominio frontend
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-    credentials: true // Permitir cookies
 };
 app.use(cors(corsOptions));
 
