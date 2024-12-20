@@ -125,14 +125,13 @@ const getEvaluations = async (req, res) => {
 
     const evaluations = await TrainingEvaluation.find({
         company: { $in: CompanyId },
-    }).populate({ path: 'numberEmployee' })
+    }).sort({ createdAt: -1 })
+        .limit(limit)
+        .populate({ path: 'numberEmployee' })
         .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
         .populate({ path: 'qualifiedBy' })
-        .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
-        .limit(limit)
-        .sort({ createdAt: -1 });
+        .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } });
     res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
-
 };
 
 // Getting Evaluation by Id////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -304,7 +303,7 @@ const getEvaluationsFiltered = async (req, res) => {
     if (operator) {
         const foundEmployee = await Employees.find({
             numberEmployee: { $in: operator },
-        }); 
+        });
         options["numberEmployee"] = foundEmployee.map((employee) => employee._id);
     }
     // Filter Company
@@ -313,11 +312,11 @@ const getEvaluationsFiltered = async (req, res) => {
     }
 
     const trainingEvaluationsF = await TrainingEvaluation.find(options)
-    .populate({ path: 'numberEmployee' })
-    .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
-    .populate({ path: 'qualifiedBy' })
-    .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
-    .sort({ date: -1 });
+        .populate({ path: 'numberEmployee' })
+        .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+        .populate({ path: 'qualifiedBy' })
+        .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+        .sort({ date: -1 });
     res.json({ status: "200", message: "Evaluations Loaded New", body: trainingEvaluationsF });
 };
 

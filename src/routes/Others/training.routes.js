@@ -26,7 +26,7 @@ router.post(
 
 ///Route to get All the evaluations count///
 router.get(
-    "/TrainingEvaluations/:CompanyId",
+    "/CountTrainingEvaluations/:CompanyId",
     countEvaluations,
 );
 
