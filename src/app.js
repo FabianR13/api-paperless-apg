@@ -13,15 +13,17 @@ app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
 const corsOptions = {
-    origin: ['https://www.axiompaperless.com'], // Dominio AWS
+    origin: 'https://www.axiompaperless.com', // Dominio AWS
     //origin: ['http://localhost:3000'], // Dominio Local
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+    allowedHeaders: 'Content-Type,Authorization',// Encabezados permitidos
+
 };
 app.use(cors(corsOptions));
 
-//app.get('/api/data', (req, res) => {
-   // res.json({ message: 'CORS configurado correctamente' });
-//});
+app.get('/', (req, res) => {
+  res.send('CORS configurado correctamente.');
+});
 
 //app.use((req, res, next) => {
   //const origin = req.headers.origin;
