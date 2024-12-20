@@ -332,8 +332,8 @@ const getDashboardCards = async (req, res) => {
 const getUsers = async (req, res) => {
   const origin = req.headers.origin;
   console.log(origin)
-  res.header('Access-Control-Allow-Origin', origin);
-  //res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+  //res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Origin', 'https://www.axiompaperless.com');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -356,8 +356,8 @@ const getUsers = async (req, res) => {
 const getRoles = async (req, res) => {
   const origin = req.headers.origin;
   console.log(origin)
-  res.header('Access-Control-Allow-Origin', origin);
-  //res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+  //res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Origin', 'https://www.axiompaperless.com');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');

@@ -12,12 +12,12 @@ const  mongoose = require("mongoose");
 app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
-//const corsOptions = {
-   // origin: ['*'], // Dominio AWS
+const corsOptions = {
+    origin: ['https://www.axiompaperless.com'], // Dominio AWS
     //origin: ['http://localhost:3000'], // Dominio Local
-   //// methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-//};
-//app.use(cors(corsOptions));
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+};
+app.use(cors(corsOptions));
 
 //app.get('/api/data', (req, res) => {
    // res.json({ message: 'CORS configurado correctamente' });
