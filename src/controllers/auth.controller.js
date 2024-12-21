@@ -330,7 +330,7 @@ const getDashboardCards = async (req, res) => {
 };
 // Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getUsers = async (req, res) => {
- // const origin = req.headers.origin;
+ const origin = req.headers.origin;
   console.log(origin)
   //res.header('Access-Control-Allow-Origin', origin);
   //res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
@@ -354,7 +354,7 @@ const getUsers = async (req, res) => {
 };
 // Getting all Roles//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getRoles = async (req, res) => {
-  //const origin = req.headers.origin;
+  const origin = req.headers.origin;
   console.log(origin)
   //res.header('Access-Control-Allow-Origin', origin);
   //res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
