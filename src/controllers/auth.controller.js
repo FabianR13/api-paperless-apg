@@ -330,13 +330,13 @@ const getDashboardCards = async (req, res) => {
 };
 // Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getUsers = async (req, res) => {
-  const origin = req.headers.origin;
+ // const origin = req.headers.origin;
   console.log(origin)
   //res.header('Access-Control-Allow-Origin', origin);
-  res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  //res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
+  //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  //res.header('Access-Control-Allow-Credentials', 'true');
   const { CompanyId } = req.params
   if (CompanyId.length !== 24) {
     return;
@@ -354,13 +354,13 @@ const getUsers = async (req, res) => {
 };
 // Getting all Roles//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getRoles = async (req, res) => {
-  const origin = req.headers.origin;
+  //const origin = req.headers.origin;
   console.log(origin)
   //res.header('Access-Control-Allow-Origin', origin);
-  res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  //res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
+  //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  //res.header('Access-Control-Allow-Credentials', 'true');
   const roles = await Role.find();
   res.json({ status: "200", message: "Roles Loaded", body: roles });
 };
