@@ -13,7 +13,7 @@ app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || '*', // Dominio AWS
+  origin: 'https://axiompaperless.com', // Dominio AWS
     //origin: ['http://localhost:3000'], // Dominio Local
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
     allowedHeaders: 'Content-Type,Authorization',// Encabezados permitidos
