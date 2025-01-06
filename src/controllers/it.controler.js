@@ -713,7 +713,7 @@ const updateCellphone = async (req, res) => {
     let responsible;
     let responsibleAlt = "";
     let number;
-    let responsibleGroup="";
+    let responsibleGroup;
     let modifiedBy;
 
     const {
