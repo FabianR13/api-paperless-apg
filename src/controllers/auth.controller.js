@@ -347,6 +347,8 @@ const getUsers = async (req, res) => {
   if (!company) {
     return;
   }
+  console.log("casi final")
+
   const users = await User.find({
     company: { $in: CompanyId },
   }).populate({ path: 'employee', populate: [{ path: "department" }, { path: "position" }] }).populate({ path: "roles" }).populate({ path: "rolesAxiom" }).populate({ path: "companyAccess" });
