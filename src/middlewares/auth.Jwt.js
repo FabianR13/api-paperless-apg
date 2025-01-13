@@ -8,6 +8,7 @@ dotenv.config({ path: '../.env' });
 
 ///Verify the token provided in the Header/////////////////////////////////////////////////////////////////////////
 const verifyToken = async (req, res, next) => {
+  console.log("token")
   try {
     const token = req.headers["x-access-token"];
     if (!token)
