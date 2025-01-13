@@ -10,9 +10,7 @@ const  mongoose = require("mongoose");
 const sslRedirect = require('heroku-ssl-redirect');
 
 // Configuración básica (permitir todas las solicitudes)
-app.use(sslRedirect());
 
-app.get('/', (req, res) => res.send('¡SSL Habilitado!'));
 
 app.use(cors());
 
