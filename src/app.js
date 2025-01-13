@@ -7,8 +7,13 @@ const app = express().use("*", cors());
 const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
 const  mongoose = require("mongoose");
+const sslRedirect = require('heroku-ssl-redirect');
 
 // Configuración básica (permitir todas las solicitudes)
+app.use(sslRedirect());
+
+app.get('/', (req, res) => res.send('¡SSL Habilitado!'));
+
 app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
