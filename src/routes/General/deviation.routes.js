@@ -82,7 +82,7 @@ router.put(
 );
 
 //delete deviation///
-router.put(
+router.delete(
   "/DeleteDeviation/:deviationId/:CompanyId",
   verifyToken,
   isAutorized,
