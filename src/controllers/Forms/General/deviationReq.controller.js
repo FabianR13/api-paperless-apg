@@ -23,6 +23,7 @@ const s3 = new AWS.S3();
 //create deviation request//////////////////////////////////////////////////////////////////////////////////////
 const createDeviationRequest = async (req, res, next) => {
   const {
+    deviationNumber,
     deviationDate,
     deviationType,
     supplier,
@@ -57,6 +58,7 @@ const createDeviationRequest = async (req, res, next) => {
     company,
   } = req.body;
   const newDeviationReq = new DeviationRequest({
+    deviationNumber,
     deviationDate,
     deviationType,
     supplier,
@@ -117,19 +119,19 @@ const createDeviationRequest = async (req, res, next) => {
       .json({ message: "Deviation not saved", status: "403" });
   }
 
-  var count = 1
-  const date = new Date();
-  const yearactual = date.getFullYear()
+  //var count = 1
+  //const date = new Date();
+  //const yearactual = date.getFullYear()
 
-  const foundDeviations = await DeviationRequest.find();
+  //const foundDeviations = await DeviationRequest.find();
 
-  foundDeviations.map((deviationC) => {
-    if (deviationC.deviationDate.getFullYear() === yearactual) {
-      count = count + 1
-    }
-  })
+  //foundDeviations.map((deviationC) => {
+  //  if (deviationC.deviationDate.getFullYear() === yearactual) {
+  //    count = count + 1
+  //  }
+  //})
 
-  // const count = await DeviationRequest.estimatedDocumentCount();
+  const count = await DeviationRequest.estimatedDocumentCount();
 
   if (count > 1) {
     const deviations = await DeviationRequest.find().sort({ consecutive: -1 }).limit(1);
@@ -139,7 +141,7 @@ const createDeviationRequest = async (req, res, next) => {
   }
 
   // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${Number(newDeviationReq.consecutive)}`.padStart(3, "0")`
-  newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${count}`.padStart(3, "0")
+ // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${count}`.padStart(3, "0")
 
   const savedDeviationRequest = await newDeviationReq.save();
   if (!savedDeviationRequest) {
@@ -166,8 +168,7 @@ const getDeviationRequest = async (req, res) => {
     company: { $in: CompanyId },
   }).sort({ consecutive: -1 })
     .populate({ path: 'customer' })
-    .populate({ path: 'requestBy' })
-    .populate({ path: 'requestBy', populate: { path: "signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
+    .populate({ path: 'requestBy', populate: { path: "signature" , model: "Signature"}, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
     .populate({ path: 'parts' });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
@@ -175,8 +176,7 @@ const getDeviationRequest = async (req, res) => {
 const getDeviationById = async (req, res) => {
   const foundDeviation = await DeviationRequest.findById(req.params.deviationId)
     .populate({ path: 'customer' })
-    .populate({ path: 'requestBy' })
-    .populate({ path: 'requestBy', populate: { path: "signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
+    .populate({ path: 'requestBy', populate: { path: "signature", model: "Signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
     .populate({ path: 'parts' });
 
 
@@ -479,6 +479,68 @@ const updateDeviationStatus = async (req, res) => {
 };
 
 
+
+//close deviation////////////////////////////////////////////////////////////////////////////////////////////////////////
+const deleteDeviation = async (req, res) => {
+  const { deviationId } = req.params;
+  const {
+    deviationRiskID,
+  } = req.body;
+
+  //Getting Previous Images
+  const foundPrevDeviation = await DeviationRequest.findById(deviationId);
+  // Deleting Images from Folder
+  const prevClosingFile = foundPrevDeviation.deviationStatus;
+  // Validating if there are Images in the Field
+  if (prevClosingFile !== "Open") {
+    // Delete File from Folder
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME + "/Uploads/DeviationClosingFile",
+      Key: prevClosingFile
+    };
+    try {
+      s3.deleteObject(params, function (err, data) {
+        if (err) console.log(err);
+      });
+    } catch (error) {
+      res.status(403).json({
+        status: "403",
+        message: error,
+        body: "",
+      });
+    }
+  }
+
+  // delete the deviation risk assessment
+
+  DeviationRiskAssessment.findById(deviationRiskID, function (err, deviationRisk) {
+    if (err) {
+      res.status(503).json({
+        status: "403",
+        message: err,
+      });
+      return;
+    }
+    deviationRisk.remove();
+  });
+
+ DeviationRequest.findById(deviationId, function (err, deviation) {
+     if (err) {
+       res.status(503).json({
+         status: "403",
+         message: err,
+       });
+       return;
+     }
+     deviation.remove(
+       res.status(200).json({
+         status: "200",
+         message: 'The deviation has been deleted',
+       }));
+   });
+};
+
+
 module.exports = {
   createDeviationRequest,
   getDeviationRequest,
@@ -486,5 +548,6 @@ module.exports = {
   updateDeviation,
   updateDeviationReq,
   updateRiskStatus,
-  updateDeviationStatus
+  updateDeviationStatus,
+  deleteDeviation
 };
