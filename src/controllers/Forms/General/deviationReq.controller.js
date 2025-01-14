@@ -487,6 +487,8 @@ const deleteDeviation = async (req, res) => {
     deviationRiskID,
   } = req.body;
 
+  console.log("deviation")
+
   //Getting Previous Images
   const foundPrevDeviation = await DeviationRequest.findById(deviationId);
   // Deleting Images from Folder
@@ -503,6 +505,7 @@ const deleteDeviation = async (req, res) => {
         if (err) console.log(err);
       });
     } catch (error) {
+      console.log("error")
       res.status(403).json({
         status: "403",
         message: error,
