@@ -487,7 +487,7 @@ const deleteDeviation = async (req, res) => {
     deviationRiskID,
   } = req.body;
 
-  console.log("deviation")
+  //console.log("deviation")
 
   //Getting Previous Images
   const foundPrevDeviation = await DeviationRequest.findById(deviationId);
@@ -505,7 +505,7 @@ const deleteDeviation = async (req, res) => {
         if (err) console.log(err);
       });
     } catch (error) {
-      console.log("error")
+      //console.log("error")
       res.status(403).json({
         status: "403",
         message: error,
@@ -515,7 +515,7 @@ const deleteDeviation = async (req, res) => {
   }
 
   // delete the deviation risk assessment
-  console.log(deviationId)
+  console.log(deviationRiskID)
   if (deviationRiskID !== "") {
     DeviationRiskAssessment.findById(deviationRiskID, function (err, deviationRisk) {
       if (err) {
