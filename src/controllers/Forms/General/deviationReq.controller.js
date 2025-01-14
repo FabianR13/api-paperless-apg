@@ -164,7 +164,11 @@ const getDeviationRequest = async (req, res) => {
   }
   const deviations = await DeviationRequest.find({
     company: { $in: CompanyId },
-  }).sort({ consecutive: -1 }).populate({ path: 'customer' }).populate({ path: 'requestBy' }).populate({ path: 'requestBy', populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } }).populate({ path: 'parts' });
+  }).sort({ consecutive: -1 })
+    .populate({ path: 'customer' })
+    .populate({ path: 'requestBy' })
+    .populate({ path: 'requestBy', populate: { path: "signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
+    .populate({ path: 'parts' });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
 // Getting deviation by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,7 +176,7 @@ const getDeviationById = async (req, res) => {
   const foundDeviation = await DeviationRequest.findById(req.params.deviationId)
     .populate({ path: 'customer' })
     .populate({ path: 'requestBy' })
-    .populate({ path: 'requestBy', populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
+    .populate({ path: 'requestBy', populate: { path: "signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
     .populate({ path: 'parts' });
 
 
