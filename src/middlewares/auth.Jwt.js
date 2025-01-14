@@ -8,7 +8,7 @@ dotenv.config({ path: '../.env' });
 
 ///Verify the token provided in the Header/////////////////////////////////////////////////////////////////////////
 const verifyToken = async (req, res, next) => {
- // console.log("token")
+  // console.log("token")
   try {
     const token = req.headers["x-access-token"];
     if (!token)
@@ -21,13 +21,15 @@ const verifyToken = async (req, res, next) => {
 
     const user = await User.findById(req.userId, { password: 0 });
 
+    console.log(user.username)
+
     if (!user)
       return res.status(404).json({ message: "User not found", status: "404" });
 
     next();
   } catch (error) {
     return res.status(401).json({ message: "nO Unauthorized", status: "401" });
-    
+
   }
 };
 //Verify Moderador Role (moderador role)////////////////////////////////////////////////////////////////////////////
