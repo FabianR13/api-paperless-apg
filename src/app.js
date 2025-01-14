@@ -140,7 +140,7 @@ setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 
 const date = new Date();
     const horaActual = date.getHours()
-console.log(horaActual)
+//console.log(horaActual)
 
 
 

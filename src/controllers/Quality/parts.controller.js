@@ -24,8 +24,8 @@ const createPart = async (req, res) => {
     mould,
     status,
   });
-  console.log(req.params)
-  console.log(CompanyId)
+ // console.log(req.params)
+ // console.log(CompanyId)
   if (customer) {
     const foundCustomers = await Customer.find({
       name: { $in: customer },

@@ -233,7 +233,7 @@ const uploadLaptopLetter = async (req, res) => {
     const foundPrevLaptop = await Laptops.findById(laptopId);
     // Deleting Images from Folder
     const prevLaptopLetter = foundPrevLaptop.responsibeLetter;
-    console.log(prevLaptopLetter)
+    //console.log(prevLaptopLetter)
     // Validating if there are Images in the Field
     if (prevLaptopLetter !== "") {
         // Delete File from Folder
