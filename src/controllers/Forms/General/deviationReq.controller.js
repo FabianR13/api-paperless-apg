@@ -483,9 +483,7 @@ const updateDeviationStatus = async (req, res) => {
 //close deviation////////////////////////////////////////////////////////////////////////////////////////////////////////
 const deleteDeviation = async (req, res) => {
   const { deviationId } = req.params;
-  const {
-    deviationRiskID,
-  } = req.body;
+  
 
   //console.log("deviation")
 
@@ -513,6 +511,8 @@ const deleteDeviation = async (req, res) => {
       });
     }
   }
+
+  const deviationRiskID = foundPrevDeviation.deviationRisk
 
   // delete the deviation risk assessment
   console.log(deviationRiskID)
