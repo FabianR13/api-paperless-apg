@@ -141,7 +141,7 @@ const createDeviationRequest = async (req, res, next) => {
   }
 
   // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${Number(newDeviationReq.consecutive)}`.padStart(3, "0")`
- // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${count}`.padStart(3, "0")
+  // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${count}`.padStart(3, "0")
 
   const savedDeviationRequest = await newDeviationReq.save();
   if (!savedDeviationRequest) {
@@ -168,7 +168,7 @@ const getDeviationRequest = async (req, res) => {
     company: { $in: CompanyId },
   }).sort({ consecutive: -1 })
     .populate({ path: 'customer' })
-    .populate({ path: 'requestBy', populate: { path: "signature" , model: "Signature"}, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
+    .populate({ path: 'requestBy', populate: { path: "signature", model: "Signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
     .populate({ path: 'parts' });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
@@ -512,8 +512,20 @@ const deleteDeviation = async (req, res) => {
   }
 
   // delete the deviation risk assessment
-
-  DeviationRiskAssessment.findById(deviationRiskID, function (err, deviationRisk) {
+  console.log(deviationId)
+  if (deviationRiskID !== "") {
+    DeviationRiskAssessment.findById(deviationRiskID, function (err, deviationRisk) {
+      if (err) {
+        res.status(503).json({
+          status: "403",
+          message: err,
+        });
+        return;
+      }
+      deviationRisk.remove();
+    });
+  }
+  DeviationRequest.findById(deviationId, function (err, deviation) {
     if (err) {
       res.status(503).json({
         status: "403",
@@ -521,23 +533,12 @@ const deleteDeviation = async (req, res) => {
       });
       return;
     }
-    deviationRisk.remove();
+    deviation.remove(
+      res.status(200).json({
+        status: "200",
+        message: 'The deviation has been deleted',
+      }));
   });
-
- DeviationRequest.findById(deviationId, function (err, deviation) {
-     if (err) {
-       res.status(503).json({
-         status: "403",
-         message: err,
-       });
-       return;
-     }
-     deviation.remove(
-       res.status(200).json({
-         status: "200",
-         message: 'The deviation has been deleted',
-       }));
-   });
 };
 
 
