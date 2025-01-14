@@ -54,13 +54,13 @@ router.put(
   updatePassword
 );
 ///Route to change user signature///
-router.put(
-  "/ChangeSignature/:userId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isAdmin,
-  updateUserSign
-);
+//router.put(
+ // "/ChangeSignature/:userId/:CompanyId",
+ // verifyToken,
+ // isAutorized,
+ // isAdmin,
+ ////// updateUserSign
+//);
 ///Route to get all users///
 router.get("/Users/:CompanyId",
   verifyToken,
