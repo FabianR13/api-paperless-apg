@@ -7,21 +7,26 @@ const app = express().use("*", cors());
 const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
 const  mongoose = require("mongoose");
+const sslRedirect = require('heroku-ssl-redirect');
 
 // Configuración básica (permitir todas las solicitudes)
+
+
 app.use(cors());
 
 // Configuración avanzada (especificar orígenes permitidos)
-//const corsOptions = {
-   // origin: ['*'], // Dominio AWS
+const corsOptions = {
+  origin: ['https://www.axiompaperless.com', 'https://axiompaperless.com'], // Dominio AWS
     //origin: ['http://localhost:3000'], // Dominio Local
-   //// methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-//};
-//app.use(cors(corsOptions));
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+    allowedHeaders: 'Content-Type,Authorization',// Encabezados permitidos
 
-//app.get('/api/data', (req, res) => {
-   // res.json({ message: 'CORS configurado correctamente' });
-//});
+};
+app.use(cors(corsOptions));
+
+app.get('/', (req, res) => {
+  res.send('CORS configurado correctamente.');
+});
 
 //app.use((req, res, next) => {
   //const origin = req.headers.origin;
@@ -135,7 +140,7 @@ setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 
 const date = new Date();
     const horaActual = date.getHours()
-console.log(horaActual)
+//console.log(horaActual)
 
 
 

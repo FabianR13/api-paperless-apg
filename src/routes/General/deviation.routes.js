@@ -7,7 +7,8 @@ const {
   updateDeviation,
   updateDeviationReq,
   updateRiskStatus,
-  updateDeviationStatus
+  updateDeviationStatus,
+  deleteDeviation
 } = require("../../controllers/Forms/General/deviationReq.controller.js");
 const {
   createDeviationRisk,
@@ -79,6 +80,17 @@ router.put(
   uploadDeviationFile,
   updateDeviationStatus
 );
+
+//delete deviation///
+router.delete(
+  "/DeleteDeviation/:deviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationR,
+  deleteDeviation
+);
+
+
 //Deviation Risk Assessment////////////////////////////////////////
 //Route to post a new Deviation Risk Assesment ///
 router.post("/NewDeviationRisk/:CompanyId",

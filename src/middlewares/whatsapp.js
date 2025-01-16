@@ -8,7 +8,7 @@ const whatsapp = new Client({
 });
 
 whatsapp.on('loading_screen', (percent, message) => {
-    console.log('LOADING SCREEN', percent, message);
+   // console.log('LOADING SCREEN', percent, message);
 });
 
 

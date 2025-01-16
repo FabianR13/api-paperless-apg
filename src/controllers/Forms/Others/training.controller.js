@@ -139,9 +139,8 @@ const getEvaluationById = async (req, res) => {
     const foundEvaluation = await TrainingEvaluation.findById(req.params.evaluationId)
         .populate({ path: 'numberEmployee' })
         .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
-        .populate({ path: 'qualifiedBy' })
         .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
-        .populate({ path: 'qualifiedBy', populate: { path: "employee", model: "Employees" } });;
+        .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] });;
     if (!foundEvaluation) {
         res
             .status(403)

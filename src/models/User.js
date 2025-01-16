@@ -15,9 +15,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    signature: {
-      type: String,
-    },
+    signature: [
+      {
+        ref: "Signature",
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
     roles: [
       {
         ref: "Role",

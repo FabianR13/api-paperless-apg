@@ -6,17 +6,32 @@ const Dashboard = require("../models/Dashboard.js");
 const Employees = require("../models/Employees.js");
 const Company = require("../models/Company.js");
 const dotenv = require('dotenv')
+const Signature = require("../models/Signatures.js")
 dotenv.config({ path: '../.env' });
 
 //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const signUp = async (req, res) => {
   const { username, email, password, signature, roles, rolesAxiom, employee, companyAccess, company } = req.body;
+
+  //guardar firma
+  const newSignature = new Signature({
+    username,
+    signature
+  });
+
+  const savedSignature = await newSignature.save();
+
   const newUser = new User({
     username,
     email,
-    password: await User.encryptPassword(password),
-    signature,
+    password: await User.encryptPassword(password)
   });
+
+  if (savedSignature) {
+    const foundSignature = await Signature.find({ username: { $in: username } });
+    newUser.signature = foundSignature.map((signature) => signature._id);
+  }
+
   //Buscar roles en db y asignar a roles apg
   if (roles) {
     const foundRoles = await Role.find({ name: { $in: roles } });
@@ -204,7 +219,7 @@ const signIn = async (req, res) => {
     if (roles[i].name === "TrainingL" || roles[i].name === "admin") {
       userAccessApg[22] = "true";
     }
-    if (roles[i].name === "PersonalReqR" || roles[i].name === "PersonalReqC" || roles[i].name === "PersonalReqE" || roles[i].name === "PersonalReqS" || roles[i].name === "PersonalReqSRH"  || roles[i].name === "PersonalReqReclu" || roles[i].name === "admin") {
+    if (roles[i].name === "PersonalReqR" || roles[i].name === "PersonalReqC" || roles[i].name === "PersonalReqE" || roles[i].name === "PersonalReqS" || roles[i].name === "PersonalReqSRH" || roles[i].name === "PersonalReqReclu" || roles[i].name === "admin") {
       userAccessApg[23] = "true";
     }
     if (roles[i].name === "PersonalReqC" || roles[i].name === "admin") {
@@ -243,7 +258,7 @@ const signIn = async (req, res) => {
     if (rolesAxiom[i].name === "QualityASIns" || rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer" || rolesAxiom[i].name === "SeniorManagement") {
       userAccessAXG[5] = "true";
     }
-    if (rolesAxiom[i].name === "QualityASEng"|| rolesAxiom[i].name === "QualityASGer") {
+    if (rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer") {
       userAccessAXG[6] = "true";
     }
     if (rolesAxiom[i].name === "QualityASGer") {
@@ -331,12 +346,12 @@ const getDashboardCards = async (req, res) => {
 // Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getUsers = async (req, res) => {
   const origin = req.headers.origin;
-  console.log(origin)
-  res.header('Access-Control-Allow-Origin', origin);
-  //res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  //console.log(origin)
+  //res.header('Access-Control-Allow-Origin', origin);
+  //res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
+  //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  //res.header('Access-Control-Allow-Credentials', 'true');
   const { CompanyId } = req.params
   if (CompanyId.length !== 24) {
     return;
@@ -347,20 +362,26 @@ const getUsers = async (req, res) => {
   if (!company) {
     return;
   }
+  //console.log("casi final")
+
   const users = await User.find({
     company: { $in: CompanyId },
-  }).populate({ path: 'employee', populate: [{ path: "department" }, { path: "position" }] }).populate({ path: "roles" }).populate({ path: "rolesAxiom" }).populate({ path: "companyAccess" });
+  })
+  .populate({ path: 'employee', populate: [{ path: "department" }, { path: "position" }] })
+  .populate({ path: "roles" }).populate({ path: "rolesAxiom" })
+  .populate({ path: "companyAccess" })
+  .populate({ path: 'signature'});
   res.json({ status: "200", message: "Users Loaded", body: users });
 };
 // Getting all Roles//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getRoles = async (req, res) => {
   const origin = req.headers.origin;
-  console.log(origin)
-  res.header('Access-Control-Allow-Origin', origin);
-  //res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  //console.log(origin)
+  //res.header('Access-Control-Allow-Origin', origin);
+  //res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
+  //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  //res.header('Access-Control-Allow-Credentials', 'true');
   const roles = await Role.find();
   res.json({ status: "200", message: "Roles Loaded", body: roles });
 };
@@ -379,14 +400,25 @@ const updateUser = async (req, res) => {
   userUpd.companyAccess = foundCompanyAccess.map((company) => company._id);
   userUpd.username = req.body.username;
   userUpd.email = req.body.email;
-  userUpd.signature = req.body.signature;
   if (userFound.password !== req.body.password) {
     userUpd.password = await User.encryptPassword(req.body.password)
   } else {
     userUpd.password = req.body.password;
   }
 
-  const { username, email, password, roles, rolesAxiom, companyAccess, signature } = userUpd;
+  const signature = req.body.signature;
+
+  const updatedSignature = await Signature.updateOne(
+    { username: req.body.username },
+    {
+      $set: {
+        signature,
+      },
+    }
+  );
+
+
+  const { username, email, password, roles, rolesAxiom, companyAccess } = userUpd;
 
   const updatedUser = await User.updateOne(
     { _id: userId },
@@ -398,7 +430,6 @@ const updateUser = async (req, res) => {
         roles,
         rolesAxiom,
         companyAccess,
-        signature,
       },
     }
   );
@@ -455,7 +486,6 @@ const updatePassword = async (req, res) => {
 };
 // Updating user signature////////////////////////////////////////////////////////////////////////////////////////////////////
 const updateUserSign = async (req, res) => {
-  //const updatedKaizen = await K
   const { userId } = req.params;
   const { signature } = req.body;
   const updatedUser = await User.updateOne(

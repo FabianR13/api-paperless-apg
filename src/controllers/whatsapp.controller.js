@@ -157,8 +157,8 @@ const logoutWhatsapp = async (req, res) => {
 const autoSendMessage = async (req, res) => {
     const whatsappAutoAlertData = await whatsappAutoAlert.find();
 
-    console.log(whatsappAutoAlertData[0].message)
-    console.log(whatsappAutoAlertData[0].receivers)
+    //console.log(whatsappAutoAlertData[0].message)
+    //console.log(whatsappAutoAlertData[0].receivers)
 
     // const celulares = ['+5214191280540', '+5214191364747']
     //const message = "*Mensaje autogenerado* \nMensaje de prueba"
@@ -224,7 +224,7 @@ const autoSendEmail = async (req, res) => {
     const message = whatsappAutoAlertData[1].message
     const days = whatsappAutoAlertData[1].notificationDays
     const hours = whatsappAutoAlertData[1].timeAlert
-    console.log(horaActual)
+    //console.log(horaActual)
 
     //alerta movimiento salud
     if (whatsappAutoAlertData[1].alertStatus === "Active") {
@@ -261,7 +261,7 @@ const autoSendEmail = async (req, res) => {
                             }
                         });
 
-                        console.log("Envio de mensajes terminado")
+                       // console.log("Envio de mensajes terminado")
                     }
                 }
             }
@@ -309,7 +309,7 @@ const autoSendEmail = async (req, res) => {
                             }
                         });
 
-                        console.log("Envio de mensajes terminado")
+                        //console.log("Envio de mensajes terminado")
                     }
                 }
             }
@@ -337,7 +337,7 @@ const getAutoAlertData = async (req, res) => {
 const updateAutoAlertData = async (req, res) => {
     const { alertId } = req.params;
     const UpdAlert = [];
-    console.log(req.body)
+    //console.log(req.body)
 
     UpdAlert.modifiedDate = req.body.modifiedDate;
     UpdAlert.alertStatus = req.body.alertStatus;
@@ -379,7 +379,7 @@ const updateAutoAlertData = async (req, res) => {
         }
     );
 
-    console.log(updatedAlert)
+    //console.log(updatedAlert)
 
     if (!updatedAlert) {
         res
