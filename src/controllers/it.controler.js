@@ -10,6 +10,7 @@ const Lines = require("../models/Lines.js");
 const Cellphones = require("../models/Cellphones.js");
 const Accounts = require("../models/Accounts.js");
 const Monitors = require("../models/Monitors.js");
+const LabelPrinters = require("../models/LabelPrinters.js")
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
@@ -1324,6 +1325,138 @@ const updateMonitor = async (req, res) => {
     });
 };
 
+//create new label printer//////////////////////////////////////////////////////////////////////////////////////
+const createNewLabelPrinter = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        printerName,
+        location,
+        marca,
+        model,
+        serialNo,
+        macAddress,
+        ipAddress,
+        status,
+        modifiedBy,
+        version
+    } = req.body;
+
+    const newLabelPrinter = new LabelPrinters({
+        printerName,
+        location,
+        marca,
+        model,
+        serialNo,
+        macAddress,
+        ipAddress,
+        status,
+        version
+    });
+
+
+    if (modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: modifiedBy },
+        });
+        newLabelPrinter.modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (CompanyId) {
+        const foundCompany = await Company.find({
+            _id: { $in: CompanyId },
+        });
+        newLabelPrinter.company = foundCompany.map((company) => company._id);
+    }
+
+    const saveLabelPrinter = await newLabelPrinter.save();
+
+    if (!saveLabelPrinter) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Label Printer not Saved", body: "" });
+    }
+
+    return res
+        .status(200)
+        .json({ status: "200", message: "Label Printer Saved" })
+};
+
+// Getting all Label Printer/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllLabelPrinters = async (req, res) => {
+
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+    const labelPrinters = await LabelPrinters.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .populate({ path: "modifiedBy", select: "username" })
+    res.json({ status: "200", message: "Cellphones Loaded", body: labelPrinters });
+};
+
+//update label printer data//////////////////////////////////////////////////////////////////////////////////////
+const updateLabelPrinter = async (req, res) => {
+    const { labelPrinterId } = req.params;
+    let modifiedBy;
+
+    const {
+        printerName,
+        location,
+        marca,
+        model,
+        serialNo,
+        macAddress,
+        ipAddress,
+        status
+    } = req.body;
+
+    if (req.body.modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: req.body.modifiedBy },
+        });
+        modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    const updatedLabelPrinterDevice = await LabelPrinters.updateOne(
+        { _id: labelPrinterId },
+        {
+            $set: {
+                printerName,
+                location,
+                marca,
+                model,
+                serialNo,
+                macAddress,
+                ipAddress,
+                status,
+                modifiedBy,
+            },
+        }
+    );
+
+    if (!updatedLabelPrinterDevice) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Label printer not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Label printer Updated ",
+        body: updatedLabelPrinterDevice,
+    });
+};
+
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -1346,5 +1479,8 @@ module.exports = {
     getDirectory,
     createNewMonitor,
     getAllMonitors,
-    updateMonitor
+    updateMonitor,
+    createNewLabelPrinter,
+    getAllLabelPrinters,
+    updateLabelPrinter
 };
