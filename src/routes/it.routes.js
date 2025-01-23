@@ -22,7 +22,10 @@ const {
     getDirectory,
     createNewMonitor,
     getAllMonitors,
-    updateMonitor
+    updateMonitor,
+    createNewLabelPrinter,
+    getAllLabelPrinters,
+    updateLabelPrinter
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
@@ -225,6 +228,35 @@ router.put(
     isAutorized,
     isAdmin,
     updateMonitor
+);
+
+//////    RUTAS PARA IMPRESORAS DE ETIQUETAS    ///////////////////////////////////////
+
+// Route to save new label printer///
+router.post(
+    "/NewLabelPrinter/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    createNewLabelPrinter
+);
+
+// Route to get All the LABEL PRINTERS///
+router.get(
+    "/LabelPrinters/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    getAllLabelPrinters
+);
+
+// Route to update label printer///
+router.put(
+    "/UpdateLabelPrinter/:labelPrinterId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    updateLabelPrinter
 );
 
 module.exports = router;

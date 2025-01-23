@@ -516,7 +516,7 @@ const deleteDeviation = async (req, res) => {
 
   // delete the deviation risk assessment
   console.log(deviationRiskID)
-  if (deviationRiskID !== "") {
+  if (deviationRiskID !== "No") {
     DeviationRiskAssessment.findById(deviationRiskID, function (err, deviationRisk) {
       if (err) {
         res.status(503).json({
