@@ -1338,6 +1338,8 @@ const createNewLabelPrinter = async (req, res) => {
         macAddress,
         ipAddress,
         status,
+        printerCondition,
+        comments,
         modifiedBy,
         version
     } = req.body;
@@ -1351,6 +1353,8 @@ const createNewLabelPrinter = async (req, res) => {
         macAddress,
         ipAddress,
         status,
+        printerCondition,
+        comments,
         version
     });
 
@@ -1416,7 +1420,9 @@ const updateLabelPrinter = async (req, res) => {
         serialNo,
         macAddress,
         ipAddress,
-        status
+        status,
+        printerCondition,
+        comments
     } = req.body;
 
     if (req.body.modifiedBy) {
@@ -1438,6 +1444,8 @@ const updateLabelPrinter = async (req, res) => {
                 macAddress,
                 ipAddress,
                 status,
+                printerCondition,
+                comments,
                 modifiedBy,
             },
         }

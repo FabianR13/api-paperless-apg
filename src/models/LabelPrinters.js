@@ -26,6 +26,12 @@ const labelPrinterSchema = new mongoose.Schema(
         status: {
             type: String,
         },
+        printerCondition: {
+            type: String,
+        },
+        comments: {
+            type: String,
+        },
         modifiedBy: [
             {
                 ref: "User",
