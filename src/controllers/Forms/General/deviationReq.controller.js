@@ -87,8 +87,13 @@ const createDeviationRequest = async (req, res, next) => {
     seniorSignStatus,
     customerSignStatus,
     deviationStatus,
-    deviationRisk,
   });
+  if (deviationRisk) {
+    const foundRiskAssessment = await DeviationRiskAssessment.find({
+      _id: { $in: deviationRisk },
+    });
+    newDeviationReq.deviationRisk = foundRiskAssessment.map((risk) => risk._id);
+  }
   if (requestBy) {
     const foundUsers = await User.find({
       username: { $in: requestBy },
@@ -169,7 +174,9 @@ const getDeviationRequest = async (req, res) => {
   }).sort({ consecutive: -1 })
     .populate({ path: 'customer' })
     .populate({ path: 'requestBy', populate: { path: "signature", model: "Signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
-    .populate({ path: 'parts' });
+    .populate({ path: 'parts' })
+    .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
+    //.populate({ path: 'deviationRisk', model: "DeviationRiskAssessmentTemp"  });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
 // Getting deviation by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -351,7 +358,7 @@ const updateRiskStatus = async (req, res) => {
     });
     update.deviationRisk = foundDevRisk.map((devRisk) => devRisk._id);
   }
-  const deviationRisk = update.deviationRisk.toString();
+  const deviationRisk = update.deviationRisk;
   const updatedDeviationRequest = await DeviationRequest.updateOne(
     { _id: deviationId },
     {
