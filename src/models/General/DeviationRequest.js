@@ -107,9 +107,10 @@ const deviationRequestSchema = new mongoose.Schema(
         deviationStatus: {
             type: String,
         },
-        deviationRisk: {
-            type: String,
-        },
+        deviationRisk: [{
+            ref: "DeviationRiskAssessment",
+            type: mongoose.Schema.Types.ObjectId,
+        }],
         company: [
             {
                 ref: "Company",
