@@ -176,7 +176,7 @@ const getDeviationRequest = async (req, res) => {
 const getDeviationById = async (req, res) => {
   const foundDeviation = await DeviationRequest.findById(req.params.deviationId)
     .populate({ path: 'customer' })
-    .populate({ path: 'requestBy', populate: { path: "signature", model: "Signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
+    .populate({ path: 'requestBy', populate: [{ path: "signature", model: "Signature" }, { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } }] })
     .populate({ path: 'parts' });
 
 
@@ -483,7 +483,7 @@ const updateDeviationStatus = async (req, res) => {
 //close deviation////////////////////////////////////////////////////////////////////////////////////////////////////////
 const deleteDeviation = async (req, res) => {
   const { deviationId } = req.params;
-  
+
 
   //console.log("deviation")
 
