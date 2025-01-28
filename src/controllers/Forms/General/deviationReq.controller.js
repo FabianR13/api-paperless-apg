@@ -519,7 +519,13 @@ const deleteDeviation = async (req, res) => {
     }
   }
 
-  const deviationRiskID = foundPrevDeviation.deviationRisk
+  let deviationRiskID;
+  if(foundPrevDeviation.deviationRisk.length !== 0){
+    deviationRiskID = foundPrevDeviation.deviationRisk[0]
+  }else{
+    deviationRiskID = "No"
+  }
+  
 
   // delete the deviation risk assessment
   console.log(deviationRiskID)
