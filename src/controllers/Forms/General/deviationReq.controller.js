@@ -1,8 +1,8 @@
 const Customer = require("../../../models/General/Customer.js");
 const Parts = require("../../../models/Quality/Parts.js");
-const DeviationRequest = require("../../../models/General/DeviationRequest.js");
+const DeviationRequest = require("../../../models/General/DeviationRequestTemp.js");
 const User = require("../../../models/User.js");
-const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessment.js");
+const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessmentTemp.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
@@ -90,7 +90,7 @@ const createDeviationRequest = async (req, res, next) => {
   });
   if (deviationRisk) {
     const foundRiskAssessment = await DeviationRiskAssessment.find({
-      _id: { $in: deviationRisk },
+      deviationNumber: { $in: deviationRisk },
     });
     newDeviationReq.deviationRisk = foundRiskAssessment.map((risk) => risk._id);
   }
@@ -175,8 +175,8 @@ const getDeviationRequest = async (req, res) => {
     .populate({ path: 'customer' })
     .populate({ path: 'requestBy', populate: { path: "signature", model: "Signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
     .populate({ path: 'parts' })
-    .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
-    //.populate({ path: 'deviationRisk', model: "DeviationRiskAssessmentTemp"  });
+    //.populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
+    .populate({ path: 'deviationRisk', model: "DeviationRiskAssessmentTemp"  });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
 // Getting deviation by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

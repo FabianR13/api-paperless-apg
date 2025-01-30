@@ -1,4 +1,4 @@
-const DeviationRiskAssesment = require("../../../models/General/DeviationRiskAssessment.js");
+const DeviationRiskAssesment = require("../../../models/General/DeviationRiskAssessmentTemp.js");
 const Company = require("../../../models/Company.js");
 
 //create new devition risk//////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,8 +149,8 @@ const createDeviationRisk = async (req, res,next) => {
   }
 
 
-  next();
-  //res.json({ status: "200", message: "Deviation risk assesmen is created", savedDeviationRisk });
+  // next();
+  res.json({ status: "200", message: "Deviation risk assesmen is created", savedDeviationRisk });
 };
 //update all data deviation risk assessment/////////////////////////////////////////////////////////////////////////////////////////
 const updateDeviationRisk = async (req, res) => {
