@@ -23,7 +23,7 @@ const connectDB = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             maxPoolSize: 20, // Limita las conexiones simultáneas
-            minPoolSize: 2,  // Mantiene 2 conexiones abiertas mínimo
+            minPoolSize: 3,  // Mantiene 2 conexiones abiertas mínimo
         });
         console.log("✅ Conectado a MongoDB Atlas");
     } catch (error) {
