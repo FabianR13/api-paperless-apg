@@ -1,8 +1,8 @@
 const Customer = require("../../../models/General/Customer.js");
 const Parts = require("../../../models/Quality/Parts.js");
-const DeviationRequest = require("../../../models/General/DeviationRequestTemp.js");
+const DeviationRequest = require("../../../models/General/DeviationRequest.js");
 const User = require("../../../models/User.js");
-const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessmentTemp.js");
+const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessment.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
@@ -176,7 +176,7 @@ const getDeviationRequest = async (req, res) => {
     .populate({ path: 'requestBy', populate: { path: "signature", model: "Signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
     .populate({ path: 'parts' })
     //.populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
-    .populate({ path: 'deviationRisk', model: "DeviationRiskAssessmentTemp"  });
+    .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
 // Getting deviation by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
