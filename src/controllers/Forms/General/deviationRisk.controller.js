@@ -1,4 +1,4 @@
-const DeviationRiskAssesment = require("../../../models/General/DeviationRiskAssessmentTemp.js");
+const DeviationRiskAssesment = require("../../../models/General/DeviationRiskAssessment.js");
 const Company = require("../../../models/Company.js");
 
 //create new devition risk//////////////////////////////////////////////////////////////////////////////////////////////
