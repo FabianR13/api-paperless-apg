@@ -255,14 +255,8 @@ const updateDeviationReq = async (req, res) => {
   newDeviation.timePeriodStart = req.body.timePeriodStart;
   newDeviation.timePeriodEnd = req.body.timePeriodEnd;
   newDeviation.other = req.body.other;
-  newDeviation.qualitySign = req.body.qualitySign;
-  newDeviation.seniorSign = req.body.seniorSign;
-  newDeviation.customerSign = req.body.customerSign;
   newDeviation.comments = req.body.comments;
   newDeviation.severity = req.body.severity;
-  newDeviation.qualitySignStatus = req.body.qualitySignStatus;
-  newDeviation.seniorSignStatus = req.body.seniorSignStatus;
-  newDeviation.customerSignStatus = req.body.customerSignStatus;
 
   if (newCustomer) {
     const foundCustomers = await Customer.find({
@@ -294,14 +288,8 @@ const updateDeviationReq = async (req, res) => {
     timePeriodStart,
     timePeriodEnd,
     other,
-    qualitySign,
-    seniorSign,
-    customerSign,
     comments,
     severity,
-    qualitySignStatus,
-    seniorSignStatus,
-    customerSignStatus,
   } = newDeviation;
 
   const updatedDeviationRequest = await DeviationRequest.updateOne(
@@ -323,14 +311,8 @@ const updateDeviationReq = async (req, res) => {
         timePeriodStart,
         timePeriodEnd,
         other,
-        qualitySign,
-        seniorSign,
-        customerSign,
         comments,
         severity,
-        qualitySignStatus,
-        seniorSignStatus,
-        customerSignStatus,
       },
     }
   );
