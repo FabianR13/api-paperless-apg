@@ -25,7 +25,10 @@ const {
     updateMonitor,
     createNewLabelPrinter,
     getAllLabelPrinters,
-    updateLabelPrinter
+    updateLabelPrinter,
+    createNewChromebook,
+    getAllChromebooks,
+    updateChromebook
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
@@ -257,6 +260,35 @@ router.put(
     isAutorized,
     isAdmin,
     updateLabelPrinter
+);
+
+//////    RUTAS PARA Chromebooks   ///////////////////////////////////////
+
+// Route to save new chromebook///
+router.post(
+    "/NewChromebook/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    createNewChromebook
+);
+
+// Route to get All the chromebooks///
+router.get(
+    "/Chromebooks/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    getAllChromebooks
+);
+
+// Route to update chromebook///
+router.put(
+    "/UpdateChromebook/:chromebookId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    updateChromebook
 );
 
 module.exports = router;
