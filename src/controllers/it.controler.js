@@ -10,7 +10,8 @@ const Lines = require("../models/Lines.js");
 const Cellphones = require("../models/Cellphones.js");
 const Accounts = require("../models/Accounts.js");
 const Monitors = require("../models/Monitors.js");
-const LabelPrinters = require("../models/LabelPrinters.js")
+const LabelPrinters = require("../models/LabelPrinters.js");
+const Chromebooks = require("../models/Chromebooks.js");
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
@@ -1464,6 +1465,141 @@ const updateLabelPrinter = async (req, res) => {
     });
 };
 
+//create new chromebook//////////////////////////////////////////////////////////////////////////////////////
+const createNewChromebook = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        chromebookName,
+        location,
+        model,
+        serialNo,
+        macAddressWifi,
+        macAddressAdaptador,
+        status,
+        chromebookCondition,
+        comments,
+        modifiedBy,
+        version
+    } = req.body;
+
+    const newChromebook = new Chromebooks({
+        chromebookName,
+        location,
+        model,
+        serialNo,
+        macAddressWifi,
+        macAddressAdaptador,
+        status,
+        chromebookCondition,
+        comments,
+        version
+    });
+
+
+    if (modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: modifiedBy },
+        });
+        newChromebook.modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (CompanyId) {
+        const foundCompany = await Company.find({
+            _id: { $in: CompanyId },
+        });
+        newChromebook.company = foundCompany.map((company) => company._id);
+    }
+
+    const saveChromebook = await newChromebook.save();
+
+    if (!saveChromebook) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Chromebook not Saved", body: "" });
+    }
+
+    return res
+        .status(200)
+        .json({ status: "200", message: "Chromebook Saved" })
+};
+
+// Getting all Chromebooks/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllChromebooks = async (req, res) => {
+
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+    const chromebooks = await Chromebooks.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .populate({ path: "modifiedBy", select: "username" })
+    res.json({ status: "200", message: "Chromebooks Loaded", body: chromebooks });
+};
+
+//update label printer data//////////////////////////////////////////////////////////////////////////////////////
+const updateChromebook = async (req, res) => {
+    const { chromebookId } = req.params;
+    let modifiedBy;
+
+    const {
+        chromebookName,
+        location,
+        model,
+        serialNo,
+        macAddressWifi,
+        macAddressAdaptador,
+        status,
+        chromebookCondition,
+        comments
+    } = req.body;
+
+    if (req.body.modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: req.body.modifiedBy },
+        });
+        modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    const updatedChromebook = await Chromebooks.updateOne(
+        { _id: chromebookId },
+        {
+            $set: {
+                chromebookName,
+                location,
+                model,
+                serialNo,
+                macAddressWifi,
+                macAddressAdaptador,
+                status,
+                chromebookCondition,
+                comments,
+                modifiedBy,
+            },
+        }
+    );
+
+    if (!updatedChromebook) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Chromebook not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Chromebook Updated ",
+        body: updatedChromebook,
+    });
+};
+
 
 module.exports = {
     createNewLaptop,
@@ -1490,5 +1626,8 @@ module.exports = {
     updateMonitor,
     createNewLabelPrinter,
     getAllLabelPrinters,
-    updateLabelPrinter
+    updateLabelPrinter,
+    createNewChromebook,
+    getAllChromebooks,
+    updateChromebook
 };
