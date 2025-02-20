@@ -28,7 +28,10 @@ const {
     updateLabelPrinter,
     createNewChromebook,
     getAllChromebooks,
-    updateChromebook
+    updateChromebook,
+    createNewScanner,
+    getAllScanners,
+    updateScanner
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
@@ -289,6 +292,35 @@ router.put(
     isAutorized,
     isAdmin,
     updateChromebook
+);
+
+//////    RUTAS PARA Scanner   ///////////////////////////////////////
+
+// Route to save new scanner///
+router.post(
+    "/NewScanner/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    createNewScanner
+);
+
+// Route to get All the scanner///
+router.get(
+    "/Scanners/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    getAllScanners
+);
+
+// Route to update scanner///
+router.put(
+    "/UpdateScanner/:scannerId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    updateScanner
 );
 
 module.exports = router;

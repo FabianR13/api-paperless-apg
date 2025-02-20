@@ -12,6 +12,7 @@ const Accounts = require("../models/Accounts.js");
 const Monitors = require("../models/Monitors.js");
 const LabelPrinters = require("../models/LabelPrinters.js");
 const Chromebooks = require("../models/Chromebooks.js");
+const Scanners = require("../models/Scanners.js");
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
@@ -1600,6 +1601,140 @@ const updateChromebook = async (req, res) => {
     });
 };
 
+//create new scanner//////////////////////////////////////////////////////////////////////////////////////
+const createNewScanner = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        scannerName,
+        location,
+        model,
+        serialNoScanner,
+        seriaNoBase,
+        pairCode,
+        status,
+        scannerCondition,
+        comments,
+        modifiedBy,
+        version
+    } = req.body;
+
+    const newScanner = new Scanners({
+        scannerName,
+        location,
+        model,
+        serialNoScanner,
+        seriaNoBase,
+        pairCode,
+        status,
+        scannerCondition,
+        comments,
+        version
+    });
+
+
+    if (modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: modifiedBy },
+        });
+        newScanner.modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    if (CompanyId) {
+        const foundCompany = await Company.find({
+            _id: { $in: CompanyId },
+        });
+        newScanner.company = foundCompany.map((company) => company._id);
+    }
+
+    const saveScanner = await newScanner.save();
+
+    if (!saveScanner) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Scanner not Saved", body: "" });
+    }
+
+    return res
+        .status(200)
+        .json({ status: "200", message: "Scanner Saved" })
+};
+
+// Getting all Scanners/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllScanners = async (req, res) => {
+
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+    const scanners = await Scanners.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .populate({ path: "modifiedBy", select: "username" })
+    res.json({ status: "200", message: "Scanners Loaded", body: scanners });
+};
+
+//update scanner data//////////////////////////////////////////////////////////////////////////////////////
+const updateScanner = async (req, res) => {
+    const { scannerId } = req.params;
+    let modifiedBy;
+
+    const {
+        scannerName,
+        location,
+        model,
+        serialNoScanner,
+        serialNoBase,
+        pairCode,
+        status,
+        scannerCondition,
+        comments
+    } = req.body;
+
+    if (req.body.modifiedBy) {
+        const foundUsers = await User.find({
+            username: { $in: req.body.modifiedBy },
+        });
+        modifiedBy = foundUsers.map((user) => user._id);
+    }
+
+    const updatedScanner = await Scanners.updateOne(
+        { _id: scannerId },
+        {
+            $set: {
+                scannerName,
+                location,
+                model,
+                serialNoScanner,
+                serialNoBase,
+                pairCode,
+                status,
+                scannerCondition,
+                comments,
+                modifiedBy,
+            },
+        }
+    );
+
+    if (!updatedScanner) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Scanner not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Scanner Updated ",
+        body: updatedScanner,
+    });
+};
 
 module.exports = {
     createNewLaptop,
@@ -1629,5 +1764,8 @@ module.exports = {
     updateLabelPrinter,
     createNewChromebook,
     getAllChromebooks,
-    updateChromebook
+    updateChromebook,
+    createNewScanner,
+    getAllScanners,
+    updateScanner
 };
