@@ -56,6 +56,12 @@ const laptopsSchema = new mongoose.Schema(
         macAddress: {
             type: String,
         },
+        principalDisk: {
+            type: String,
+        },
+        secondaryDisk: {
+            type: String,
+        },
         initialCost: {
             type: Number,
         },
