@@ -169,7 +169,9 @@ const getEvaluations = async (req, res) => {
     company: {
       $in: CompanyId
     }
-  }).populate({
+  }).sort({
+    createdAt: -1
+  }).limit(limit).populate({
     path: 'numberEmployee'
   }).populate({
     path: 'partNumber',
@@ -185,8 +187,6 @@ const getEvaluations = async (req, res) => {
       path: "employee",
       model: "Employees"
     }
-  }).limit(limit).sort({
-    createdAt: -1
   });
   res.json({
     status: "200",
@@ -206,8 +206,6 @@ const getEvaluationById = async (req, res) => {
       model: "Customer"
     }
   }).populate({
-    path: 'qualifiedBy'
-  }).populate({
     path: 'trainer',
     populate: {
       path: "employee",
@@ -215,10 +213,12 @@ const getEvaluationById = async (req, res) => {
     }
   }).populate({
     path: 'qualifiedBy',
-    populate: {
+    populate: [{
+      path: "signature"
+    }, {
       path: "employee",
       model: "Employees"
-    }
+    }]
   });
   ;
 

@@ -153,9 +153,14 @@ const createDeviationRisk = async (req, res, next) => {
       message: "Deviation not Saved",
       body: ""
     });
-  }
+  } // next();
 
-  next(); //res.json({ status: "200", message: "Deviation risk assesmen is created", savedDeviationRisk });
+
+  res.json({
+    status: "200",
+    message: "Deviation risk assesmen is created",
+    savedDeviationRisk
+  });
 }; //update all data deviation risk assessment/////////////////////////////////////////////////////////////////////////////////////////
 
 

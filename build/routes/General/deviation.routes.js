@@ -11,7 +11,8 @@ const {
   updateDeviation,
   updateDeviationReq,
   updateRiskStatus,
-  updateDeviationStatus
+  updateDeviationStatus,
+  deleteDeviation
 } = require("../../controllers/Forms/General/deviationReq.controller.js");
 
 const {
@@ -47,10 +48,13 @@ router.put("/UpdateDeviation/Signature/:deviationId/:CompanyId", verifyToken, is
 
 router.put("/UpdateDeviation/RiskStatus/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, updateRiskStatus); //close deviation///
 
-router.put("/CloseDeviation/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, uploadDeviationFile, updateDeviationStatus); //Deviation Risk Assessment////////////////////////////////////////
+router.put("/CloseDeviation/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, uploadDeviationFile, updateDeviationStatus); //delete deviation///
+
+router.delete("/DeleteDeviation/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, deleteDeviation); //Deviation Risk Assessment////////////////////////////////////////
 //Route to post a new Deviation Risk Assesment ///
 
-router.post("/NewDeviationRisk/:CompanyId", verifyToken, isAutorized, isDeviationR, createDeviationRisk, sendEmailMiddlewareResponse); //Route to update a new Deviation Risk Assesment ///
+router.post("/NewDeviationRisk/:CompanyId", verifyToken, isAutorized, isDeviationR, createDeviationRisk // sendEmailMiddlewareResponse
+); //Route to update a new Deviation Risk Assesment ///
 
 router.put("/UpdateDeviationRisk/:deviationRiskId/:CompanyId", verifyToken, isAutorized, isDeviationR, updateDeviationRisk); //Route to update Deviation Risk Assesment Signature///
 

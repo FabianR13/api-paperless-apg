@@ -26,6 +26,7 @@ const verifyToken = async (req, res, next) => {
     const user = await User.findById(req.userId, {
       password: 0
     });
+    console.log(user.username);
     if (!user) return res.status(404).json({
       message: "User not found",
       status: "404"
@@ -957,6 +958,7 @@ const isProductionRW = async (req, res, next) => {
 
 
 const isAutorized = async (req, res, next) => {
+  //console.log("autorizacion")
   const user = await User.findById(req.userId);
   const Access = [];
   const {

@@ -33,6 +33,7 @@ const s3 = new AWS.S3(); //create deviation request/////////////////////////////
 
 const createDeviationRequest = async (req, res, next) => {
   const {
+    deviationNumber,
     deviationDate,
     deviationType,
     supplier,
@@ -67,6 +68,7 @@ const createDeviationRequest = async (req, res, next) => {
     company
   } = req.body;
   const newDeviationReq = new DeviationRequest({
+    deviationNumber,
     deviationDate,
     deviationType,
     supplier,
@@ -94,9 +96,17 @@ const createDeviationRequest = async (req, res, next) => {
     qualitySignStatus,
     seniorSignStatus,
     customerSignStatus,
-    deviationStatus,
-    deviationRisk
+    deviationStatus
   });
+
+  if (deviationRisk) {
+    const foundRiskAssessment = await DeviationRiskAssessment.find({
+      deviationNumber: {
+        $in: deviationRisk
+      }
+    });
+    newDeviationReq.deviationRisk = foundRiskAssessment.map(risk => risk._id);
+  }
 
   if (requestBy) {
     const foundUsers = await User.find({
@@ -139,17 +149,18 @@ const createDeviationRequest = async (req, res, next) => {
       message: "Deviation not saved",
       status: "403"
     });
-  }
+  } //var count = 1
+  //const date = new Date();
+  //const yearactual = date.getFullYear()
+  //const foundDeviations = await DeviationRequest.find();
+  //foundDeviations.map((deviationC) => {
+  //  if (deviationC.deviationDate.getFullYear() === yearactual) {
+  //    count = count + 1
+  //  }
+  //})
 
-  var count = 1;
-  const date = new Date();
-  const yearactual = date.getFullYear();
-  const foundDeviations = await DeviationRequest.find();
-  foundDeviations.map(deviationC => {
-    if (deviationC.deviationDate.getFullYear() === yearactual) {
-      count = count + 1;
-    }
-  }); // const count = await DeviationRequest.estimatedDocumentCount();
+
+  const count = await DeviationRequest.estimatedDocumentCount();
 
   if (count > 1) {
     const deviations = await DeviationRequest.find().sort({
@@ -159,9 +170,9 @@ const createDeviationRequest = async (req, res, next) => {
   } else {
     newDeviationReq.consecutive = 1;
   } // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${Number(newDeviationReq.consecutive)}`.padStart(3, "0")`
+  // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${count}`.padStart(3, "0")
 
 
-  newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${count}`.padStart(3, "0");
   const savedDeviationRequest = await newDeviationReq.save();
 
   if (!savedDeviationRequest) {
@@ -204,9 +215,11 @@ const getDeviationRequest = async (req, res) => {
   }).populate({
     path: 'customer'
   }).populate({
-    path: 'requestBy'
-  }).populate({
     path: 'requestBy',
+    populate: {
+      path: "signature",
+      model: "Signature"
+    },
     populate: {
       path: "employee",
       model: "Employees",
@@ -217,6 +230,10 @@ const getDeviationRequest = async (req, res) => {
     }
   }).populate({
     path: 'parts'
+  }) //.populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
+  .populate({
+    path: 'deviationRisk',
+    model: "DeviationRiskAssessment"
   });
   res.json({
     status: "200",
@@ -230,17 +247,18 @@ const getDeviationById = async (req, res) => {
   const foundDeviation = await DeviationRequest.findById(req.params.deviationId).populate({
     path: 'customer'
   }).populate({
-    path: 'requestBy'
-  }).populate({
     path: 'requestBy',
-    populate: {
+    populate: [{
+      path: "signature",
+      model: "Signature"
+    }, {
       path: "employee",
       model: "Employees",
       populate: {
         path: "department",
         model: "Department"
       }
-    }
+    }]
   }).populate({
     path: 'parts'
   });
@@ -324,14 +342,8 @@ const updateDeviationReq = async (req, res) => {
   newDeviation.timePeriodStart = req.body.timePeriodStart;
   newDeviation.timePeriodEnd = req.body.timePeriodEnd;
   newDeviation.other = req.body.other;
-  newDeviation.qualitySign = req.body.qualitySign;
-  newDeviation.seniorSign = req.body.seniorSign;
-  newDeviation.customerSign = req.body.customerSign;
   newDeviation.comments = req.body.comments;
   newDeviation.severity = req.body.severity;
-  newDeviation.qualitySignStatus = req.body.qualitySignStatus;
-  newDeviation.seniorSignStatus = req.body.seniorSignStatus;
-  newDeviation.customerSignStatus = req.body.customerSignStatus;
 
   if (newCustomer) {
     const foundCustomers = await Customer.find({
@@ -367,14 +379,8 @@ const updateDeviationReq = async (req, res) => {
     timePeriodStart,
     timePeriodEnd,
     other,
-    qualitySign,
-    seniorSign,
-    customerSign,
     comments,
-    severity,
-    qualitySignStatus,
-    seniorSignStatus,
-    customerSignStatus
+    severity
   } = newDeviation;
   const updatedDeviationRequest = await DeviationRequest.updateOne({
     _id: deviationId
@@ -395,14 +401,8 @@ const updateDeviationReq = async (req, res) => {
       timePeriodStart,
       timePeriodEnd,
       other,
-      qualitySign,
-      seniorSign,
-      customerSign,
       comments,
-      severity,
-      qualitySignStatus,
-      seniorSignStatus,
-      customerSignStatus
+      severity
     }
   });
 
@@ -438,7 +438,7 @@ const updateRiskStatus = async (req, res) => {
     update.deviationRisk = foundDevRisk.map(devRisk => devRisk._id);
   }
 
-  const deviationRisk = update.deviationRisk.toString();
+  const deviationRisk = update.deviationRisk;
   const updatedDeviationRequest = await DeviationRequest.updateOne({
     _id: deviationId
   }, {
@@ -566,6 +566,79 @@ const updateDeviationStatus = async (req, res) => {
     message: "Deviation Updated",
     body: foundDeviationNew
   });
+}; //close deviation////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const deleteDeviation = async (req, res) => {
+  const {
+    deviationId
+  } = req.params; //console.log("deviation")
+  //Getting Previous Images
+
+  const foundPrevDeviation = await DeviationRequest.findById(deviationId); // Deleting Images from Folder
+
+  const prevClosingFile = foundPrevDeviation.deviationStatus; // Validating if there are Images in the Field
+
+  if (prevClosingFile !== "Open") {
+    // Delete File from Folder
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME + "/Uploads/DeviationClosingFile",
+      Key: prevClosingFile
+    };
+
+    try {
+      s3.deleteObject(params, function (err, data) {
+        if (err) console.log(err);
+      });
+    } catch (error) {
+      //console.log("error")
+      res.status(403).json({
+        status: "403",
+        message: error,
+        body: ""
+      });
+    }
+  }
+
+  let deviationRiskID;
+
+  if (foundPrevDeviation.deviationRisk.length !== 0) {
+    deviationRiskID = foundPrevDeviation.deviationRisk[0];
+  } else {
+    deviationRiskID = "No";
+  } // delete the deviation risk assessment
+
+
+  console.log(deviationRiskID);
+
+  if (deviationRiskID !== "No") {
+    DeviationRiskAssessment.findById(deviationRiskID, function (err, deviationRisk) {
+      if (err) {
+        res.status(503).json({
+          status: "403",
+          message: err
+        });
+        return;
+      }
+
+      deviationRisk.remove();
+    });
+  }
+
+  DeviationRequest.findById(deviationId, function (err, deviation) {
+    if (err) {
+      res.status(503).json({
+        status: "403",
+        message: err
+      });
+      return;
+    }
+
+    deviation.remove(res.status(200).json({
+      status: "200",
+      message: 'The deviation has been deleted'
+    }));
+  });
 };
 
 module.exports = {
@@ -575,5 +648,6 @@ module.exports = {
   updateDeviation,
   updateDeviationReq,
   updateRiskStatus,
-  updateDeviationStatus
+  updateDeviationStatus,
+  deleteDeviation
 };

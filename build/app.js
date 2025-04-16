@@ -8,7 +8,7 @@ const cors = require("cors");
 
 const bodyParser = require("body-parser");
 
-const app = express();
+const app = express().use("*", cors());
 
 const config = require('../src/config');
 
@@ -18,13 +18,34 @@ const {
 
 const mongoose = require("mongoose");
 
-app.use(cors({
-  origin: ['http://paperless-apg.s3-website-us-east-1.amazonaws.com', 'http://localhost:3000'],
-  // Lista de dominios permitidos
-  credentials: true // Habilitar envío de cookies
+const sslRedirect = require('heroku-ssl-redirect'); // Configuración básica (permitir todas las solicitudes)
 
-}));
-app.options('*', cors()); /////Metodos initial setup/////
+
+app.use(cors()); // Configuración avanzada (especificar orígenes permitidos)
+
+const corsOptions = {
+  origin: ['https://www.axiompaperless.com', 'https://axiompaperless.com'],
+  // Dominio AWS
+  //origin: ['http://localhost:3000'], // Dominio Local
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  // Métodos permitidos
+  allowedHeaders: 'Content-Type,Authorization' // Encabezados permitidos
+
+};
+app.use(cors(corsOptions));
+app.get('/', (req, res) => {
+  res.send('CORS configurado correctamente.');
+}); //app.use((req, res, next) => {
+//const origin = req.headers.origin;
+// res.header('Access-Control-Allow-Origin', origin);
+//res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+//res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+//res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//res.header('Access-Control-Allow-Credentials', 'true');
+// next();
+//});
+//app.options('*', cors(corsOptions));
+/////Metodos initial setup/////
 
 const {
   createCompanys,
@@ -70,7 +91,9 @@ const itRoutes = require("./routes/it.routes.js");
 
 const encuestasRoutes = require("./routes/encuestas.routes.js");
 
-const processRoutes = require("./routes/Setup/process.routes.js"); //// Calling Middlewares
+const processRoutes = require("./routes/Setup/process.routes.js");
+
+const supermarketRoutes = require("./routes/Production/supermarket.routes.js"); //// Calling Middlewares
 
 
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -97,6 +120,11 @@ const {
 // updateEmployeesData();
 
 
+app.get("/api/cors", (req, res) => {
+  res.status(200).json({
+    message: "Esta entrando"
+  });
+});
 app.set("pkg", pkg);
 app.use(morgan("dev"));
 app.use(express.json({
@@ -132,15 +160,11 @@ app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/it", itRoutes);
 app.use("/api/encuestas", encuestasRoutes);
 app.use("/api/process", processRoutes);
+app.use("/api/supermarket", supermarketRoutes);
 setInterval(autoSendEmail, 3600000); //Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
 
 const date = new Date();
-const horaActual = date.getHours();
-console.log(horaActual);
-app.get("/api/cors", (req, res) => {
-  res.status(200).json({
-    message: "Esta entrando"
-  });
-});
+const horaActual = date.getHours(); //console.log(horaActual)
+
 module.exports = app;

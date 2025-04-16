@@ -73,6 +73,7 @@ const itRoutes = require("./routes/it.routes.js");
 const encuestasRoutes = require("./routes/encuestas.routes.js");
 const processRoutes = require("./routes/Setup/process.routes.js")
 const supermarketRoutes = require("./routes/Production/supermarket.routes.js")
+const minutaRoutes = require("./routes/General/minuta.routes.js")
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -136,6 +137,7 @@ app.use("/api/it",itRoutes);
 app.use("/api/encuestas",encuestasRoutes);
 app.use("/api/process",processRoutes);
 app.use("/api/supermarket",supermarketRoutes);
+app.use("/api/minuta", minutaRoutes);
 
 setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);

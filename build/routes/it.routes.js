@@ -30,7 +30,16 @@ const {
   getDirectory,
   createNewMonitor,
   getAllMonitors,
-  updateMonitor
+  updateMonitor,
+  createNewLabelPrinter,
+  getAllLabelPrinters,
+  updateLabelPrinter,
+  createNewChromebook,
+  getAllChromebooks,
+  updateChromebook,
+  createNewScanner,
+  getAllScanners,
+  updateScanner
 } = require("../controllers/it.controler");
 
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
@@ -83,5 +92,26 @@ router.post("/NewMonitor/:CompanyId", verifyToken, isAutorized, isAdmin, createN
 
 router.get("/Monitors/:CompanyId", verifyToken, isAutorized, isAdmin, getAllMonitors); // Route to update cellphone///
 
-router.put("/UpdateMonitor/:monitorId/:CompanyId", verifyToken, isAutorized, isAdmin, updateMonitor);
+router.put("/UpdateMonitor/:monitorId/:CompanyId", verifyToken, isAutorized, isAdmin, updateMonitor); //////    RUTAS PARA IMPRESORAS DE ETIQUETAS    ///////////////////////////////////////
+// Route to save new label printer///
+
+router.post("/NewLabelPrinter/:CompanyId", verifyToken, isAutorized, isAdmin, createNewLabelPrinter); // Route to get All the LABEL PRINTERS///
+
+router.get("/LabelPrinters/:CompanyId", verifyToken, isAutorized, isAdmin, getAllLabelPrinters); // Route to update label printer///
+
+router.put("/UpdateLabelPrinter/:labelPrinterId/:CompanyId", verifyToken, isAutorized, isAdmin, updateLabelPrinter); //////    RUTAS PARA Chromebooks   ///////////////////////////////////////
+// Route to save new chromebook///
+
+router.post("/NewChromebook/:CompanyId", verifyToken, isAutorized, isAdmin, createNewChromebook); // Route to get All the chromebooks///
+
+router.get("/Chromebooks/:CompanyId", verifyToken, isAutorized, isAdmin, getAllChromebooks); // Route to update chromebook///
+
+router.put("/UpdateChromebook/:chromebookId/:CompanyId", verifyToken, isAutorized, isAdmin, updateChromebook); //////    RUTAS PARA Scanner   ///////////////////////////////////////
+// Route to save new scanner///
+
+router.post("/NewScanner/:CompanyId", verifyToken, isAutorized, isAdmin, createNewScanner); // Route to get All the scanner///
+
+router.get("/Scanners/:CompanyId", verifyToken, isAutorized, isAdmin, getAllScanners); // Route to update scanner///
+
+router.put("/UpdateScanner/:scannerId/:CompanyId", verifyToken, isAutorized, isAdmin, updateScanner);
 module.exports = router;
