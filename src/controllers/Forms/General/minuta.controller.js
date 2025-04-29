@@ -12,15 +12,16 @@ const createNewMinuta = async (req, res) => {
 
         const {
             consecutive,
+            createdBy,
             theme,
             date,
             asistentes,
             ausentes,
+            retardos,
             lugar,
             nextMinuta,
             resumen,
-            version,
-            tasks
+            version
         } = req.body;
 
         const newMinuta = new Minuta({
@@ -31,6 +32,13 @@ const createNewMinuta = async (req, res) => {
             resumen,
             version,
         });
+
+        if (createdBy.length > 0) {
+            const foundUsers = await User.find({
+                username: { $in: createdBy },
+            });
+            newMinuta.createdBy = foundUsers.map((user) => user._id);
+        }
 
         if (asistentes.length > 0) {
             const foundUsers = await User.find({
@@ -44,6 +52,13 @@ const createNewMinuta = async (req, res) => {
                 username: { $in: ausentes },
             });
             newMinuta.ausentes = foundUsers.map((user) => user._id);
+        }
+
+        if (retardos.length > 0) {
+            const foundUsers = await User.find({
+                username: { $in: retardos },
+            });
+            newMinuta.retardos = foundUsers.map((user) => user._id);
         }
 
         if (nextMinuta) {
@@ -62,59 +77,59 @@ const createNewMinuta = async (req, res) => {
 
         await newMinuta.save()
 
-        for (let i = 0; i < tasks.length; i++) {
-            const {
-                status,
-                task,
-                updates,
-                when,
-                version
-            } = tasks[i];
+        // for (let i = 0; i < tasks.length; i++) {
+        //     const {
+        //         status,
+        //         task,
+        //         updates,
+        //         when,
+        //         version
+        //     } = tasks[i];
 
-            const newTask = new Tasks({
-                status,
-                task,
-                updates,
-                when,
-                version
-            });
+        //     const newTask = new Tasks({
+        //         status,
+        //         task,
+        //         updates,
+        //         when,
+        //         version
+        //     });
 
-            const foundMinuta = await Minuta.find({
-                consecutive: { $in: consecutive },
-            });
-            newTask.minuta = foundMinuta.map((minuta) => minuta._id);
+        //     const foundMinuta = await Minuta.find({
+        //         consecutive: { $in: consecutive },
+        //     });
+        //     newTask.minuta = foundMinuta.map((minuta) => minuta._id);
 
-            const tasksdb = await Tasks.find({
-                company: { $in: CompanyId },
-            }).sort({ item: -1 }).limit(1);
+        //     const tasksdb = await Tasks.find({
+        //         company: { $in: CompanyId },
+        //     }).sort({ item: -1 }).limit(1);
 
-            if (tasksdb.length === 0) {
-                newTask.item = 1;
-            } else {
-                newTask.item = tasksdb[0].item + 1
-            }
+        //     if (tasksdb.length === 0) {
+        //         newTask.item = 1;
+        //     } else {
+        //         newTask.item = tasksdb[0].item + 1
+        //     }
 
-            console.log(tasks[i])
+        //     console.log(tasks[i])
 
-            if (tasks[i].who) {
-                console.log(tasks[i].who)
-                const foundUser = await User.find({
-                    username: { $in: tasks[i].who },
-                });
-                newTask.who = foundUser.map((user) => user._id);
-            }
+        //     if (tasks[i].who) {
+        //         console.log(tasks[i].who)
+        //         const foundUser = await User.find({
+        //             username: { $in: tasks[i].who },
+        //         });
+        //         newTask.who = foundUser.map((user) => user._id);
+        //     }
 
-            if (CompanyId) {
-                const foundCompany = await Company.find({
-                    _id: { $in: CompanyId },
-                });
-                newTask.company = foundCompany.map((company) => company._id);
-            }
+        //     if (CompanyId) {
+        //         const foundCompany = await Company.find({
+        //             _id: { $in: CompanyId },
+        //         });
+        //         newTask.company = foundCompany.map((company) => company._id);
+        //     }
 
-            await newTask.save()
-        }
+        //     await newTask.save()
+        // }
 
-        res.status(200).json({ status: "200", message: 'Minuta y tareas guardadas' });
+        res.status(200).json({ status: "200", message: 'Minuta guardada' });
 
     } catch (error) {
         res.status(500).json({ status: "error", message: "Error al guardar minuta", error: error.message });
@@ -140,12 +155,22 @@ const getAllMinutas = async (req, res) => {
         company: { $in: CompanyId },
     }).sort({ consecutive: -1 })
         .populate({
+            path: "createdBy",
+            select: "employee",
+            populate: { path: "employee", select: "name lastName" }
+        })
+        .populate({
             path: "asistentes",
             select: "employee",
             populate: { path: "employee", select: "name lastName" }
         })
         .populate({
             path: "ausentes",
+            select: "employee",
+            populate: { path: "employee", select: "name lastName" }
+        })
+        .populate({
+            path: "retardos",
             select: "employee",
             populate: { path: "employee", select: "name lastName" }
         })

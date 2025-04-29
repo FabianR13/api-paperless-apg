@@ -143,8 +143,10 @@ const signIn = async (req, res) => {
   let userAccessApg = [
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
   let userAccessAXG = [
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
@@ -236,6 +238,18 @@ const signIn = async (req, res) => {
     }
     if (roles[i].name === "PersonalReqReclu" || roles[i].name === "admin") {
       userAccessApg[28] = "true";
+    }
+    if (roles[i].name === "CreateMinuta" || roles[i].name === "admin") {
+      userAccessApg[29] = "true";
+    }
+    if (roles[i].name === "CreateMinuta" || roles[i].name === "admin") {
+      userAccessApg[30] = "true";
+    }
+    if (roles[i].name === "SMCreator") {
+      userAccessApg[31] = "true";
+    }
+    if (roles[i].name === "SMSupplier") {
+      userAccessApg[32] = "true";
     }
   }
   //Crear variable con los roles que tiene en axiom

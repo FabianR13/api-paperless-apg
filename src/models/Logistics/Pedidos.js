@@ -21,6 +21,12 @@ const PedidoSchema = new mongoose.Schema({
         default: null
     },
     pStatus: { type: String, required: true },
+    creationTime: {
+        type: String,
+    },
+    surTime: {
+        type: String,
+    },
     fecha: { type: Date, default: Date.now }
 });
 

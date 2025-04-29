@@ -11,6 +11,12 @@ const minutaSchema = new mongoose.Schema(
         date: {
             type: Date,
         },
+        createdBy:  [
+            {
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId,
+            },
+        ],
         asistentes:  [
             {
                 ref: "User",
@@ -18,6 +24,12 @@ const minutaSchema = new mongoose.Schema(
             },
         ],
         ausentes:  [
+            {
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId,
+            },
+        ],
+        retardos:  [
             {
                 ref: "User",
                 type: mongoose.Schema.Types.ObjectId,
