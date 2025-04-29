@@ -38,8 +38,14 @@ router.post("/NewRole/:CompanyId", verifyToken, isAdmin, checkDuplicateRole, new
 router.put("/UpdateUser/:userId/:CompanyId", verifyToken, isAutorized, isAdmin, updateUser); ///Route to change user password///
 
 router.put("/ChangePassword/:userId", verifyToken, updatePassword); ///Route to change user signature///
-
-router.put("/ChangeSignature/:userId/:CompanyId", verifyToken, isAutorized, isAdmin, updateUserSign); ///Route to get all users///
+//router.put(
+// "/ChangeSignature/:userId/:CompanyId",
+// verifyToken,
+// isAutorized,
+// isAdmin,
+////// updateUserSign
+//);
+///Route to get all users///
 
 router.get("/Users/:CompanyId", verifyToken, isAutorized, getUsers); ///Route to get all roles///
 

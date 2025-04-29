@@ -163,9 +163,9 @@ const logoutWhatsapp = async (req, res) => {
 
 
 const autoSendMessage = async (req, res) => {
-  const whatsappAutoAlertData = await whatsappAutoAlert.find();
-  console.log(whatsappAutoAlertData[0].message);
-  console.log(whatsappAutoAlertData[0].receivers); // const celulares = ['+5214191280540', '+5214191364747']
+  const whatsappAutoAlertData = await whatsappAutoAlert.find(); //console.log(whatsappAutoAlertData[0].message)
+  //console.log(whatsappAutoAlertData[0].receivers)
+  // const celulares = ['+5214191280540', '+5214191364747']
   //const message = "*Mensaje autogenerado* \nMensaje de prueba"
 
   const date = new Date();
@@ -233,8 +233,8 @@ const autoSendEmail = async (req, res) => {
   const subject = whatsappAutoAlertData[1].subject;
   const message = whatsappAutoAlertData[1].message;
   const days = whatsappAutoAlertData[1].notificationDays;
-  const hours = whatsappAutoAlertData[1].timeAlert;
-  console.log(horaActual); //alerta movimiento salud
+  const hours = whatsappAutoAlertData[1].timeAlert; //console.log(horaActual)
+  //alerta movimiento salud
 
   if (whatsappAutoAlertData[1].alertStatus === "Active") {
     for (let i = 0; i < days.length; i++) {
@@ -267,8 +267,7 @@ const autoSendEmail = async (req, res) => {
                 //.json({status: "200", message: "Email Sent"})
                 console.log('Email sent');
               }
-            });
-            console.log("Envio de mensajes terminado");
+            }); // console.log("Envio de mensajes terminado")
           }
         }
       }
@@ -313,8 +312,7 @@ const autoSendEmail = async (req, res) => {
                 //.json({status: "200", message: "Email Sent"})
                 console.log('Email sent');
               }
-            });
-            console.log("Envio de mensajes terminado");
+            }); //console.log("Envio de mensajes terminado")
           }
         }
       }
@@ -356,8 +354,8 @@ const updateAutoAlertData = async (req, res) => {
   const {
     alertId
   } = req.params;
-  const UpdAlert = [];
-  console.log(req.body);
+  const UpdAlert = []; //console.log(req.body)
+
   UpdAlert.modifiedDate = req.body.modifiedDate;
   UpdAlert.alertStatus = req.body.alertStatus;
   UpdAlert.message = req.body.message;
@@ -396,8 +394,7 @@ const updateAutoAlertData = async (req, res) => {
       notificationDays,
       timeAlert
     }
-  });
-  console.log(updatedAlert);
+  }); //console.log(updatedAlert)
 
   if (!updatedAlert) {
     res.status(403).json({

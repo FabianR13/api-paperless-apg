@@ -11,8 +11,7 @@ const whatsapp = new Client({
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   }
 });
-whatsapp.on('loading_screen', (percent, message) => {
-  console.log('LOADING SCREEN', percent, message);
+whatsapp.on('loading_screen', (percent, message) => {// console.log('LOADING SCREEN', percent, message);
 });
 module.exports = {
   whatsapp

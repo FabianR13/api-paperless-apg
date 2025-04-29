@@ -32,7 +32,7 @@ router.post("/NewEvaluation/:CompanyId", verifyToken, isAutorized, isTrainingT, 
 
 router.post("/TrainingEvaluations/:CompanyId", getEvaluations); ///Route to get All the evaluations count///
 
-router.get("/TrainingEvaluations/:CompanyId", countEvaluations); ///Route to get especific evaluation//
+router.get("/CountTrainingEvaluations/:CompanyId", countEvaluations); ///Route to get especific evaluation//
 
 router.get("/TrainingEvaluations/:evaluationId/:CompanyId", verifyToken, isAutorized, isTrainingR, getEvaluationById); ///Ruta para guardar calificacion de evaluacion
 

@@ -22,6 +22,12 @@ const Accounts = require("../models/Accounts.js");
 
 const Monitors = require("../models/Monitors.js");
 
+const LabelPrinters = require("../models/LabelPrinters.js");
+
+const Chromebooks = require("../models/Chromebooks.js");
+
+const Scanners = require("../models/Scanners.js");
+
 dotenv.config({
   path: "C:\\api-paperless-apg\\src\\.env"
 });
@@ -51,6 +57,8 @@ const createNewLaptop = async (req, res) => {
     processor,
     serialNo,
     macAddress,
+    principalDisk,
+    secondaryDisk,
     initialCost,
     purchaseDate,
     status,
@@ -70,6 +78,8 @@ const createNewLaptop = async (req, res) => {
     processor,
     serialNo,
     macAddress,
+    principalDisk,
+    secondaryDisk,
     initialCost,
     purchaseDate,
     status,
@@ -206,6 +216,8 @@ const updateLaptop = async (req, res) => {
     processor,
     serialNo,
     macAddress,
+    principalDisk,
+    secondaryDisk,
     initialCost,
     purchaseDate,
     status,
@@ -257,6 +269,8 @@ const updateLaptop = async (req, res) => {
       processor,
       serialNo,
       macAddress,
+      principalDisk,
+      secondaryDisk,
       initialCost,
       purchaseDate,
       status,
@@ -291,8 +305,8 @@ const uploadLaptopLetter = async (req, res) => {
 
   const foundPrevLaptop = await Laptops.findById(laptopId); // Deleting Images from Folder
 
-  const prevLaptopLetter = foundPrevLaptop.responsibeLetter;
-  console.log(prevLaptopLetter); // Validating if there are Images in the Field
+  const prevLaptopLetter = foundPrevLaptop.responsibeLetter; //console.log(prevLaptopLetter)
+  // Validating if there are Images in the Field
 
   if (prevLaptopLetter !== "") {
     // Delete File from Folder
@@ -874,7 +888,7 @@ const updateCellphone = async (req, res) => {
   let responsible;
   let responsibleAlt = "";
   let number;
-  let responsibleGroup = "";
+  let responsibleGroup;
   let modifiedBy;
   const {
     cellphoneName,
@@ -1630,6 +1644,493 @@ const updateMonitor = async (req, res) => {
     message: "Monitor Updated ",
     body: updatedMonitorDevice
   });
+}; //create new label printer//////////////////////////////////////////////////////////////////////////////////////
+
+
+const createNewLabelPrinter = async (req, res) => {
+  const {
+    CompanyId
+  } = req.params;
+  const {
+    printerName,
+    location,
+    marca,
+    model,
+    serialNo,
+    macAddress,
+    ipAddress,
+    status,
+    printerCondition,
+    comments,
+    modifiedBy,
+    version
+  } = req.body;
+  const newLabelPrinter = new LabelPrinters({
+    printerName,
+    location,
+    marca,
+    model,
+    serialNo,
+    macAddress,
+    ipAddress,
+    status,
+    printerCondition,
+    comments,
+    version
+  });
+
+  if (modifiedBy) {
+    const foundUsers = await User.find({
+      username: {
+        $in: modifiedBy
+      }
+    });
+    newLabelPrinter.modifiedBy = foundUsers.map(user => user._id);
+  }
+
+  if (CompanyId) {
+    const foundCompany = await Company.find({
+      _id: {
+        $in: CompanyId
+      }
+    });
+    newLabelPrinter.company = foundCompany.map(company => company._id);
+  }
+
+  const saveLabelPrinter = await newLabelPrinter.save();
+
+  if (!saveLabelPrinter) {
+    res.status(403).json({
+      status: "403",
+      message: "Label Printer not Saved",
+      body: ""
+    });
+  }
+
+  return res.status(200).json({
+    status: "200",
+    message: "Label Printer Saved"
+  });
+}; // Getting all Label Printer/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const getAllLabelPrinters = async (req, res) => {
+  const {
+    CompanyId
+  } = req.params;
+
+  if (CompanyId.length !== 24) {
+    return;
+  }
+
+  const company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (!company) {
+    return;
+  }
+
+  const labelPrinters = await LabelPrinters.find({
+    company: {
+      $in: CompanyId
+    }
+  }).sort({
+    createdAt: -1
+  }).populate({
+    path: "modifiedBy",
+    select: "username"
+  });
+  res.json({
+    status: "200",
+    message: "Cellphones Loaded",
+    body: labelPrinters
+  });
+}; //update label printer data//////////////////////////////////////////////////////////////////////////////////////
+
+
+const updateLabelPrinter = async (req, res) => {
+  const {
+    labelPrinterId
+  } = req.params;
+  let modifiedBy;
+  const {
+    printerName,
+    location,
+    marca,
+    model,
+    serialNo,
+    macAddress,
+    ipAddress,
+    status,
+    printerCondition,
+    comments
+  } = req.body;
+
+  if (req.body.modifiedBy) {
+    const foundUsers = await User.find({
+      username: {
+        $in: req.body.modifiedBy
+      }
+    });
+    modifiedBy = foundUsers.map(user => user._id);
+  }
+
+  const updatedLabelPrinterDevice = await LabelPrinters.updateOne({
+    _id: labelPrinterId
+  }, {
+    $set: {
+      printerName,
+      location,
+      marca,
+      model,
+      serialNo,
+      macAddress,
+      ipAddress,
+      status,
+      printerCondition,
+      comments,
+      modifiedBy
+    }
+  });
+
+  if (!updatedLabelPrinterDevice) {
+    res.status(403).json({
+      status: "403",
+      message: "Label printer not Updated",
+      body: ""
+    });
+  }
+
+  res.status(200).json({
+    status: "200",
+    message: "Label printer Updated ",
+    body: updatedLabelPrinterDevice
+  });
+}; //create new chromebook//////////////////////////////////////////////////////////////////////////////////////
+
+
+const createNewChromebook = async (req, res) => {
+  const {
+    CompanyId
+  } = req.params;
+  const {
+    chromebookName,
+    location,
+    model,
+    serialNo,
+    macAddressWifi,
+    macAddressAdaptador,
+    status,
+    chromebookCondition,
+    comments,
+    modifiedBy,
+    version
+  } = req.body;
+  const newChromebook = new Chromebooks({
+    chromebookName,
+    location,
+    model,
+    serialNo,
+    macAddressWifi,
+    macAddressAdaptador,
+    status,
+    chromebookCondition,
+    comments,
+    version
+  });
+
+  if (modifiedBy) {
+    const foundUsers = await User.find({
+      username: {
+        $in: modifiedBy
+      }
+    });
+    newChromebook.modifiedBy = foundUsers.map(user => user._id);
+  }
+
+  if (CompanyId) {
+    const foundCompany = await Company.find({
+      _id: {
+        $in: CompanyId
+      }
+    });
+    newChromebook.company = foundCompany.map(company => company._id);
+  }
+
+  const saveChromebook = await newChromebook.save();
+
+  if (!saveChromebook) {
+    res.status(403).json({
+      status: "403",
+      message: "Chromebook not Saved",
+      body: ""
+    });
+  }
+
+  return res.status(200).json({
+    status: "200",
+    message: "Chromebook Saved"
+  });
+}; // Getting all Chromebooks/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const getAllChromebooks = async (req, res) => {
+  const {
+    CompanyId
+  } = req.params;
+
+  if (CompanyId.length !== 24) {
+    return;
+  }
+
+  const company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (!company) {
+    return;
+  }
+
+  const chromebooks = await Chromebooks.find({
+    company: {
+      $in: CompanyId
+    }
+  }).sort({
+    createdAt: -1
+  }).populate({
+    path: "modifiedBy",
+    select: "username"
+  });
+  res.json({
+    status: "200",
+    message: "Chromebooks Loaded",
+    body: chromebooks
+  });
+}; //update label printer data//////////////////////////////////////////////////////////////////////////////////////
+
+
+const updateChromebook = async (req, res) => {
+  const {
+    chromebookId
+  } = req.params;
+  let modifiedBy;
+  const {
+    chromebookName,
+    location,
+    model,
+    serialNo,
+    macAddressWifi,
+    macAddressAdaptador,
+    status,
+    chromebookCondition,
+    comments
+  } = req.body;
+
+  if (req.body.modifiedBy) {
+    const foundUsers = await User.find({
+      username: {
+        $in: req.body.modifiedBy
+      }
+    });
+    modifiedBy = foundUsers.map(user => user._id);
+  }
+
+  const updatedChromebook = await Chromebooks.updateOne({
+    _id: chromebookId
+  }, {
+    $set: {
+      chromebookName,
+      location,
+      model,
+      serialNo,
+      macAddressWifi,
+      macAddressAdaptador,
+      status,
+      chromebookCondition,
+      comments,
+      modifiedBy
+    }
+  });
+
+  if (!updatedChromebook) {
+    res.status(403).json({
+      status: "403",
+      message: "Chromebook not Updated",
+      body: ""
+    });
+  }
+
+  res.status(200).json({
+    status: "200",
+    message: "Chromebook Updated ",
+    body: updatedChromebook
+  });
+}; //create new scanner//////////////////////////////////////////////////////////////////////////////////////
+
+
+const createNewScanner = async (req, res) => {
+  const {
+    CompanyId
+  } = req.params;
+  const {
+    scannerName,
+    location,
+    model,
+    serialNoScanner,
+    serialNoBase,
+    pairCode,
+    status,
+    scannerCondition,
+    comments,
+    modifiedBy,
+    version
+  } = req.body;
+  const newScanner = new Scanners({
+    scannerName,
+    location,
+    model,
+    serialNoScanner,
+    serialNoBase,
+    pairCode,
+    status,
+    scannerCondition,
+    comments,
+    version
+  });
+
+  if (modifiedBy) {
+    const foundUsers = await User.find({
+      username: {
+        $in: modifiedBy
+      }
+    });
+    newScanner.modifiedBy = foundUsers.map(user => user._id);
+  }
+
+  if (CompanyId) {
+    const foundCompany = await Company.find({
+      _id: {
+        $in: CompanyId
+      }
+    });
+    newScanner.company = foundCompany.map(company => company._id);
+  }
+
+  const saveScanner = await newScanner.save();
+
+  if (!saveScanner) {
+    res.status(403).json({
+      status: "403",
+      message: "Scanner not Saved",
+      body: ""
+    });
+  }
+
+  return res.status(200).json({
+    status: "200",
+    message: "Scanner Saved"
+  });
+}; // Getting all Scanners/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const getAllScanners = async (req, res) => {
+  const {
+    CompanyId
+  } = req.params;
+
+  if (CompanyId.length !== 24) {
+    return;
+  }
+
+  const company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (!company) {
+    return;
+  }
+
+  const scanners = await Scanners.find({
+    company: {
+      $in: CompanyId
+    }
+  }).sort({
+    createdAt: -1
+  }).populate({
+    path: "modifiedBy",
+    select: "username"
+  });
+  res.json({
+    status: "200",
+    message: "Scanners Loaded",
+    body: scanners
+  });
+}; //update scanner data//////////////////////////////////////////////////////////////////////////////////////
+
+
+const updateScanner = async (req, res) => {
+  const {
+    scannerId
+  } = req.params;
+  let modifiedBy;
+  const {
+    scannerName,
+    location,
+    model,
+    serialNoScanner,
+    serialNoBase,
+    pairCode,
+    status,
+    scannerCondition,
+    comments
+  } = req.body;
+
+  if (req.body.modifiedBy) {
+    const foundUsers = await User.find({
+      username: {
+        $in: req.body.modifiedBy
+      }
+    });
+    modifiedBy = foundUsers.map(user => user._id);
+  }
+
+  const updatedScanner = await Scanners.updateOne({
+    _id: scannerId
+  }, {
+    $set: {
+      scannerName,
+      location,
+      model,
+      serialNoScanner,
+      serialNoBase,
+      pairCode,
+      status,
+      scannerCondition,
+      comments,
+      modifiedBy
+    }
+  });
+
+  if (!updatedScanner) {
+    res.status(403).json({
+      status: "403",
+      message: "Scanner not Updated",
+      body: ""
+    });
+  }
+
+  res.status(200).json({
+    status: "200",
+    message: "Scanner Updated ",
+    body: updatedScanner
+  });
 };
 
 module.exports = {
@@ -1654,5 +2155,14 @@ module.exports = {
   getDirectory,
   createNewMonitor,
   getAllMonitors,
-  updateMonitor
+  updateMonitor,
+  createNewLabelPrinter,
+  getAllLabelPrinters,
+  updateLabelPrinter,
+  createNewChromebook,
+  getAllChromebooks,
+  updateChromebook,
+  createNewScanner,
+  getAllScanners,
+  updateScanner
 };

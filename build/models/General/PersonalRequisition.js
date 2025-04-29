@@ -131,7 +131,7 @@ const pesonalRequisitionSchema = new mongoose.Schema({
     ref: "User",
     type: mongoose.Schema.Types.ObjectId
   }],
-  autorizedByFinances: [{
+  autorizedByFinance: [{
     ref: "User",
     type: mongoose.Schema.Types.ObjectId
   }],
@@ -142,7 +142,7 @@ const pesonalRequisitionSchema = new mongoose.Schema({
   status: {
     type: String
   },
-  recluiter: [{
+  recruiter: [{
     ref: "User",
     type: mongoose.Schema.Types.ObjectId
   }],
