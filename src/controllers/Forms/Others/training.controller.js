@@ -154,6 +154,7 @@ const getEvaluationById = async (req, res) => {
 
 // Actualizar calificacion de evaluacion/////////////////////////////////////////////////////////////////////////////////
 const updateTrainingEvaluation = async (req, res) => {
+    
     const { evaluationId } = req.params;
     const evaluationNewData = [];
 
