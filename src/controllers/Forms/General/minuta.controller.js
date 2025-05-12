@@ -156,33 +156,102 @@ const getAllMinutas = async (req, res) => {
     }).sort({ consecutive: -1 })
         .populate({
             path: "createdBy",
-            select: "employee",
+            select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
         .populate({
             path: "asistentes",
-            select: "employee",
+            select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
         .populate({
             path: "ausentes",
-            select: "employee",
+            select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
         .populate({
             path: "retardos",
-            select: "employee",
+            select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
         .populate({
             path: "nextMinuta",
-            select: "employee",
+            select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
     res.json({ status: "200", message: "Minutas Loaded", body: minutas });
 }
 
+//Actualizar minuta
+const updateMinuta = async (req, res) => {
+    try {
+        const { MinutaId, CompanyId } = req.params;
+
+        const {
+            theme,
+            asistentes,
+            ausentes,
+            retardos,
+            lugar,
+            nextMinuta,
+            resumen
+        } = req.body;
+
+        const minuta = await Minuta.findById(MinutaId);
+        if (!minuta) {
+            return res.status(404).json({ status: "404", message: "Minuta no encontrada" });
+        }
+
+        // Actualizar campos simples
+        minuta.theme = theme || minuta.theme;
+        minuta.lugar = lugar || minuta.lugar;
+        minuta.resumen = resumen || minuta.resumen;
+
+        // Asistentes
+        if (asistentes?.length > 0) {
+            const foundUsers = await User.find({ username: { $in: asistentes } });
+            minuta.asistentes = foundUsers.map(u => u._id);
+        } else {
+            minuta.asistentes = [];
+        }
+
+        // Ausentes
+        if (ausentes?.length > 0) {
+            const foundUsers = await User.find({ username: { $in: ausentes } });
+            minuta.ausentes = foundUsers.map(u => u._id);
+        } else {
+            minuta.ausentes = [];
+        }
+
+        // Retardos
+        if (retardos?.length > 0) {
+            const foundUsers = await User.find({ username: { $in: retardos } });
+            minuta.retardos = foundUsers.map(u => u._id);
+        } else {
+            minuta.retardos = [];
+        }
+
+        // Next Minuta
+        if (nextMinuta) {
+            const foundUsers = await User.find({ username: { $in: nextMinuta } });
+            minuta.nextMinuta = foundUsers.map(u => u._id);
+        } else {
+            minuta.nextMinuta = [];
+        }
+
+        await minuta.save();
+
+        res.status(200).json({ status: "200", message: "Minuta actualizada correctamente" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Error al actualizar la minuta", error: error.message });
+    }
+};
+
+
 module.exports = {
     createNewMinuta,
-    getAllMinutas
+    getAllMinutas,
+    updateMinuta
 }
