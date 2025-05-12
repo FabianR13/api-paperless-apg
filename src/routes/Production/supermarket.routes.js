@@ -1,6 +1,6 @@
 const { Router } = require("express");
-const { isAdmin, isAutorized, verifyToken } = require("../../middlewares/auth.Jwt.js");
-const { 
+const { isAdmin, isAutorized, verifyToken, isSMReader, isSMAdministrator, isSMCreator, isSMSupplier } = require("../../middlewares/auth.Jwt.js");
+const {
     createItems,
     getAllItems,
     createPedido,
@@ -13,8 +13,8 @@ const router = Router();
 router.post(
     "/AddMaterials/:CompanyId",
     verifyToken,
-    // isAutorized,
-    // isAdmin,
+    isAutorized,
+    isSMAdministrator,
     createItems
 );
 
@@ -22,8 +22,8 @@ router.post(
 router.get(
     "/Items/:CompanyId",
     verifyToken,
-    // isAutorized,
-    // isAdmin,
+    isAutorized,
+    isSMReader,
     getAllItems
 );
 
@@ -31,8 +31,8 @@ router.get(
 router.post(
     "/CrearPedido/:CompanyId",
     verifyToken,
-    // isAutorized,
-    // isAdmin,
+    isAutorized,
+    isSMCreator,
     createPedido
 );
 
@@ -40,8 +40,8 @@ router.post(
 router.get(
     "/Pedidos/:CompanyId",
     verifyToken,
-    // isAutorized,
-    // isAdmin,
+    isAutorized,
+    isSMReader,
     getAllPedidos
 );
 
@@ -49,8 +49,8 @@ router.get(
 router.put(
     "/UpdatePedido/:idPedido/:CompanyId",
     verifyToken,
-    // isAutorized,
-    // isAdmin,
+    isAutorized,
+    isSMSupplier,
     updatePedido
 );
 

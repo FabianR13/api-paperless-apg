@@ -251,6 +251,30 @@ const signIn = async (req, res) => {
     if (roles[i].name === "SMSupplier") {
       userAccessApg[32] = "true";
     }
+    if (roles[i].name === "GeneralR") {
+      userAccessApg[33] = "true";
+    }
+    if (roles[i].name === "SetupR") {
+      userAccessApg[34] = "true";
+    }
+    if (roles[i].name === "ProductionR") {
+      userAccessApg[35] = "true";
+    }
+    if (roles[i].name === "LogisticR") {
+      userAccessApg[36] = "true";
+    }
+    if (roles[i].name === "OtherR") {
+      userAccessApg[37] = "true";
+    }
+    if (roles[i].name === "SMReader") {
+      userAccessApg[38] = "true";
+    }
+    if (roles[i].name === "SMAdministrator") {
+      userAccessApg[39] = "true";
+    }
+    if (roles[i].name === "ManagementR") {
+      userAccessApg[40] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
@@ -381,10 +405,10 @@ const getUsers = async (req, res) => {
   const users = await User.find({
     company: { $in: CompanyId },
   })
-  .populate({ path: 'employee', populate: [{ path: "department" }, { path: "position" }] })
-  .populate({ path: "roles" }).populate({ path: "rolesAxiom" })
-  .populate({ path: "companyAccess" })
-  .populate({ path: 'signature'});
+    .populate({ path: 'employee', populate: [{ path: "department" }, { path: "position" }] })
+    .populate({ path: "roles" }).populate({ path: "rolesAxiom" })
+    .populate({ path: "companyAccess" })
+    .populate({ path: 'signature' });
   res.json({ status: "200", message: "Users Loaded", body: users });
 };
 // Getting all Roles//////////////////////////////////////////////////////////////////////////////////////////////////////////////

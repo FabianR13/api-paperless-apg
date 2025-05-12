@@ -11,22 +11,49 @@ const tasksSchema = new mongoose.Schema(
         item: {
             type: Number,
         },
+        task: {
+            type: String,
+        },
+        priority: {
+            type: String,
+        },
         status: {
             type: String,
         },
-        task: {
-            type: Array,
-        },
-        updates: {
-            type: Array,
-        },
-        who: [
+        owner: [
             {
                 ref: "User",
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
-        when: {
+        createdBy: [
+            {
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId,
+            },
+        ],
+        updatedBy: [
+            {
+                ref: "User",
+                type: mongoose.Schema.Types.ObjectId,
+            },
+        ],
+        startDate: {
+            type: Date,
+        },
+        dueDate: {
+            type: Date,
+        },
+        realDate: {
+            type: Date,
+        },
+        expired: {
+            type: String,
+        },
+        complete: {
+            type: Number,
+        },
+        notes: {
             type: String,
         },
         version: {
