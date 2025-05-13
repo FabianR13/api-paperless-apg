@@ -129,7 +129,7 @@ const getEvaluations = async (req, res) => {
         .limit(limit)
         .populate({ path: 'numberEmployee' })
         .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
-        .populate({ path: 'qualifiedBy', populate: { path: "employee", model: "Employees" } })
+        .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] })
         .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } });
     res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
 };
