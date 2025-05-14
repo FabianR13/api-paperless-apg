@@ -982,9 +982,6 @@ const getAllAccounts = async (req, res) => {
 //create deviation request//////////////////////////////////////////////////////////////////////////////////////
 const updateAccounts = async (req, res) => {
     const { accountsId } = req.params;
-    let responsible;
-    let responsibleAlt = "";
-    let responsibleGroup;
     let modifiedBy;
 
     const {
@@ -1005,24 +1002,6 @@ const updateAccounts = async (req, res) => {
         modifiedBy = foundUsers.map((user) => user._id);
     }
 
-    if (req.body.responsible) {
-        const foundEmployee = await Employees.find({
-            numberEmployee: { $in: req.body.responsible },
-        });
-        responsible = foundEmployee.map((employee) => employee._id);
-    }
-
-    if (responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            groupName: { $in: req.body.responsible },
-        });
-        responsibleGroup = foundAccounts.map((account) => account._id);
-    }
-
-    if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
-        responsibleAlt = req.body.responsible;
-    }
-
     const updatedAccounts = await Accounts.updateOne(
         { _id: accountsId },
         {
@@ -1034,9 +1013,6 @@ const updateAccounts = async (req, res) => {
                 printerUser,
                 ext,
                 status,
-                responsible,
-                responsibleAlt,
-                responsibleGroup,
                 modifiedBy,
                 modified
             },
