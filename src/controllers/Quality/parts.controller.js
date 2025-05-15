@@ -24,8 +24,8 @@ const createPart = async (req, res) => {
     mould,
     status,
   });
- // console.log(req.params)
- // console.log(CompanyId)
+  // console.log(req.params)
+  // console.log(CompanyId)
   if (customer) {
     const foundCustomers = await Customer.find({
       name: { $in: customer },
@@ -109,7 +109,7 @@ const getParts = async (req, res) => {
   }
   const parts = await Parts.find({
     company: { $in: CompanyId },
-  }).populate({ path: "customer" }).sort({ customer: 1 });
+  }).populate({ path: "customer" }).sort({ "partnumber": 1 });
   res.json({ status: "200", message: "Parts loaded", body: parts });
 }
 
