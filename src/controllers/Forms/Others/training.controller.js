@@ -73,7 +73,7 @@ const createTrainingEvaluation = async (req, res) => {
 
     if (partNumber) {
         const foundParts = await Parts.find({
-            partnumber: { $in: partNumber },
+            _id: { $in: partNumber },
         });
         newTrainingEvaluation.partNumber = foundParts.map((parts) => parts._id);
     }
