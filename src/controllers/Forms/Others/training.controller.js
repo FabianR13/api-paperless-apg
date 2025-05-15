@@ -154,7 +154,7 @@ const getEvaluationById = async (req, res) => {
 
 // Actualizar calificacion de evaluacion/////////////////////////////////////////////////////////////////////////////////
 const updateTrainingEvaluation = async (req, res) => {
-    
+
     const { evaluationId } = req.params;
     const evaluationNewData = [];
 
@@ -314,7 +314,7 @@ const getEvaluationsFiltered = async (req, res) => {
     const trainingEvaluationsF = await TrainingEvaluation.find(options)
         .populate({ path: 'numberEmployee' })
         .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
-        .populate({ path: 'qualifiedBy', populate: { path: "employee", model: "Employees" } })
+        .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] })
         .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
         .sort({ createdAt: -1 });
     res.json({ status: "200", message: "Evaluations Loaded New", body: trainingEvaluationsF });
