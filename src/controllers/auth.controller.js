@@ -620,7 +620,7 @@ const notificarSuppliers = async (req, res) => {
     return res.status(400).json({ message: "pushTokens debe ser un array" });
   }
 
-  await Promise.all(pushTokens.map(sendPushToToken));
+  await Promise.all(pushTokens.map(p => sendPushToToken(p.token)));
 
   return res.sendStatus(204); // OK sin respuesta
 };

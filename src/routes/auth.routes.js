@@ -99,5 +99,4 @@ router.get("/getTokenPush",
 
 //guardar pushtoken
 router.post("/notificarSuppliers", notificarSuppliers);
-
 module.exports = router;
