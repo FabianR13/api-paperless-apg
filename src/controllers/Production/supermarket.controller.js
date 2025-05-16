@@ -90,9 +90,16 @@ const getAllItems = async (req, res) => {
 //Metodo para guardar los pedidos
 // Método para guardar los pedidos
 const createPedido = async (req, res) => {
-    const now = new Date();
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const formatter = new Intl.DateTimeFormat("es-MX", {
+        timeZone: "America/Mexico_City",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const hour = parts.find(p => p.type === "hour").value;
+    const minutes = parts.find(p => p.type === "minute").value;
 
     const time = `${hour}:${minutes}`;
 
@@ -317,9 +324,16 @@ const getAllPedidos = async (req, res) => {
 // };
 // Metodo para actualizar pedido surtido
 const updatePedido = async (req, res) => {
-    const now = new Date();
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const formatter = new Intl.DateTimeFormat("es-MX", {
+        timeZone: "America/Mexico_City",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const hour = parts.find(p => p.type === "hour").value;
+    const minutes = parts.find(p => p.type === "minute").value;
 
     const time = `${hour}:${minutes}`;
 
