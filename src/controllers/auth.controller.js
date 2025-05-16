@@ -590,7 +590,7 @@ const getTokensPush = async (req, res) => {
 };
 
 const admin = require("firebase-admin");
-const serviceAccount = require("../../paperless-5089f-firebase-adminsdk-fbsvc-fe3d3064de.json"); 
+const serviceAccount = require("../../paperless-5089f-firebase-adminsdk-fbsvc-fe3d3064de.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -607,10 +607,22 @@ const sendPushToToken = async (token) => {
 
   try {
     const response = await admin.messaging().send(message);
-    console.log("✅ Notificación enviada:", response);
+    console.log("✅ Notificación enviada a:", token);
   } catch (error) {
-    console.error("❌ Error al enviar:", error);
+    console.error("❌ Error al enviar a:", token, error.message);
   }
+};
+
+const notificarSuppliers = async (req, res) => {
+  const { pushTokens } = req.body;
+
+  if (!Array.isArray(pushTokens)) {
+    return res.status(400).json({ message: "pushTokens debe ser un array" });
+  }
+
+  await Promise.all(pushTokens.map(p => sendPushToToken(p.token)));
+
+  return res.sendStatus(204); // OK sin respuesta
 };
 
 module.exports = {
@@ -627,5 +639,6 @@ module.exports = {
   getAccess,
   saveTokenPush,
   getTokensPush,
-  sendPushToToken
+  sendPushToToken,
+  notificarSuppliers
 };
