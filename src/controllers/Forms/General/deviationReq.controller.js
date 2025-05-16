@@ -5,9 +5,7 @@ const User = require("../../../models/User.js");
 const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessment.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
-const dotenv = require('dotenv');
 const { sendEmailMiddlewareResponse } = require("../../../middlewares/mailer.js");
-dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,

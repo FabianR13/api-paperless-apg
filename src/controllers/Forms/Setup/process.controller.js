@@ -3,8 +3,6 @@ const Parts = require("../../../models/Quality/Parts.js");
 const User = require("../../../models/User.js");
 const Employees = require("../../../models/Employees.js");
 const Company = require("../../../models/Company.js");
-const dotenv = require('dotenv');
-dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 // Getting all Evaluations/////////////////////////////////////////////////////////////////////////////////////////////////////
 const getEvaluation1Template = async (req, res) => {

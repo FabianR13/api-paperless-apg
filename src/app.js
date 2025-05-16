@@ -8,7 +8,7 @@ const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
 const  mongoose = require("mongoose");
 const sslRedirect = require('heroku-ssl-redirect');
-
+require("dotenv").config();
 // Configuración básica (permitir todas las solicitudes)
 
 

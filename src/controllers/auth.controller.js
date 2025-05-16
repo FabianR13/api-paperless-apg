@@ -1,14 +1,12 @@
 const User = require("../models/User.js");
 const jwt = require("jsonwebtoken");
-const config = require("../config.js");
 const Role = require("../models/Role.js");
 const Dashboard = require("../models/Dashboard.js");
 const Employees = require("../models/Employees.js");
 const Company = require("../models/Company.js");
-const dotenv = require('dotenv')
 const Signature = require("../models/Signatures.js");
 const PushToken = require("../models/PushToken.js");
-dotenv.config({ path: '../.env' });
+console.log("ENV:", process.env.FIREBASE_CREDENTIALS_JSON ? "✅ cargada" : "❌ no encontrada");
 
 //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const signUp = async (req, res) => {
@@ -590,6 +588,7 @@ const getTokensPush = async (req, res) => {
 };
 
 // Leer desde la variable de entorno
+const admin = require("firebase-admin");
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
 // Inicializar solo una vez (por si se importa en otros módulos)

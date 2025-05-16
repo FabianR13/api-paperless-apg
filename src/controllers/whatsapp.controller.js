@@ -1,8 +1,6 @@
 const { Client, RemoteAuth, LocalAuth } = require('whatsapp-web.js');
 const { MongoStore } = require('wwebjs-mongo');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv')
-dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 const QRCode = require("qrcode")
 const whatsappAutoAlert = require("../models/whatsappAutoAlert.js");
 const { whatsapp } = require("../middlewares/whatsapp.js");

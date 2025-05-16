@@ -4,8 +4,6 @@ const Company = require("../models/Company.js");
 const Department = require("../models/Deparment.js");
 const Position = require("../models/Position.js");
 const AWS = require('aws-sdk');
-const dotenv = require('dotenv')
-dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 //Variables para acceder a s3 bucket///
 AWS.config.update({

@@ -2,8 +2,6 @@
 const Kaizen = require("../../../models/Others/Kaizen.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
-const dotenv = require('dotenv')
-dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
