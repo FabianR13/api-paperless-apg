@@ -589,13 +589,17 @@ const getTokensPush = async (req, res) => {
   res.json({ status: "200", message: "Tokens Loaded", body: tokens });
 };
 
-const admin = require("firebase-admin");
-const serviceAccount = require("../../paperless-5089f-firebase-adminsdk-fbsvc-fe3d3064de.json");
+// Leer desde la variable de entorno
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Inicializar solo una vez (por si se importa en otros módulos)
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
+// Función para enviar a un solo token
 const sendPushToToken = async (token) => {
   const message = {
     token,
@@ -613,6 +617,7 @@ const sendPushToToken = async (token) => {
   }
 };
 
+// Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
 const notificarSuppliers = async (req, res) => {
   const { pushTokens } = req.body;
 
@@ -620,9 +625,13 @@ const notificarSuppliers = async (req, res) => {
     return res.status(400).json({ message: "pushTokens debe ser un array" });
   }
 
-  await Promise.all(pushTokens.map(p => sendPushToToken(p.token)));
+  // 🔍 Filtrar proveedores
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
 
-  return res.sendStatus(204); // OK sin respuesta
+  // 🔁 Enviar notificaciones
+  await Promise.all(supplierTokens.map(p => sendPushToToken(p.token)));
+
+  return res.sendStatus(204);
 };
 
 module.exports = {
