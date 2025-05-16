@@ -188,7 +188,7 @@ const getAllPedidos = async (req, res) => {
 
     const pedidos = await Pedido.find({
         company: { $in: CompanyId },
-    }).sort({ idPedido: -1 })
+    }).sort({ createdAt: -1 })
         .populate({
             path: "usuario",
             select: "employee",
