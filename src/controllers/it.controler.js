@@ -5,7 +5,6 @@ const GenericAccount = require("../models/GenericAccount.js");
 const Deparment = require("../models/Deparment.js");
 const User = require("../models/User.js");
 const AWS = require('aws-sdk');
-const dotenv = require('dotenv');
 const Lines = require("../models/Lines.js");
 const Cellphones = require("../models/Cellphones.js");
 const Accounts = require("../models/Accounts.js");
@@ -13,7 +12,6 @@ const Monitors = require("../models/Monitors.js");
 const LabelPrinters = require("../models/LabelPrinters.js");
 const Chromebooks = require("../models/Chromebooks.js");
 const Scanners = require("../models/Scanners.js");
-dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
 AWS.config.update({
     region: process.env.S3_BUCKET_REGION,
