@@ -6,7 +6,8 @@ const Dashboard = require("../models/Dashboard.js");
 const Employees = require("../models/Employees.js");
 const Company = require("../models/Company.js");
 const dotenv = require('dotenv')
-const Signature = require("../models/Signatures.js")
+const Signature = require("../models/Signatures.js");
+const PushToken = require("../models/PushToken.js");
 dotenv.config({ path: '../.env' });
 
 //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -560,6 +561,58 @@ const getAccess = async (req, res) => {
   res.json({ status: "200", message: "Access" });
 };
 
+//get access to directory/////////////////////////////////////////////////////////////////////////////////////////////////
+const saveTokenPush = async (req, res) => {
+  try {
+    const { tokenPush, isSupplier } = req.body;
+
+    if (!tokenPush) {
+      return res.status(400).json({ message: "Token FCM requerido" });
+    }
+
+    // Si ya existe ese token, actualiza el campo isSupplier
+    await PushToken.findOneAndUpdate(
+      { token: tokenPush },
+      { isSupplier },
+      { upsert: true, new: true }
+    );
+
+    return res.sendStatus(204); // No Content
+  } catch (error) {
+    console.error("Error al guardar token FCM:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+const getTokensPush = async (req, res) => {
+  const tokens = await PushToken.find();
+  res.json({ status: "200", message: "Tokens Loaded", body: tokens });
+};
+
+const admin = require("firebase-admin");
+const serviceAccount = require("../../paperless-5089f-firebase-adminsdk-fbsvc-fe3d3064de.json"); 
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const sendPushToToken = async (token) => {
+  const message = {
+    token,
+    notification: {
+      title: "Nuevo pedido creado",
+      body: "Se ha generado un nuevo pedido en la plataforma.",
+    },
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notificación enviada:", response);
+  } catch (error) {
+    console.error("❌ Error al enviar:", error);
+  }
+};
+
 module.exports = {
   signUp,
   newRole,
@@ -571,5 +624,8 @@ module.exports = {
   updatePassword,
   updateUserSign,
   getCompany,
-  getAccess
+  getAccess,
+  saveTokenPush,
+  getTokensPush,
+  sendPushToToken
 };

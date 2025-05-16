@@ -11,7 +11,11 @@ const {
   updatePassword,
   updateUserSign,
   getCompany,
-  getAccess
+  getAccess,
+  getTokensPush,
+  saveTokenPush,
+  notificarSuppliers,
+  sendPushToToken
 } = require("../controllers/auth.controller.js");
 const {
   checkDuplicateUsernameorEmail,
@@ -55,11 +59,11 @@ router.put(
 );
 ///Route to change user signature///
 //router.put(
- // "/ChangeSignature/:userId/:CompanyId",
- // verifyToken,
- // isAutorized,
- // isAdmin,
- ////// updateUserSign
+// "/ChangeSignature/:userId/:CompanyId",
+// verifyToken,
+// isAutorized,
+// isAdmin,
+////// updateUserSign
 //);
 ///Route to get all users///
 router.get("/Users/:CompanyId",
@@ -85,4 +89,15 @@ router.get("/Dashboard",
   verifyToken,
   getDashboardCards);
 
+//guardar pushtoken
+router.post("/tokenPush",
+  saveTokenPush);
+
+//Obtener pushtokes
+router.get("/getTokenPush",
+  getTokensPush);
+
+//guardar pushtoken
+router.post("/notificarSuppliers",
+  sendPushToToken);
 module.exports = router;
