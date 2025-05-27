@@ -28,6 +28,8 @@ const PedidoSchema = new mongoose.Schema({
         type: String,
     },
     fecha: { type: Date, default: Date.now }
+},{
+    timestamps: true 
 });
 
 module.exports = mongoose.model("Pedido", PedidoSchema);

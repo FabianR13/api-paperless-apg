@@ -188,7 +188,7 @@ const getAllPedidos = async (req, res) => {
 
     const pedidos = await Pedido.find({
         company: { $in: CompanyId },
-    }).sort({ idPedido: -1 })
+    }).sort({ createdAt: -1 })
         .populate({
             path: "usuario",
             select: "employee",
@@ -204,7 +204,7 @@ const getAllPedidos = async (req, res) => {
             populate: { path: "id", select: "name description" }
         });
     res.json({ status: "200", message: "Pedidos Loaded", body: pedidos });
-};
+}; 
 
 //Metodo para actualizar pedido surtido
 // const updatePedido = async (req, res) => {

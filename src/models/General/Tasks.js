@@ -44,6 +44,9 @@ const tasksSchema = new mongoose.Schema(
         dueDate: {
             type: Date,
         },
+        originalDueDate: {
+            type: Date,
+        },
         realDate: {
             type: Date,
         },
