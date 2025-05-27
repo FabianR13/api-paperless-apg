@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { isAdmin, isAutorized, verifyToken } = require("../middlewares/auth.Jwt");
-const { 
+const {
     createNewLaptop,
     getAllLaptops,
     updateLaptop,
@@ -36,6 +36,7 @@ const {
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
 const uploadAccountsFile = require("../middlewares/uploadAccountsFile.js");
+const uploadFaqImages = require("../middlewares/uploadFaqImg.js");
 const router = Router();
 
 // Route to save new laptop///
@@ -321,6 +322,12 @@ router.put(
     isAutorized,
     isAdmin,
     updateScanner
+);
+
+///Route to Post a New Kaizen///
+router.post("/NewFaq/:CompanyId",
+    uploadFaqImages,
+    // createKaizen
 );
 
 module.exports = router;

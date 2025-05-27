@@ -61,6 +61,8 @@ const createNewTask = async (req, res) => {
             version,
         });
 
+        newTask.originalDueDate = dueDate;
+
         if (createdBy.length > 0) {
             const foundUsers = await User.find({
                 username: { $in: createdBy },

@@ -204,7 +204,7 @@ const getAllPedidos = async (req, res) => {
             populate: { path: "id", select: "name description" }
         });
     res.json({ status: "200", message: "Pedidos Loaded", body: pedidos });
-};
+}; 
 
 //Metodo para actualizar pedido surtido
 // const updatePedido = async (req, res) => {
