@@ -5,7 +5,8 @@ const {
     getAllItems,
     createPedido,
     getAllPedidos,
-    updatePedido
+    updatePedido,
+    getRecentPedidos
 } = require("../../controllers/Production/supermarket.controller.js");
 const router = Router();
 
@@ -52,6 +53,15 @@ router.put(
     isAutorized,
     isSMSupplier,
     updatePedido
+);
+
+//route to get 24h pedidos
+router.get(
+    "/RecentPedidos/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isSMReader,
+    getRecentPedidos
 );
 
 module.exports = router;
