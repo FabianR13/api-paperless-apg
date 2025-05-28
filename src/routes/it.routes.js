@@ -37,6 +37,7 @@ const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
 const uploadAccountsFile = require("../middlewares/uploadAccountsFile.js");
 const uploadFaqImages = require("../middlewares/uploadFaqImg.js");
+const { createFaq } = require("../controllers/faq.controller.js");
 const router = Router();
 
 // Route to save new laptop///
@@ -327,7 +328,7 @@ router.put(
 ///Route to Post a New Kaizen///
 router.post("/NewFaq/:CompanyId",
     uploadFaqImages,
-    // createKaizen
+    createFaq
 );
 
 module.exports = router;
