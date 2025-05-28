@@ -29,18 +29,21 @@ const trainingEvaluationSchema = new mongoose.Schema(
         trainer: [
             {
                 ref: "User",
+                required: true,
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
         partNumber: [
             {
                 ref: "Parts",
+                required: true,
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],
         numberEmployee: [
             {
                 ref: "Employees",
+                required: true,
                 type: mongoose.Schema.Types.ObjectId,
             },
         ],

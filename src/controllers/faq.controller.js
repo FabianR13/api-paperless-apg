@@ -1,7 +1,10 @@
 // Controlador para el Kaizen
-const Kaizen = require("../../../models/Others/Kaizen.js");
-const Company = require("../../../models/Company.js");
+const Company = require("../models/Company.js");
 const AWS = require('aws-sdk');
+const Dashboard = require("../models/Dashboard.js");
+const Forms = require("../models/Forms.js");
+const Faq = require("../models/IT/Faq.js");
+const User = require("../models/User.js");
 
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
@@ -15,105 +18,97 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 //Create new kaizen/////////////////////////////////////////////////////////////////////////////////////////////////////////
-const createKaizen = async (req, res) => {
+const createFaq = async (req, res) => {
+  const { CompanyId } = req.params;
+
   const {
-    kaizenName,
-    date,
+    category,
+    subCategory,
+    title,
+    subtitle,
     createdBy,
-    area,
-    implementArea,
-    implementDate,
-    takenPlant,
-    teamKaizen,
-    money,
-    space,
-    security,
-    ergonomy,
-    fiveS,
-    environment,
-    process,
-    motivation,
-    other,
-    beforeKaizen,
-    afterKaizen,
-    status,
-    montlyRank,
-    observations,
-    lastModifyBy,
-    implementationCost,
-    company,
+    modifiedBy,
+    version,
+    steps,
   } = req.body;
 
   //Retreiving the data for each Before Kaizen Image and adding to the schema
-  let kaizenImagesB = [];
+  let images = [];
 
-  if (req.files["kaizenImagesB"]) {
-    if (req.files["kaizenImagesB"].length > 0) {
-      kaizenImagesB = req.files["kaizenImagesB"].map((file) => {
-        return { img: file.key };
-      });
-    }
-  }
-  //Retreiving the data for each Before Kaizen Image and adding to the schema
-  let kaizenImagesA = [];
-
-  if (req.files["kaizenImagesA"]) {
-    if (req.files["kaizenImagesA"].length > 0) {
-      kaizenImagesA = req.files["kaizenImagesA"].map((file) => {
-        return { img: file.key };
-      });
-    }
-  }
-
-  const kaizen = new Kaizen({
-    kaizenName,
-    date,
-    createdBy,
-    area,
-    implementArea,
-    implementDate,
-    takenPlant,
-    teamKaizen,
-    money,
-    space,
-    security,
-    ergonomy,
-    fiveS,
-    environment,
-    process,
-    motivation,
-    other,
-    beforeKaizen,
-    afterKaizen,
-    status,
-    montlyRank,
-    observations,
-    lastModifyBy,
-    implementationCost,
-    kaizenImagesB,
-    kaizenImagesA,
-  });
-  if (company) {
-    const foundCompany = await Company.find({
-      _id: { $in: company },
+  if (req.files && req.files.length > 0) {
+    images = req.files.map((file, index) => {
+      const stepIdFieldName = `images[${index}][stepId]`;
+      const stepId = req.body[stepIdFieldName]; // Obtener el stepId del body
+      return {
+        img: file.key, // Clave de S3
+        stepId: stepId   // ID del paso al que pertenece esta imagen
+      };
     });
-    kaizen.company = foundCompany.map((company) => company._id);
   }
 
-  const kaizens = await Kaizen.find({
-    company: { $in: req.body.company },
-  }).sort({ consecutive: -1 }).limit(1);
-
-  if (kaizens.length === 0) {
-    kaizen.consecutive = 1;
-  } else {
-    kaizen.consecutive = kaizens[0].consecutive + 1
+  if (steps) {
+    try {
+      parsedSteps = JSON.parse(steps);
+      if (!Array.isArray(parsedSteps)) {
+        console.warn("El campo 'steps' parseado no es un array. Se guardará como array vacío o se manejará el error.");
+      }
+    } catch (error) {
+      console.error("Error al parsear 'steps' JSON:", error);
+      return res.status(400).json({ status: "400", message: "Error al procesar los pasos (formato JSON inválido)." });
+    }
   }
 
-  kaizen.save((error, kaizen) => {
+  const newFaq = new Faq({
+    title,
+    subtitle,
+    version,
+    steps: parsedSteps,
+    images
+  });
+
+  if (category) {
+    const foundUsers = await Dashboard.find({
+      _id: { $in: category },
+    });
+    newFaq.category = foundUsers.map((user) => user._id);
+  }
+
+  if (subCategory) {
+    const foundUsers = await Forms.find({
+      _id: { $in: subCategory },
+    });
+    newFaq.subCategory = foundUsers.map((user) => user._id);
+  }
+
+  if (modifiedBy) {
+    const foundUsers = await User.find({
+      username: { $in: modifiedBy },
+    });
+    newFaq.modifiedBy = foundUsers.map((user) => user._id);
+  }
+
+  if (createdBy) {
+    const foundUsers = await User.find({
+      username: { $in: createdBy },
+    });
+    newFaq.createdBy = foundUsers.map((user) => user._id);
+  }
+
+  if (CompanyId) {
+    const foundCompany = await Company.find({
+      _id: { $in: CompanyId },
+    });
+    newFaq.company = foundCompany.map((company) => company._id);
+  }
+
+  newFaq.save((error, newFaq) => {
     if (error) return res.status(400).json({ status: "400", message: error });
-    if (kaizen) {
-      res.json({ status: "200", message: "Kaizen Created", body: kaizen });
+    if (newFaq) {
+      res.json({ status: "200", message: "Faq Created", body: newFaq });
     }
   });
 };
+
+module.exports = {
+  createFaq
+}

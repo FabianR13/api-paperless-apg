@@ -33,6 +33,23 @@ const createTrainingEvaluation = async (req, res) => {
         question13,
         version
     } = req.body;
+
+    const isInvalidInput = (fieldValue) => {
+        return (
+            fieldValue === undefined ||
+            fieldValue === null ||
+            fieldValue === "" ||
+            (Array.isArray(fieldValue) && fieldValue.length === 0)
+        );
+    };
+
+    if (isInvalidInput(trainer) || isInvalidInput(partNumber) || isInvalidInput(numberEmployee)) {
+        return res.status(400).json({
+            status: "400",
+            message: "No se guardó la evaluación porque no se pudieron analizar los datos correctamente."
+        });
+    }
+
     const newTrainingEvaluation = new TrainingEvaluation({
         evaluationStatus,
         evaluationDate,
@@ -55,47 +72,55 @@ const createTrainingEvaluation = async (req, res) => {
         version
     });
 
-    if (qualifiedBy) {
-        const foundUsers = await User.find({
-            username: { $in: qualifiedBy },
-        });
-        newTrainingEvaluation.qualifiedBy = foundUsers.map((user) => user._id);
-    }
-
-    if (trainer) {
-        const foundUsers = await User.find({
-            username: { $in: trainer },
-        });
-        newTrainingEvaluation.trainer = foundUsers.map((user) => user._id);
-    }
-
-    if (partNumber) {
-        const foundParts = await Parts.find({
-            _id: { $in: partNumber },
-        });
-        newTrainingEvaluation.partNumber = foundParts.map((parts) => parts._id);
-    }
-
-    if (numberEmployee) {
-        const foundEmployee = await Employees.find({
-            numberEmployee: { $in: numberEmployee },
-        });
-        newTrainingEvaluation.numberEmployee = foundEmployee.map((employee) => employee._id);
-    }
-
-    if (CompanyId) {
-        const foundCompany = await Company.find({
-            _id: { $in: CompanyId },
-        });
-        newTrainingEvaluation.company = foundCompany.map((company) => company._id);
-    }
-
-    newTrainingEvaluation.save((error, newTrainingEvaluation) => {
-        if (error) return res.status(400).json({ status: "400", message: error });
-        if (newTrainingEvaluation) {
-            res.json({ status: "200", message: "Evaluation Created", body: newTrainingEvaluation });
+    try {
+        if (qualifiedBy) {
+            const foundUsers = await User.find({
+                username: { $in: qualifiedBy },
+            });
+            newTrainingEvaluation.qualifiedBy = foundUsers.map((user) => user._id);
         }
-    });
+
+        if (trainer) {
+            const foundUsers = await User.find({
+                username: { $in: trainer },
+            });
+            newTrainingEvaluation.trainer = foundUsers.map((user) => user._id);
+        }
+
+        if (partNumber) {
+            const foundParts = await Parts.find({
+                _id: { $in: partNumber },
+            });
+            newTrainingEvaluation.partNumber = foundParts.map((parts) => parts._id);
+        }
+
+        if (numberEmployee) {
+            const foundEmployee = await Employees.find({
+                numberEmployee: { $in: numberEmployee },
+            });
+            newTrainingEvaluation.numberEmployee = foundEmployee.map((employee) => employee._id);
+        }
+
+        if (CompanyId) {
+            const foundCompany = await Company.find({
+                _id: { $in: CompanyId },
+            });
+            newTrainingEvaluation.company = foundCompany.map((company) => company._id);
+        }
+
+        // Guardar la nueva evaluación
+        const savedTrainingEvaluation = await newTrainingEvaluation.save();
+        res.json({ status: "200", message: "Evaluation Created", body: savedTrainingEvaluation });
+
+    } catch (error) {
+        // Captura errores de las operaciones await (búsquedas en BD, save)
+        console.error("Error al crear la evaluación de entrenamiento:", error);
+        // El error de Mongoose (si los arrays requeridos están vacíos después de los mapeos) también se capturará aquí.
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ status: "400", message: "Error de validación: " + error.message, errors: error.errors });
+        }
+        return res.status(500).json({ status: "500", message: "Error interno del servidor al crear la evaluación.", error: error.message });
+    }
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const countEvaluations = async (req, res) => {
