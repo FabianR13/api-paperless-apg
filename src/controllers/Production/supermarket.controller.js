@@ -204,7 +204,7 @@ const getAllPedidos = async (req, res) => {
             populate: { path: "id", select: "name description" }
         });
     res.json({ status: "200", message: "Pedidos Loaded", body: pedidos });
-}; 
+};
 
 //Metodo para actualizar pedido surtido
 // const updatePedido = async (req, res) => {
@@ -402,11 +402,65 @@ const updatePedido = async (req, res) => {
     }
 };
 
+const getRecentPedidos = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    // Valida la longitud del CompanyId (asumiendo que es un ObjectId de MongoDB)
+    if (CompanyId.length !== 24) {
+        // Es mejor enviar una respuesta en lugar de solo retornar
+        return res.status(400).json({ status: "400", message: "Formato de CompanyId inválido." });
+    }
+
+    try {
+        // Primero, verificamos si la compañía existe.
+        // Si CompanyId es siempre un único ID, findOne es más apropiado.
+        // El uso de $in con un solo valor funciona, pero findOne({_id: CompanyId}) es más directo.
+        const company = await Company.findOne({ _id: CompanyId });
+
+        if (!company) {
+            // Si la compañía no existe, envía una respuesta apropiada.
+            return res.status(404).json({ status: "404", message: "Compañía no encontrada." });
+        }
+
+        // Calcula la fecha y hora de hace 24 horas desde el momento actual.
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        // Busca los pedidos
+        const pedidos = await Pedido.find({
+            company: CompanyId, // Asumo que 'company' en Pedido es el ObjectId de la compañía.
+            // Si CompanyId pudiera ser un array, { $in: CompanyId } sería correcto.
+            createdAt: { $gte: twentyFourHoursAgo } // Filtra los pedidos creados desde hace 24 horas hasta ahora.
+        })
+            .sort({ createdAt: -1 }) // Ordena los más recientes primero
+            .populate({
+                path: "usuario",
+                select: "employee",
+                populate: { path: "employee", select: "name lastName" }
+            })
+            .populate({
+                path: "surtidor",
+                select: "employee",
+                populate: { path: "employee", select: "name lastName" }
+            })
+            .populate({
+                path: "items",
+                populate: { path: "id", select: "name description" }
+            });
+
+        res.json({ status: "200", message: "Pedidos cargados", body: pedidos });
+
+    } catch (error) {
+        // Manejo de errores generales (e.g., problemas de conexión con la BD)
+        console.error("Error al obtener pedidos:", error);
+        res.status(500).json({ status: "500", message: "Error interno del servidor al cargar los pedidos." });
+    }
+};
+
 
 module.exports = {
     createItems,
     getAllItems,
     createPedido,
     getAllPedidos,
-    updatePedido
+    updatePedido,
+    getRecentPedidos
 }
