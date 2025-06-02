@@ -6,15 +6,22 @@ const RegistroMovimientos = require("../../models/Logistics/RegistroMovimiento.j
 
 //Crear nuevos Items//////////////////////////////////////////////////////////////////////////////////////////////////// 
 const createItems = async (req, res) => {
-    const { materials, user } = req.body;
+    const { materials, user } = req.body; // 'materials' es el array que proporcionaste
     const { CompanyId } = req.params;
-    let company = "";
+    let companyObjectId = null; // Usaremos null o el ObjectId directamente
 
     if (CompanyId) {
-        const foundCompany = await Company.find({
-            _id: { $in: CompanyId },
-        });
-        company = foundCompany.map((company) => company._id);
+        try {
+            const foundCompany = await Company.findById(CompanyId);
+            if (foundCompany) {
+                companyObjectId = foundCompany._id;
+            } else {
+                return res.status(404).json({ message: "Compañía no encontrada con el ID proporcionado" });
+            }
+        } catch (error) {
+            console.error("Error al buscar compañía:", error);
+            return res.status(500).json({ message: "Error al buscar la compañía" });
+        }
     }
 
     // Verificar que materials es un array válido
@@ -22,49 +29,78 @@ const createItems = async (req, res) => {
         return res.status(400).json({ message: "Datos inválidos, se esperaba un array de materiales" });
     }
 
-    //Registrar el movimiento en la base de datos
+    // Registrar el movimiento en la base de datos
     const nuevoMovimiento = new RegistroMovimientos({
-        // usuario: usuarioEncontrado._id,
         tipoAccion: "Modificar Items",
         detalles: `Actualizo la informacion de los Items con excel de PRISM.`
-    })
+    });
 
     // Buscar ID del usuario en la base de datos
-    if (user) {
-        const foundUsers = await User.find({
-            username: { $in: user },
-        });
-        nuevoMovimiento.usuario = foundUsers.map((user) => user._id);
+    if (user) { // 'user' probablemente sea el username
+        try {
+            const foundUser = await User.findOne({ username: user }); // findOne si esperas un solo usuario
+            if (foundUser) {
+                nuevoMovimiento.usuario = foundUser._id;
+            } else {
+                console.warn(`Usuario "${user}" no encontrado para el registro de movimiento.`);
+                // Decide si esto es un error o si el movimiento puede guardarse sin usuario.
+            }
+        } catch (error) {
+            console.error("Error al buscar usuario:", error);
+            // Considera cómo manejar este error.
+        }
     }
 
     try {
-        for (const group of materials) {
-            for (const material of group.materials) {
-                const existingMaterial = await Items.findOne({ name: material.name });
+        // Iterar directamente sobre el array de materiales, ya que cada elemento es un material
+        for (const material of materials) {
+            // Validar que el objeto material tenga las propiedades necesarias (ej. name, qty)
+            if (!material || typeof material.name !== 'string' || typeof material.qty !== 'number') {
+                console.warn('Item de material inválido o incompleto, omitiendo:', material);
+                continue; // Saltar al siguiente material
+            }
 
-                if (existingMaterial) {
-                    // Si el material existe, actualizamos la cantidad
-                    existingMaterial.qty += material.qty;
-                    await existingMaterial.save();
-                } else {
-                    // Si el material no existe, lo creamos con el objeto valor2
-                    const newMaterial = new Items({
-                        ...material,
-                        itemGroup: {
-                            valor: material.itemGroup, // Asignamos el valor
-                            descripcion: "Desconocido" // Descripción predeterminada
-                        },
-                        company: company,
-                    });
-                    await newMaterial.save();
+            const existingMaterial = await Items.findOne({ name: material.name, company: companyObjectId }); // Opcional: buscar también por compañía si es relevante
+
+            if (existingMaterial) {
+                // Si el material existe, actualizamos la cantidad
+                existingMaterial.qty = (existingMaterial.qty || 0) + material.qty; // Manejo de qty undefined o null
+                // También puedes querer actualizar otros campos si vienen en 'material'
+                existingMaterial.description = material.description || existingMaterial.description;
+                existingMaterial.class = material.class || existingMaterial.class;
+                existingMaterial.uom = material.uom || existingMaterial.uom;
+                if (material.itemGroup) { // Solo actualizar si se proporciona
+                    existingMaterial.itemGroup.valor = material.itemGroup;
+                    // existingMaterial.itemGroup.descripcion = "Actualizado"; // O alguna lógica para la descripción
                 }
+                // No actualices selectedBy aquí a menos que sea intencional desde esta carga masiva
+
+                await existingMaterial.save();
+            } else {
+                // Si el material no existe, lo creamos
+                const newMaterialData = {
+                    ...material, // Copia todas las propiedades del material de entrada
+                    qty: material.qty || 0, // Asegurar que qty tenga un valor numérico
+                    itemGroup: {
+                        valor: material.itemGroup || "Desconocido", // Valor predeterminado si no viene
+                        descripcion: "Desconocido" // Descripción predeterminada
+                    },
+                    selectedBy: [], // Inicializar como vacío por defecto si no viene
+                };
+                if (companyObjectId) {
+                    newMaterialData.company = companyObjectId;
+                }
+
+                const newMaterialInstance = new Items(newMaterialData);
+                await newMaterialInstance.save();
             }
         }
+
         await nuevoMovimiento.save();
         res.status(200).json({ status: "200", message: 'Materiales procesados correctamente' });
     } catch (error) {
         console.error('Error al procesar materiales:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        res.status(500).json({ message: 'Error interno del servidor al procesar materiales', details: error.message });
     }
 };
 
@@ -188,7 +224,7 @@ const getAllPedidos = async (req, res) => {
 
     const pedidos = await Pedido.find({
         company: { $in: CompanyId },
-    }).sort({ createdAt: -1 })
+    }).sort({ createdAt: 1 })
         .populate({
             path: "usuario",
             select: "employee",
@@ -455,6 +491,74 @@ const getRecentPedidos = async (req, res) => {
     }
 };
 
+// Metodo para actualizar pedido cancelado
+const cancelPedido = async (req, res) => {
+    const formatter = new Intl.DateTimeFormat("es-MX", {
+        timeZone: "America/Mexico_City",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const hour = parts.find(p => p.type === "hour").value;
+    const minutes = parts.find(p => p.type === "minute").value;
+
+    const time = `${hour}:${minutes}`;
+
+    try {
+        const { idPedido } = req.params;
+        const { surtidor, pStatus } = req.body.pedido;
+
+        // Buscar el pedido actual
+        const pedidoActual = await Pedido.findOne({ idPedido: idPedido });
+        if (!pedidoActual) {
+            return res.status(404).json({ message: "Pedido no encontrado." });
+        }
+
+        // Registrar el movimiento en la base de datos
+        const nuevoMovimiento = new RegistroMovimientos({
+            tipoAccion: "Cancelar pedido",
+            detalles: `Cancelo el pedido con id: ${idPedido}.`,
+        });
+
+        // Buscar el surtidor
+        let surtidorId = null;
+        if (surtidor) {
+            const foundUsers = await User.find({ username: surtidor });
+            surtidorId = foundUsers.map((user) => user._id);
+
+        }
+
+        // Actualizar otros datos del pedido
+        if (surtidorId) {
+            pedidoActual.surtidor = surtidorId;
+            nuevoMovimiento.usuario = surtidorId;
+        }
+
+        pedidoActual.surTime = time;
+        pedidoActual.pStatus = pStatus;
+
+        // Guardar cambios en el pedido
+        await pedidoActual.save();
+
+        // Guardar el movimiento registrado
+        await nuevoMovimiento.save();
+
+        // Enviar respuesta de éxito
+        res.status(200).json({
+            status: "200",
+            message: "Pedido actualizado con éxito.",
+            body: pedidoActual,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: "500",
+            message: "Error en el servidor.",
+            error: error.message,
+        });
+    }
+};
 
 module.exports = {
     createItems,
@@ -462,5 +566,6 @@ module.exports = {
     createPedido,
     getAllPedidos,
     updatePedido,
-    getRecentPedidos
+    getRecentPedidos,
+    cancelPedido
 }

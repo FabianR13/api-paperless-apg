@@ -634,6 +634,41 @@ const notificarSuppliers = async (req, res) => {
   return res.sendStatus(204);
 };
 
+// Función para enviar a un solo token
+const sendPushToTokenCancel = async (token) => {
+  const message = {
+    token,
+    notification: {
+      title: "Han cancelado un pedido",
+      body: "Se ha cancelado un pedido en la plataforma.",
+    },
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notificación enviada a:", token);
+  } catch (error) {
+    console.error("❌ Error al enviar a:", token, error.message);
+  }
+};
+
+// Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
+const notificarCancelacion = async (req, res) => {
+  const { pushTokens } = req.body;
+
+  if (!Array.isArray(pushTokens)) {
+    return res.status(400).json({ message: "pushTokens debe ser un array" });
+  }
+
+  // 🔍 Filtrar proveedores
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
+
+  // 🔁 Enviar notificaciones
+  await Promise.all(supplierTokens.map(p => sendPushToTokenCancel(p.token)));
+
+  return res.sendStatus(204);
+};
+
 module.exports = {
   signUp,
   newRole,
@@ -649,5 +684,6 @@ module.exports = {
   saveTokenPush,
   getTokensPush,
   sendPushToToken,
-  notificarSuppliers
+  notificarSuppliers,
+  notificarCancelacion
 };
