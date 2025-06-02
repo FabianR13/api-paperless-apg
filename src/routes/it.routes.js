@@ -37,7 +37,7 @@ const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
 const uploadAccountsFile = require("../middlewares/uploadAccountsFile.js");
 const uploadFaqImages = require("../middlewares/uploadFaqImg.js");
-const { createFaq } = require("../controllers/faq.controller.js");
+const { createFaq, getAllFaqs } = require("../controllers/faq.controller.js");
 const router = Router();
 
 // Route to save new laptop///
@@ -330,5 +330,15 @@ router.post("/NewFaq/:CompanyId",
     uploadFaqImages,
     createFaq
 );
+
+// Route to get All the scanner///
+router.get(
+    "/Faqs/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    getAllFaqs
+);
+
 
 module.exports = router;

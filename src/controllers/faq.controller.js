@@ -109,6 +109,27 @@ const createFaq = async (req, res) => {
   });
 };
 
+// Getting all faqs/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getAllFaqs = async (req, res) => {
+
+  const { CompanyId } = req.params
+  if (CompanyId.length !== 24) {
+    return;
+  }
+  const company = await Company.find({
+    _id: { $in: CompanyId },
+  })
+
+  if (!company) {
+    return;
+  }
+  const laptops = await Laptops.find({
+    company: { $in: CompanyId },
+  }).sort({ createdAt: -1 })
+  res.json({ status: "200", message: "Faqs Loaded", body: laptops });
+};
+
 module.exports = {
-  createFaq
+  createFaq,
+  getAllFaqs
 }
