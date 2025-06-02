@@ -67,7 +67,7 @@ const signUp = async (req, res) => {
 
   const token = jwt.sign({ id: savedUser._id }, process.env.SECRET, {
     expiresIn: 86400, // 24 Horas
-    // expiresIn: 5,
+    // expiresIn: 20,
   });
 
   res.json({ status: "200", message: "User created" });
@@ -120,7 +120,8 @@ const signIn = async (req, res) => {
 
   const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
     expiresIn: 86400,
-    // expiresIn: 5,
+    // expiresIn: 20,
+
   });
 
   const roles = await Role.find({ _id: { $in: userFound.roles } });
