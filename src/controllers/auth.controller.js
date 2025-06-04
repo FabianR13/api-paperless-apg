@@ -164,7 +164,7 @@ const signIn = async (req, res) => {
     if (roles[i].name === "KaizenApproval") {
       userAccessApg[3] = "true";
     }
-    if (roles[i].name === "KaizenR" || roles[i].name === "admin" || roles[i].name === "KaizenApproval" || roles[i].name === "KaizenRW") {
+    if (roles[i].name === "KaizenR" ) {
       userAccessApg[4] = "true";
     }
     if (roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
