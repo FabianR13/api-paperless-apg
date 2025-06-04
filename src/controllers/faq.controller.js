@@ -123,10 +123,10 @@ const getAllFaqs = async (req, res) => {
   if (!company) {
     return;
   }
-  const laptops = await Laptops.find({
+  const faqs = await Faq.find({
     company: { $in: CompanyId },
   }).sort({ createdAt: -1 })
-  res.json({ status: "200", message: "Faqs Loaded", body: laptops });
+  res.json({ status: "200", message: "Faqs Loaded", body: faqs });
 };
 
 module.exports = {
