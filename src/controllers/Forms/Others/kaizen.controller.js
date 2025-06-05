@@ -2,6 +2,8 @@
 const Kaizen = require("../../../models/Others/Kaizen.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
+const Employees = require("../../../models/Employees.js");
+const Deparment = require("../../../models/Deparment.js");
 
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
@@ -16,106 +18,114 @@ const s3 = new AWS.S3();
 
 //Create new kaizen/////////////////////////////////////////////////////////////////////////////////////////////////////////
 const createKaizen = async (req, res) => {
-  const {
-    kaizenName,
-    date,
-    createdBy,
-    area,
-    implementArea,
-    implementDate,
-    takenPlant,
-    teamKaizen,
-    money,
-    space,
-    security,
-    ergonomy,
-    fiveS,
-    environment,
-    process,
-    motivation,
-    other,
-    beforeKaizen,
-    afterKaizen,
-    status,
-    montlyRank,
-    observations,
-    lastModifyBy,
-    implementationCost,
-    company,
-  } = req.body;
+  const { CompanyId } = req.params;
 
-  //Retreiving the data for each Before Kaizen Image and adding to the schema
-  let kaizenImagesB = [];
+  try {
+    const {
+      kaizenName,
+      createdBy,
+      teamKaizen,
+      createdDate,
+      implementDate,
+      implementationCost,
+      area,
+      implementArea,
+      takenPlant,
+      savedMoney,
+      savedSpace,
+      savingsUnmeasured,
+      beforeKaizen,
+      afterKaizen
+    } = req.body;
 
-  if (req.files["kaizenImagesB"]) {
-    if (req.files["kaizenImagesB"].length > 0) {
-      kaizenImagesB = req.files["kaizenImagesB"].map((file) => {
-        return { img: file.key };
-      });
+    //Retreiving the data for each Before Kaizen Image and adding to the schema
+    let kaizenImagesB = [];
+
+    if (req.files["kaizenImagesB"]) {
+      if (req.files["kaizenImagesB"].length > 0) {
+        kaizenImagesB = req.files["kaizenImagesB"].map((file) => {
+          return { img: file.key };
+        });
+      }
     }
-  }
-  //Retreiving the data for each Before Kaizen Image and adding to the schema
-  let kaizenImagesA = [];
+    //Retreiving the data for each Before Kaizen Image and adding to the schema
+    let kaizenImagesA = [];
 
-  if (req.files["kaizenImagesA"]) {
-    if (req.files["kaizenImagesA"].length > 0) {
-      kaizenImagesA = req.files["kaizenImagesA"].map((file) => {
-        return { img: file.key };
-      });
+    if (req.files["kaizenImagesA"]) {
+      if (req.files["kaizenImagesA"].length > 0) {
+        kaizenImagesA = req.files["kaizenImagesA"].map((file) => {
+          return { img: file.key };
+        });
+      }
     }
-  }
 
-  const kaizen = new Kaizen({
-    kaizenName,
-    date,
-    createdBy,
-    area,
-    implementArea,
-    implementDate,
-    takenPlant,
-    teamKaizen,
-    money,
-    space,
-    security,
-    ergonomy,
-    fiveS,
-    environment,
-    process,
-    motivation,
-    other,
-    beforeKaizen,
-    afterKaizen,
-    status,
-    montlyRank,
-    observations,
-    lastModifyBy,
-    implementationCost,
-    kaizenImagesB,
-    kaizenImagesA,
-  });
-  if (company) {
-    const foundCompany = await Company.find({
-      _id: { $in: company },
+    const parsedSavingsUnmeasured = savingsUnmeasured.split(',')
+      .map(item => item.trim())
+      .filter(item => item !== '');
+
+    const kaizen = new Kaizen({
+      kaizenName,
+      teamKaizen,
+      createdDate,
+      implementDate,
+      implementationCost,
+      implementArea,
+      takenPlant,
+      savedMoney,
+      savedSpace,
+      savingsUnmeasured: parsedSavingsUnmeasured,
+      beforeKaizen,
+      afterKaizen,
+      kaizenImagesB,
+      kaizenImagesA,
     });
-    kaizen.company = foundCompany.map((company) => company._id);
-  }
 
-  const kaizens = await Kaizen.find({
-    company: { $in: req.body.company },
-  }).sort({ consecutive: -1 }).limit(1);
-
-  if (kaizens.length === 0) {
-    kaizen.consecutive = 1;
-  } else {
-    kaizen.consecutive = kaizens[0].consecutive + 1
-  }
-
-  kaizen.save((error, kaizen) => {
-    if (error) return res.status(400).json({ status: "400", message: error });
-    if (kaizen) {
-      res.json({ status: "200", message: "Kaizen Created", body: kaizen });
+    if (createdBy) {
+      const foundEmployee = await Employees.find({
+        _id: { $in: createdBy },
+      });
+      kaizen.createdBy = foundEmployee.map((employee) => employee._id);
+      kaizen.modifiedBy = foundEmployee.map((employee) => employee._id);
     }
-  });
+
+    if (area) {
+      const foundDepartments = await Deparment.find({
+        _id: { $in: area },
+      });
+      kaizen.area = foundDepartments.map((department) => department._id);
+    }
+
+    if (CompanyId) {
+      const foundCompany = await Company.find({
+        _id: { $in: CompanyId },
+      });
+      kaizen.company = foundCompany.map((company) => company._id);
+    }
+
+    const kaizens = await Kaizen.find({
+      company: { $in: CompanyId },
+    }).sort({ consecutive: -1 }).limit(1);
+
+    if (kaizens.length === 0) {
+      kaizen.consecutive = 1;
+    } else {
+      kaizen.consecutive = kaizens[0].consecutive + 1;
+      kaizen.idKaizen = "APG-KZ" + (kaizens[0].consecutive + 1);
+    }
+
+    kaizen.status = "New";
+    kaizen.montlyRank = "Pending";
+    kaizen.observations = "";
+    kaizen.version = 2;
+
+    await kaizen.save();
+
+    res.status(200).json({ status: "200", message: "Kaizen guardado exitosamente", body: kaizen });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Error al guardar el kaizen", error: error.message });
+  }
 };
 // Getting all Kaizens//////////////////////////////////////////////////////////////////////////////////////////////////////
 const getKaizens = async (req, res) => {
@@ -131,7 +141,10 @@ const getKaizens = async (req, res) => {
   }
   const kaizens = await Kaizen.find({
     company: { $in: CompanyId },
-  }).sort({ consecutive: -1 });
+  }).sort({ consecutive: -1 })
+    .populate({ path: 'createdBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+    .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+    .populate({ path: "area", select: "name" });
   res.json({ status: "200", message: "Kaizens Loaded", body: kaizens });
 };
 // Getting Kaizen by Id////////////////////////////////////////////////////////////////////////////////////////////////////////
