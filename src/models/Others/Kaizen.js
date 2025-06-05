@@ -2,23 +2,39 @@ const mongoose = require('mongoose')
 
 const kaizenSchema = new mongoose.Schema(
   {
+    idKaizen: {
+      type: String
+    },
     kaizenName: {
       type: String,
       required: true,
     },
-    date: {
+    createdBy: [
+      {
+        ref: "Employees",
+        type: mongoose.Schema.Types.ObjectId,
+      },
+
+    ],
+    modifiedBy: [
+      {
+        ref: "Employees",
+        type: mongoose.Schema.Types.ObjectId,
+      },
+
+    ],
+    teamKaizen: {
+      type: String,
+    },
+    area: [
+      {
+        ref: "Department",
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+    createdDate: {
       type: Date,
       required: true,
-    },
-    createdBy: {
-      type: String,
-      required: true,
-    },
-    area: {
-      type: String,
-    },
-    implementArea: {
-      type: String,
     },
     implementDate: {
       type: Date,
@@ -26,42 +42,29 @@ const kaizenSchema = new mongoose.Schema(
     takenPlant: {
       type: String,
     },
-    teamKaizen: {
+    implementArea: {
       type: String,
     },
-    money: {
-      type: String,
+    implementationCost: {
+      type: Number,
     },
-    space: {
-      type: String,
+    savedMoney: {
+      type: Number,
     },
-    security: {
-      type: String,
+    savedSpace: {
+      type: Number,
     },
-    ergonomy: {
+    savingsUnmeasured: [{ 
       type: String,
-    },
-    fiveS: {
-      type: String,
-    },
-    environment: {
-      type: String,
-    },
-    process: {
-      type: String,
-    },
-    motivation: {
-      type: String,
-    },
-    other: {
-      type: String,
-    },
+    }],
     beforeKaizen: {
       type: String,
     },
+    kaizenImagesB: [{ img: { type: String } }],
     afterKaizen: {
       type: String,
     },
+    kaizenImagesA: [{ img: { type: String } }],
     status: {
       type: String,
     },
@@ -71,13 +74,7 @@ const kaizenSchema = new mongoose.Schema(
     observations: {
       type: String,
     },
-    lastModifyBy: {
-      type: String,
-    },
     consecutive: {
-      type: Number,
-    },
-    implementationCost: {
       type: Number,
     },
     company: [
@@ -89,8 +86,6 @@ const kaizenSchema = new mongoose.Schema(
     version: {
       type: Number,
     },
-    kaizenImagesB: [{ img: { type: String } }],
-    kaizenImagesA: [{ img: { type: String } }],
   },
   {
     timestamps: true,
