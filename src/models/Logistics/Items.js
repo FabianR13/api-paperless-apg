@@ -16,7 +16,7 @@ const itemsSchema = new mongoose.Schema(
             type: Number,
         },
         image: {
-            type: Number,
+            type: String,
         },
         company: [
             {
