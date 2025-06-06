@@ -139,7 +139,7 @@ const signIn = async (req, res) => {
       apg = userFound.companyAccess[i]._id
     }
   }
-  let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id;
+  let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id + "|" + userFound.employee[0].numberEmployee;
   let userAccessApg = [
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
@@ -161,10 +161,10 @@ const signIn = async (req, res) => {
     if (roles[i].name === "KaizenRW" || roles[i].name === "admin") {
       userAccessApg[2] = "true";
     }
-    if (roles[i].name === "KaizenApproval") {
+    if (roles[i].name === "KaizenApproval" || roles[i].name === "admin") {
       userAccessApg[3] = "true";
     }
-    if (roles[i].name === "KaizenR" ) {
+    if (roles[i].name === "KaizenR") {
       userAccessApg[4] = "true";
     }
     if (roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
