@@ -560,6 +560,61 @@ const cancelPedido = async (req, res) => {
     }
 };
 
+// Metodo para actualizar pedido cancelado
+const confirmPedido = async (req, res) => {
+
+    try {
+        const { idPedido } = req.params;
+        const { surtidor, pStatus } = req.body.pedido;
+
+        // Buscar el pedido actual
+        const pedidoActual = await Pedido.findOne({ idPedido: idPedido });
+        if (!pedidoActual) {
+            return res.status(404).json({ message: "Pedido no encontrado." });
+        }
+
+        // Registrar el movimiento en la base de datos
+        const nuevoMovimiento = new RegistroMovimientos({
+            tipoAccion: "Cancelar pedido",
+            detalles: `Confirmo el pedido con id: ${idPedido}.`,
+        });
+
+        // Buscar el surtidor
+        let surtidorId = null;
+        if (surtidor) {
+            const foundUsers = await User.find({ username: surtidor });
+            surtidorId = foundUsers.map((user) => user._id);
+
+        }
+
+        // Actualizar otros datos del pedido
+        if (surtidorId) {
+            nuevoMovimiento.usuario = surtidorId;
+        }
+
+        pedidoActual.pStatus = pStatus;
+
+        // Guardar cambios en el pedido
+        await pedidoActual.save();
+
+        // Guardar el movimiento registrado
+        await nuevoMovimiento.save();
+
+        // Enviar respuesta de éxito
+        res.status(200).json({
+            status: "200",
+            message: "Pedido actualizado con éxito.",
+            body: pedidoActual,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: "500",
+            message: "Error en el servidor.",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     createItems,
     getAllItems,
@@ -567,5 +622,6 @@ module.exports = {
     getAllPedidos,
     updatePedido,
     getRecentPedidos,
-    cancelPedido
+    cancelPedido,
+    confirmPedido
 }

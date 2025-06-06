@@ -7,7 +7,8 @@ const {
     getAllPedidos,
     updatePedido,
     getRecentPedidos,
-    cancelPedido
+    cancelPedido,
+    confirmPedido
 } = require("../../controllers/Production/supermarket.controller.js");
 const router = Router();
 
@@ -72,6 +73,15 @@ router.put(
     isAutorized,
     isSMCreator,
     cancelPedido
+);
+
+//route to update pedido
+router.put(
+    "/ConfirmPedido/:idPedido/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isSMCreator,
+    confirmPedido
 );
 
 module.exports = router;

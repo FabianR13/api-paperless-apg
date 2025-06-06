@@ -415,7 +415,7 @@ const isKaizenRW = async (req, res, next) => {
         next();
         return;
       }
-      if (rolesAxiom[i].name === "KaizenApproval") {
+      if (roles[i].name === "KaizenApproval") {
         next();
         return;
       }
