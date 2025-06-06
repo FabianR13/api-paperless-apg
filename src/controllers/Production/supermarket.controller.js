@@ -66,6 +66,7 @@ const createItems = async (req, res) => {
                 // Si el material existe, actualizamos la cantidad
                 existingMaterial.qty = (existingMaterial.qty || 0) + material.qty; // Manejo de qty undefined o null
                 // También puedes querer actualizar otros campos si vienen en 'material'
+                existingMaterial.image = material.image || existingMaterial.image;
                 existingMaterial.description = material.description || existingMaterial.description;
                 existingMaterial.class = material.class || existingMaterial.class;
                 existingMaterial.uom = material.uom || existingMaterial.uom;
