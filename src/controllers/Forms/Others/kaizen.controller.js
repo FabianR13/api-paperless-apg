@@ -213,7 +213,7 @@ const updateKaizen = async (req, res) => {
     afterKaizen,
     status,
     implementationCost,
-    modifiBy,
+    modifiedBy,
     observations
   } = req.body;
 
@@ -227,9 +227,9 @@ const updateKaizen = async (req, res) => {
     newArea = foundDepartments.map((department) => department._id);
   }
 
-  if (modifiBy) {
+  if (modifiedBy) {
     const foundEmployee = await Employees.find({
-      numberEmployee: { $in: modifiBy },
+      numberEmployee: { $in: modifiedBy },
     });
     newModifiedBy = foundEmployee.map((employee) => employee._id);
   }
@@ -251,7 +251,7 @@ const updateKaizen = async (req, res) => {
         afterKaizen,
         status,
         implementationCost,
-        modifiBy: newModifiedBy,
+        modifiedBy: newModifiedBy,
         observations
       },
     }
