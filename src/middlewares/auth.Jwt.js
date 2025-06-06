@@ -415,6 +415,10 @@ const isKaizenRW = async (req, res, next) => {
         next();
         return;
       }
+      if (roles[i].name === "KaizenApproval") {
+        next();
+        return;
+      }
     }
   }
   if (Access.company[0].name === "Axiom") {
