@@ -15,6 +15,9 @@ const itemsSchema = new mongoose.Schema(
         version: {
             type: Number,
         },
+        image: {
+            type: Number,
+        },
         company: [
             {
                 ref: "Company",
