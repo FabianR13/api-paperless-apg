@@ -241,7 +241,7 @@ const getDeviations = async (req, res) => {
     }
     const deviations = await Deviation.find({
         company: { $in: CompanyId },
-    }).sort({ consecutive: -1 })
+    }).sort({ createdAt: -1 })
         .populate({ path: 'customer' })
         .populate({
             path: 'requestBy',
