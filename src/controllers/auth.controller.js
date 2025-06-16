@@ -118,11 +118,20 @@ const signIn = async (req, res) => {
       .status(404)
       .json({ token: null, message: "Invalid password", status: "404" });
 
-  const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
-    expiresIn: 86400,
-    // expiresIn: 20,
+  // const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
+  //   expiresIn: 86400,
+  //   // expiresIn: 20,
 
-  });
+  // });
+  const payload = { id: userFound._id };
+  const secret = process.env.SECRET;
+  const options = {}; 
+  
+  if (userFound.username !== 'SupplierAPG') {
+    options.expiresIn = 86400; // 86400 segundos = 24 horas
+  }
+
+  const token = jwt.sign(payload, secret, options);
 
   const roles = await Role.find({ _id: { $in: userFound.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: userFound.rolesAxiom } });
