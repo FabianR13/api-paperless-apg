@@ -216,7 +216,7 @@ const transformRawItems = (rawItems) => {
 const createNewChecklist = async (req, res) => {
     try {
         const { ErrorProofingId } = req.params;
-        const { sensors, clamping, nidos, visual } = req.body;
+        const { sensors, clamping, nidos, visual, createdBy } = req.body;
 
         if (!ErrorProofingId) {
             return res.status(400).json({ message: "El campo 'idErrorProofing' es requerido." });
@@ -246,6 +246,13 @@ const createNewChecklist = async (req, res) => {
             visual: cleanVisual,
             consecutive: consecutivo
         });
+
+        if (createdBy) {
+            const foundUsers = await User.find({
+                username: { $in: createdBy },
+            });
+            newChecklist.createdBy = foundUsers.map((user) => user._id);
+        }
 
         const savedChecklist = await newChecklist.save();
 
