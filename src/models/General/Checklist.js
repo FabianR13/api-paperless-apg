@@ -21,6 +21,10 @@ const ChecklistSchema = new Schema({
     consecutive: {
         type: Number,
     },
+    createdBy: {
+        ref: "User",
+        type: mongoose.Schema.Types.ObjectId,
+    },
 }, {
     timestamps: true
 });
