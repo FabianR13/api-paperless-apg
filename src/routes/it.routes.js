@@ -334,9 +334,6 @@ router.post("/NewFaq/:CompanyId",
 // Route to get All the scanner///
 router.get(
     "/Faqs/:CompanyId",
-    verifyToken,
-    isAutorized,
-    isAdmin,
     getAllFaqs
 );
 
