@@ -58,7 +58,19 @@ const getErrorProofings = async (req, res) => {
             select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
-        .populate({ path: 'checklists', model: "Checklist" });
+        .populate({
+            path: 'checklists',
+            model: 'Checklist',
+            populate: {
+                path: 'createdBy',
+                model: 'User',
+                select: 'username employee',
+                populate: {
+                    path: 'employee',
+                    select: 'name lastName',
+                }
+            }
+        });
     // .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment" });
     res.json({ status: "200", message: "Error Proofings Loaded", body: errorProofings });
 };
