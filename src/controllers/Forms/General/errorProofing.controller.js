@@ -122,7 +122,6 @@ const updateErrorProofing = async (req, res) => {
     const { ErrorProofingId } = req.params;
 
     const {
-        device,
         endDate,
         endShift,
         endTechnician,
@@ -173,7 +172,6 @@ const updateErrorProofing = async (req, res) => {
         { _id: ErrorProofingId },
         {
             $set: {
-                device,
                 endDate,
                 endShift,
                 endTechnician: newEndTechnician,
