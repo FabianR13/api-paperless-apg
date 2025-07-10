@@ -29,6 +29,7 @@ const signEmployee = async (req, res) => {
     group,
     visualWeakness,
     user,
+    startDate,
     company,
   } = req.body;
 
@@ -46,6 +47,7 @@ const signEmployee = async (req, res) => {
     group,
     visualWeakness,
     user,
+    startDate
   });
 
   //Buscar compañia y agregar id al empleado
@@ -114,15 +116,15 @@ const getEmployees = async (req, res) => {
         company: { $in: CompanyId },
         active: { $in: employeeStatus },
       }).sort({ name: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-        res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }else{
+      res.json({ status: "200", message: "Employees Loaded", body: employees });
+    } else {
       const employees = await Employees.find({
         company: { $in: CompanyId },
         active: { $in: employeeStatus },
       }).sort({ name: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
-    
+
   }
   if (filter === "lastName") {
     if (order === "acend") {
@@ -131,14 +133,14 @@ const getEmployees = async (req, res) => {
         active: { $in: employeeStatus },
       }).sort({ lastName: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }else{
+    } else {
       const employees = await Employees.find({
         company: { $in: CompanyId },
         active: { $in: employeeStatus },
       }).sort({ lastName: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
     }
-    
+
   }
   if (filter === "employeeNo") {
     if (order === "acend") {
@@ -147,7 +149,7 @@ const getEmployees = async (req, res) => {
         active: { $in: employeeStatus },
       }).sort({ numberEmployee: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }else{
+    } else {
       const employees = await Employees.find({
         company: { $in: CompanyId },
         active: { $in: employeeStatus },
@@ -162,7 +164,7 @@ const getEmployees = async (req, res) => {
         active: { $in: employeeStatus },
       }).sort({ department: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }else{
+    } else {
       const employees = await Employees.find({
         company: { $in: CompanyId },
         active: { $in: employeeStatus },
@@ -177,7 +179,7 @@ const getEmployees = async (req, res) => {
         active: { $in: employeeStatus },
       }).sort({ position: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }else{
+    } else {
       const employees = await Employees.find({
         company: { $in: CompanyId },
         active: { $in: employeeStatus },
@@ -192,7 +194,7 @@ const getEmployees = async (req, res) => {
         active: { $in: employeeStatus },
       }).sort({ group: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
       res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }else{
+    } else {
       const employees = await Employees.find({
         company: { $in: CompanyId },
         active: { $in: employeeStatus },
@@ -239,6 +241,7 @@ const updateEmployee = async (req, res) => {
   empUpd.group = req.body.group;
   empUpd.visualWeakness = req.body.visualWeakness;
   empUpd.numberEmployee = req.body.numberEmployee;
+  empUpd.startDate = req.body.startDate;
 
   const employee = await Employees.findOne({ numberEmployee: req.body.numberEmployee })
   if (employee) {
@@ -271,6 +274,7 @@ const updateEmployee = async (req, res) => {
     active,
     group,
     visualWeakness,
+    startDate
   } = empUpd;
 
   const updatedEmployee = await Employees.updateOne(
@@ -285,6 +289,7 @@ const updateEmployee = async (req, res) => {
         active,
         group,
         visualWeakness,
+        startDate
       },
     }
   );
