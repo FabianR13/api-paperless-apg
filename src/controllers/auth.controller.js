@@ -125,8 +125,8 @@ const signIn = async (req, res) => {
   // });
   const payload = { id: userFound._id };
   const secret = process.env.SECRET;
-  const options = {}; 
-  
+  const options = {};
+
   if (userFound.username !== 'SupplierAPG') {
     options.expiresIn = 86400; // 86400 segundos = 24 horas
   }
@@ -153,8 +153,10 @@ const signIn = async (req, res) => {
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
   let userAccessAXG = [
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
@@ -283,6 +285,30 @@ const signIn = async (req, res) => {
     }
     if (roles[i].name === "ManagementR") {
       userAccessApg[40] = "true";
+    }
+    if (roles[i].name === "TEvaluationR" || roles[i].name === "TEvaluationDM" || roles[i].name === "TEvaluationS" ||
+      roles[i].name === "TEvaluationT" || roles[i].name === "TEvaluationRHR" || roles[i].name === "TEvaluationRHS" ||
+      roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin"
+    ) {
+      userAccessApg[41] = "true";
+    }
+    if (roles[i].name === "TEvaluationDM" || roles[i].name === "admin") {
+      userAccessApg[42] = "true";
+    }
+     if (roles[i].name === "TEvaluationS" || roles[i].name === "admin") {
+      userAccessApg[43] = "true";
+    }
+     if (roles[i].name === "TEvaluationT" || roles[i].name === "admin") {
+      userAccessApg[44] = "true";
+    }
+     if (roles[i].name === "TEvaluationRHR" || roles[i].name === "admin") {
+      userAccessApg[45] = "true";
+    }
+     if (roles[i].name === "TEvaluationRHS" || roles[i].name === "admin") {
+      userAccessApg[46] = "true";
+    }
+     if (roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
+      userAccessApg[47] = "true";
     }
   }
   //Crear variable con los roles que tiene en axiom
