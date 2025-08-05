@@ -685,7 +685,7 @@ const isProductionRW = async (req, res, next) => {
 };
 // Verify Accesss to company///////////////////////////////////////////////////////////////////////////////////////////////
 const isAutorized = async (req, res, next) => {
-  //console.log("autorizacion")
+  // console.log("autorizacion")
   const user = await User.findById(req.userId);
   const Access = [];
   const { CompanyId } = req.params;

@@ -70,7 +70,7 @@ const signEmployee = async (req, res) => {
   //buscar posicion y agregar id al empleado
   if (position) {
     const foundPositions = await Position.find({
-      name: { $in: position },
+      _id: { $in: position },
     });
     newEmployee.position = foundPositions.map((position) => position._id);
   } else {
@@ -87,7 +87,7 @@ const signEmployee = async (req, res) => {
 };
 // Getting all positions////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getPositions = async (req, res) => {
-  const positions = await Position.find().sort({ name: 1 });
+  const positions = await Position.find().sort({ name: 1 }).populate({ path: 'department', select: "name" });
   res.json({ status: "200", message: "Position Loaded", body: positions });
 };
 // Getting all positions///////////////////////////////////////////////////////////////////////////////////////////////////////////////
