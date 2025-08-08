@@ -318,7 +318,7 @@ const getEvaluationsFiltered = async (req, res) => {
     // Filter Created By
     if (partNo) {
         const foundParts = await Parts.find({
-            partnumber: { $in: partNo },
+            _id: { $in: partNo },
         });
         options["partNumber"] = foundParts.map((parts) => parts._id);
     }
