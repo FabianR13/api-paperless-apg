@@ -48,16 +48,16 @@ const getErrorProofings = async (req, res) => {
             select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
-        .populate({
-            path: "qualityResponsible",
-            select: "employee username",
-            populate: { path: "employee", select: "name lastName" }
-        })
-        .populate({
-            path: "productionResponsible",
-            select: "employee username",
-            populate: { path: "employee", select: "name lastName" }
-        })
+        // .populate({
+        //     path: "qualityResponsible",
+        //     select: "employee username",
+        //     populate: { path: "employee", select: "name lastName" }
+        // })
+        // .populate({
+        //     path: "productionResponsible",
+        //     select: "employee username",
+        //     populate: { path: "employee", select: "name lastName" }
+        // })
         .populate({
             path: 'checklists',
             model: 'Checklist',

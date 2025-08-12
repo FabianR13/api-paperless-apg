@@ -18,6 +18,22 @@ const ChecklistSchema = new Schema({
     clamping: [ChecklistItemSchema],
     nidos: [ChecklistItemSchema],
     visual: [ChecklistItemSchema],
+    automationResponsible: [{
+        ref: "User",
+        type: mongoose.Schema.Types.ObjectId,
+    },],
+    automationValidationDate: {
+        type: Date,
+        default: null
+    },
+    // productionResponsible: [{
+    //     ref: "User",
+    //     type: mongoose.Schema.Types.ObjectId,
+    // },],
+    // productionValidationDate: {
+    //     type: Date,
+    //     default: null
+    // },
     consecutive: {
         type: Number,
     },

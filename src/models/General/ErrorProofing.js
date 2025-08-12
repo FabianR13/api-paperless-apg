@@ -50,22 +50,6 @@ const ErrorProfingSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    qualityResponsible: [{
-        ref: "User",
-        type: mongoose.Schema.Types.ObjectId,
-    },],
-    qualityValidationDate: {
-        type: Date,
-        default: null
-    },
-    productionResponsible: [{
-        ref: "User",
-        type: mongoose.Schema.Types.ObjectId,
-    },],
-    productionValidationDate: {
-        type: Date,
-        default: null
-    },
 }, {
     timestamps: true
 });
