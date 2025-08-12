@@ -260,7 +260,7 @@ const updateEmployee = async (req, res) => {
   //verify position
   if (newPosition) {
     const foundPositions = await Position.find({
-      name: { $in: newPosition },
+      _id: { $in: newPosition },
     });
     empUpd.position = foundPositions.map((position) => position._id);
   }
