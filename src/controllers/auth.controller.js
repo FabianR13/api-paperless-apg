@@ -612,21 +612,34 @@ const saveTokenPush = async (req, res) => {
     const { tokenPush, isSupplier, isErrorProofingInteres } = req.body;
 
     if (!tokenPush) {
-      return res.status(400).json({ message: "Token FCM requerido" });
+      return res.status(400).json({ message: "FCM token is required" });
     }
 
-    // Si ya existe ese token, actualiza el campo isSupplier
-    await PushToken.findOneAndUpdate(
-      { token: tokenPush },
-      { isSupplier },
-      { isErrorProofingInteres },
-      { upsert: true, new: true }
+    // --- CORRECCIÓN AQUÍ ---
+    // 1. Define los datos a actualizar.
+    //    Es buena práctica construir este objeto para evitar enviar 'undefined'
+    //    si algún campo no viene en el body.
+    const updateData = {};
+    if (isSupplier !== undefined) {
+      updateData.isSupplier = isSupplier;
+    }
+    if (isErrorProofingInteres !== undefined) {
+      updateData.isErrorProofingInteres = isErrorProofingInteres;
+    }
+
+    // 2. Ejecuta findOneAndUpdate con los argumentos correctos.
+    const updatedToken = await PushToken.findOneAndUpdate(
+      { token: tokenPush },                // 1. El filtro para buscar el documento
+      { $set: updateData },                // 2. La actualización (usando $set)
+      { upsert: true, new: true }         // 3. Las opciones (crea si no existe)
     );
 
+    console.log('Token guardado/actualizado:', updatedToken);
     return res.sendStatus(204); // No Content
+
   } catch (error) {
-    console.error("Error al guardar token FCM:", error);
-    return res.status(500).json({ message: "Error interno del servidor" });
+    console.error("Error saving FCM token:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
