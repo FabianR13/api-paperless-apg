@@ -25,7 +25,8 @@ const ErrorProfingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
     },
     device: {
-        type: String,
+        ref: "AutomationDevice",
+        type: mongoose.Schema.Types.ObjectId,
     },
     errorProofingStatus: {
         type: String,

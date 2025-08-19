@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { verifyToken, isAutorized } = require("../../middlewares/auth.Jwt");
-const { getErrorProofings, createNewErrorProofing, updateErrorProofing, createNewChecklist } = require("../../controllers/Forms/General/errorProofing.controller.js");
+const { getErrorProofings, createNewErrorProofing, updateErrorProofing, createNewChecklist, validateChecklist } = require("../../controllers/Forms/General/errorProofing.controller.js");
 const router = Router();
 
 // Route to get All the deviations///
@@ -32,6 +32,14 @@ router.post(
     verifyToken,
     isAutorized,
     createNewChecklist
+);
+
+//Ruta para validad un checklist
+router.put(
+    "/ValidateChecklist/:ChecklistId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    validateChecklist
 );
 
 module.exports = router;

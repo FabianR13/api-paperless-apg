@@ -16,6 +16,8 @@ const { dataPartsInfo } = require("./PartsInfoRawData.js");
 const PartsInfo = require("../models/Quality/PartsInfo.js");
 const { dataMachine } = require("./MachineRawData.js");
 const Machine = require("../models/Setup/Machine.js");
+const  dataDevicesAutomation  = require("./DevicesRawData.js");
+const AutomationDevice = require("../models/Automation/AutomationDevice.js")
 
 //crear compañias/////////////////////////////////////////////////////////////////////////////////////////////
 const createCompanys = async () => {
@@ -381,6 +383,7 @@ const createPartsInfo = async () => {
 }
 //create machines//////////////////////////////////////////////////////////////////////////////////////////////////
 const createMachine = async () => {
+  console.log(dataMachine)
   let machines = dataMachine;
   const foundCompany = await Company.find({
     name: { $in: "APG Mexico" },
@@ -418,9 +421,9 @@ const updateEmployeesData = async () => {
   try {
     for (let i = 11033; i < 11034; i++) {
       const employee = await Employees.findOne({ numberEmployee: i })
-      
+
       if (employee) {
-        
+
         const updatedEmployeeData = await Employees.updateOne(
           { numberEmployee: i },
           {
@@ -439,7 +442,40 @@ const updateEmployeesData = async () => {
   console.log("Terminado")
 };
 
+//create Devices Automation//////////////////////////////////////////////////////////////////////////////////////////////////
+const createDevicesAutomation = async () => {
+  console.log(dataDevicesAutomation)
+  let automationDevices = dataDevicesAutomation;
+  const foundCompany = await Company.find({
+    name: { $in: "APG Mexico" },
+  });
+  const company = foundCompany.map((company) => company._id);
 
+  try {
+    const count = await AutomationDevice.estimatedDocumentCount();
+    if (count > 0) return;
+
+    for (let i = 0; i < automationDevices.length; i++) {
+      let newAutomationDevice = new AutomationDevice({
+        name: automationDevices[i].name,
+        sensors: automationDevices[i].sensors,
+        clampingType: automationDevices[i].clampingType,
+        nestType: automationDevices[i].nestType,
+        typeOfVisualAids: automationDevices[i].typeOfVisualAids,
+        company: company,
+      });
+      const foundCustomers = await Customer.find({
+        name: { $in: automationDevices[i].customer },
+      });
+      newAutomationDevice.customer = foundCustomers.map(
+        (customer) => customer._id
+      );
+      let savedAutomationDevice = await newAutomationDevice.save();
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 
 module.exports = {
@@ -454,6 +490,7 @@ module.exports = {
   createParts,
   createPartsInfo,
   createMachine,
-  updateEmployeesData
+  updateEmployeesData,
+  createDevicesAutomation
 }
 
