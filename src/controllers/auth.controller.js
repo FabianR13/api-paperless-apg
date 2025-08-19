@@ -154,6 +154,8 @@ const signIn = async (req, res) => {
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
   let userAccessAXG = [
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
@@ -295,20 +297,29 @@ const signIn = async (req, res) => {
     if (roles[i].name === "TEvaluationDM" || roles[i].name === "admin") {
       userAccessApg[42] = "true";
     }
-     if (roles[i].name === "TEvaluationS" || roles[i].name === "admin") {
+    if (roles[i].name === "TEvaluationS" || roles[i].name === "admin") {
       userAccessApg[43] = "true";
     }
-     if (roles[i].name === "TEvaluationT" || roles[i].name === "admin") {
+    if (roles[i].name === "TEvaluationT" || roles[i].name === "admin") {
       userAccessApg[44] = "true";
     }
-     if (roles[i].name === "TEvaluationRHR" || roles[i].name === "admin") {
+    if (roles[i].name === "TEvaluationRHR" || roles[i].name === "admin") {
       userAccessApg[45] = "true";
     }
-     if (roles[i].name === "TEvaluationRHS" || roles[i].name === "admin") {
+    if (roles[i].name === "TEvaluationRHS" || roles[i].name === "admin") {
       userAccessApg[46] = "true";
     }
-     if (roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
+    if (roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
       userAccessApg[47] = "true";
+    }
+    if (roles[i].name === "ErrorPCreator") {
+      userAccessApg[48] = "true";
+    }
+    if (roles[i].name === "ErrorPValidatorA") {
+      userAccessApg[49] = "true";
+    }
+    if (roles[i].name === "ErrorPReader") {
+      userAccessApg[50] = "true";
     }
   }
   //Crear variable con los roles que tiene en axiom
@@ -598,7 +609,7 @@ const getAccess = async (req, res) => {
 //get access to directory/////////////////////////////////////////////////////////////////////////////////////////////////
 const saveTokenPush = async (req, res) => {
   try {
-    const { tokenPush, isSupplier } = req.body;
+    const { tokenPush, isSupplier, isErrorProofingInteres } = req.body;
 
     if (!tokenPush) {
       return res.status(400).json({ message: "Token FCM requerido" });
@@ -608,6 +619,7 @@ const saveTokenPush = async (req, res) => {
     await PushToken.findOneAndUpdate(
       { token: tokenPush },
       { isSupplier },
+      { isErrorProofingInteres },
       { upsert: true, new: true }
     );
 
@@ -704,6 +716,61 @@ const notificarCancelacion = async (req, res) => {
   return res.sendStatus(204);
 };
 
+// Generic function to send a notification (remains the same)
+const sendPushNotification = async (token, title, body) => {
+  const message = {
+    token,
+    notification: {
+      title, // Will use the title you pass
+      body,  // Will use the body you pass
+    },
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notification sent to:", token);
+  } catch (error) {
+    console.error("❌ Error sending to:", token, error.message);
+  }
+};
+// Controller updated with English notifications
+const notifyInteresErrorProofing = async (req, res) => {
+  const { TypeNotification, ErrorProofing } = req.params;
+  const { pushTokens } = req.body;
+
+  if (!Array.isArray(pushTokens)) {
+    return res.status(400).json({ message: "pushTokens must be an array" });
+  }
+
+  let title;
+  let body;
+
+  if (TypeNotification === 'ErrorProofing') {
+    title = "New Error Proofing File Created";
+    body = "A new file has been created. Please review it on the platform.";
+  }
+  else if (TypeNotification === 'Checklist') {
+    title = "New Checklist Added";
+    body = `A new checklist has been added to the file: ${ErrorProofing}. Please review it.`;
+  }
+  else {
+    return res.status(400).json({ message: "Invalid notification type. Use 'ErrorProofing' or 'Checklist'." });
+  }
+
+  const errorProofingInteresTokens = pushTokens.filter(p => p.isErrorProofingInteres && p.token);
+
+  if (errorProofingInteresTokens.length === 0) {
+    console.log("No interested users to notify.");
+    return res.sendStatus(204);
+  }
+
+  await Promise.all(
+    errorProofingInteresTokens.map(p => sendPushNotification(p.token, title, body))
+  );
+
+  return res.sendStatus(204);
+};
+
 module.exports = {
   signUp,
   newRole,
@@ -720,5 +787,6 @@ module.exports = {
   getTokensPush,
   sendPushToToken,
   notificarSuppliers,
-  notificarCancelacion
+  notificarCancelacion,
+  notifyInteresErrorProofing
 };

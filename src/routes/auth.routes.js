@@ -16,7 +16,8 @@ const {
   saveTokenPush,
   notificarSuppliers,
   sendPushToToken,
-  notificarCancelacion
+  notificarCancelacion,
+  notifyInteresErrorProofing
 } = require("../controllers/auth.controller.js");
 const {
   checkDuplicateUsernameorEmail,
@@ -102,4 +103,6 @@ router.get("/getTokenPush",
 router.post("/notificarSuppliers", notificarSuppliers);
 
 router.post("/notificarCancelacion", notificarCancelacion);
+
+router.post("/notifyErrorInteres/:TypeNotification/:ErrorProofing", notifyInteresErrorProofing);
 module.exports = router;

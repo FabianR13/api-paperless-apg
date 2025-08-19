@@ -1,3 +1,4 @@
+const AutomationDevice = require("../../../models/Automation/AutomationDevice");
 const Company = require("../../../models/Company");
 const Checklist = require("../../../models/General/Checklist");
 const ErrorProofing = require("../../../models/General/ErrorProofing");
@@ -48,6 +49,9 @@ const getErrorProofings = async (req, res) => {
             select: "employee username",
             populate: { path: "employee", select: "name lastName" }
         })
+        .populate({
+            path: "device",
+        })
         // .populate({
         //     path: "qualityResponsible",
         //     select: "employee username",
@@ -61,15 +65,28 @@ const getErrorProofings = async (req, res) => {
         .populate({
             path: 'checklists',
             model: 'Checklist',
-            populate: {
-                path: 'createdBy',
-                model: 'User',
-                select: 'username employee',
-                populate: {
-                    path: 'employee',
-                    select: 'name lastName',
+            populate: [ // <--- Convertido a un array
+                {
+                    // --- Primer populate (el que ya tenías) ---
+                    path: 'createdBy',
+                    model: 'User',
+                    select: 'username employee',
+                    populate: {
+                        path: 'employee',
+                        select: 'name lastName',
+                    }
+                },
+                {
+                    // --- Segundo populate (el que quieres agregar) ---
+                    path: 'automationResponsible', // <--- El nuevo campo
+                    model: 'User',
+                    select: 'username employee',
+                    populate: {
+                        path: 'employee',
+                        select: 'name lastName',
+                    }
                 }
-            }
+            ]
         });
     // .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment" });
     res.json({ status: "200", message: "Error Proofings Loaded", body: errorProofings });
@@ -90,7 +107,6 @@ const createNewErrorProofing = async (req, res) => {
 
         const newErrorProfing = new ErrorProofing({
             errorProofingName,
-            device,
             startDate,
             startShift,
             errorProofingStatus: "Open",
@@ -102,6 +118,13 @@ const createNewErrorProofing = async (req, res) => {
                 username: { $in: startTechnician },
             });
             newErrorProfing.startTechnician = foundUsers.map((user) => user._id);
+        }
+
+        if (device) {
+            const foundDevices = await AutomationDevice.find({
+                _id: { $in: device },
+            });
+            newErrorProfing.device = foundDevices.map((option) => option._id);
         }
 
         if (CompanyId) {
@@ -137,16 +160,10 @@ const updateErrorProofing = async (req, res) => {
         endDate,
         endShift,
         endTechnician,
-        qualityResponsible,
-        productionResponsible
     } = req.body;
 
     let newEndTechnician = null;
-    let newQualityResponsible = null;
-    let newProductionResponsible = null;
     let errorProofingStatus = "Open";
-    let newQualityValidationDate = null;
-    let newProductionValidationDate = null;
 
     if (endDate) {
         errorProofingStatus = "Closed"
@@ -160,26 +177,6 @@ const updateErrorProofing = async (req, res) => {
         }
     }
 
-    // Buscar Usuario en la base de datos
-    if (qualityResponsible) {
-        const foundUsers = await User.find({ username: qualityResponsible });
-        if (foundUsers.length === 0) {
-            return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
-        }
-        newQualityResponsible = foundUsers.map(e => e._id);
-        newQualityValidationDate = new Date();
-    }
-
-    // Buscar Usuario en la base de datos
-    if (productionResponsible) {
-        const foundUsers = await User.find({ username: productionResponsible });
-        if (foundUsers.length === 0) {
-            return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
-        }
-        newProductionResponsible = foundUsers.map(e => e._id);
-        newProductionValidationDate = new Date();
-    }
-
     const updatedErrorProofing = await ErrorProofing.updateOne(
         { _id: ErrorProofingId },
         {
@@ -188,10 +185,6 @@ const updateErrorProofing = async (req, res) => {
                 endShift,
                 endTechnician: newEndTechnician,
                 errorProofingStatus,
-                qualityResponsible: newQualityResponsible,
-                productionResponsible: newProductionResponsible,
-                qualityValidationDate: newQualityValidationDate,
-                productionValidationDate: newProductionValidationDate,
             },
         }
     );
@@ -208,25 +201,36 @@ const updateErrorProofing = async (req, res) => {
 };
 
 //Generar un nuevo checklist en un archivo de error proofing existente
-const transformRawItems = (rawItems) => {
+// Función de utilidad para transformar los ítems del array de sensores
+const transformSensorItems = (rawSensors) => {
+    if (!Array.isArray(rawSensors)) return [];
+
+    return rawSensors.map(row => ({
+        label: row.label,
+        quantityOk: parseInt(row.quantityOk, 10) || 0,
+        quantityNotOk: parseInt(row.quantityNotOk, 10) || 0,
+        totalQuantity: parseInt(row.totalQuantity, 10) || 0,
+        comments: row.comments || '',
+    }));
+};
+
+// Función de utilidad para transformar los ítems de clamping, nidos y visual
+const transformStatusItems = (rawItems) => {
     if (!Array.isArray(rawItems)) return [];
 
     return rawItems.map(row => ({
-        itemId: row.id,
         label: row.label,
-        quantityOk: parseInt(row.values[0], 10) || 0,
-        quantityNotOk: parseInt(row.values[1], 10) || 0,
-        totalQuantity: parseInt(row.values[2], 10) || 0,
-        operationOk: parseInt(row.values[3], 10) || 0,
-        operationNotOk: parseInt(row.values[4], 10) || 0,
-        comments: row.values[5] || ''
+        status: row.status || '', // Deja este vacío si no hay valor para que el default del Schema funcione
+        comments: row.comments || '', // <-- Aquí la corrección también
     }));
 };
 
 const createNewChecklist = async (req, res) => {
     try {
         const { ErrorProofingId } = req.params;
-        const { sensors, clamping, nidos, visual, createdBy } = req.body;
+        // El frontend ahora envía los arrays ya pre-filtrados y con la nueva estructura
+        // console.log(req.body)
+        const { sensors, clamping, nidos, visual, createdBy, generalComments } = req.body;
 
         if (!ErrorProofingId) {
             return res.status(400).json({ message: "El campo 'idErrorProofing' es requerido." });
@@ -234,8 +238,8 @@ const createNewChecklist = async (req, res) => {
 
         const updatedErrorProofing = await ErrorProofing.findByIdAndUpdate(
             ErrorProofingId,
-            { $inc: { checklistCounter: 1 } }, // Incrementa el contador en 1
-            { new: true } // Devuelve el documento DESPUÉS de actualizarlo
+            { $inc: { checklistCounter: 1 } },
+            { new: true }
         );
 
         if (!updatedErrorProofing) {
@@ -244,24 +248,27 @@ const createNewChecklist = async (req, res) => {
 
         const consecutivo = updatedErrorProofing.checklistCounter;
 
-        const cleanSensors = transformRawItems(sensors);
-        const cleanClamping = transformRawItems(clamping);
-        const cleanNidos = transformRawItems(nidos);
-        const cleanVisual = transformRawItems(visual);
+        // Utilizamos las nuevas funciones de transformación para procesar los datos
+        const cleanSensors = transformSensorItems(sensors);
+        const cleanClamping = transformStatusItems(clamping);
+        const cleanNidos = transformStatusItems(nidos);
+        const cleanVisual = transformStatusItems(visual);
 
+        // Creamos el nuevo checklist con la estructura de datos actualizada
         const newChecklist = new Checklist({
             sensors: cleanSensors,
             clamping: cleanClamping,
             nidos: cleanNidos,
             visual: cleanVisual,
-            consecutive: consecutivo
+            consecutive: consecutivo,
+            generalComments: generalComments || '', // Añade el campo de comentarios generales
         });
 
         if (createdBy) {
-            const foundUsers = await User.find({
-                username: { $in: createdBy },
-            });
-            newChecklist.createdBy = foundUsers.map((user) => user._id);
+            const foundUser = await User.findOne({ username: createdBy });
+            if (foundUser) {
+                newChecklist.createdBy = foundUser._id;
+            }
         }
 
         const savedChecklist = await newChecklist.save();
@@ -284,9 +291,52 @@ const createNewChecklist = async (req, res) => {
     }
 }
 
+const validateChecklist = async (req, res) => {
+    const { ChecklistId } = req.params;
+
+    const {
+        automationResponsible,
+    } = req.body;
+
+    let newAutomationResponsible = null;
+    let newAutomationValidationDate = null;
+
+    // Buscar Usuario en la base de datos
+    if (automationResponsible) {
+        const foundUsers = await User.find({ username: automationResponsible });
+        if (foundUsers.length === 0) {
+            return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
+        }
+        newAutomationResponsible = foundUsers.map(e => e._id);
+        newAutomationValidationDate = new Date();
+    }
+
+    const updatedChecklist = await Checklist.updateOne(
+        { _id: ChecklistId },
+        {
+            $set: {
+                automationResponsible: newAutomationResponsible,
+                automationValidationDate: newAutomationValidationDate,
+            },
+        }
+    );
+
+    if (!updatedChecklist) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Checklist not Updated", body: "" });
+    }
+
+    res
+        .status(200)
+        .json({ status: "200", message: "Checklist updated", body: updatedChecklist });
+};
+
+
 module.exports = {
     getErrorProofings,
     createNewErrorProofing,
     updateErrorProofing,
-    createNewChecklist
+    createNewChecklist,
+    validateChecklist
 };

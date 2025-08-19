@@ -1,39 +1,36 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const ChecklistItemSchema = new Schema({
-    itemId: { type: String, required: true },
-    label: { type: String }, // Guardemos también la etiqueta, es útil
+// Schema para los sensores
+const SensorChecklistItemSchema = new Schema({
+    label: { type: String },
     quantityOk: { type: Number, default: 0 },
     quantityNotOk: { type: Number, default: 0 },
     totalQuantity: { type: Number, default: 0 },
-    operationOk: { type: Number, default: 0 },
-    operationNotOk: { type: Number, default: 0 },
+    comments: { type: String, default: '' }
+}, { _id: false });
+
+// Schema para las categorías con 'status' (clamping, nidos, visual)
+const StatusChecklistItemSchema = new Schema({
+    label: { type: String },
+    status: { type: String, enum: ['Ok', 'No Ok', ''], default: '' },
     comments: { type: String, default: '' }
 }, { _id: false });
 
 // Schema principal del Checklist
 const ChecklistSchema = new Schema({
-    sensors: [ChecklistItemSchema],
-    clamping: [ChecklistItemSchema],
-    nidos: [ChecklistItemSchema],
-    visual: [ChecklistItemSchema],
+    sensors: [SensorChecklistItemSchema],
+    clamping: [StatusChecklistItemSchema],
+    nidos: [StatusChecklistItemSchema],
+    visual: [StatusChecklistItemSchema],
     automationResponsible: [{
         ref: "User",
         type: mongoose.Schema.Types.ObjectId,
-    },],
+    }],
     automationValidationDate: {
         type: Date,
         default: null
     },
-    // productionResponsible: [{
-    //     ref: "User",
-    //     type: mongoose.Schema.Types.ObjectId,
-    // },],
-    // productionValidationDate: {
-    //     type: Date,
-    //     default: null
-    // },
     consecutive: {
         type: Number,
     },
@@ -41,6 +38,7 @@ const ChecklistSchema = new Schema({
         ref: "User",
         type: mongoose.Schema.Types.ObjectId,
     },
+    generalComments: { type: String, default: '' }
 }, {
     timestamps: true
 });
