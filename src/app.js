@@ -161,7 +161,7 @@ app.use("/api/errorproofing", errorProfingRoutes);
 app.use("/api/evaluations", evaluationsRoutes);
 app.use("/api/automationDevices",automationDevicesRoutes);
 
-setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
+// setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
 
 const date = new Date();
