@@ -828,7 +828,7 @@ const isTrainingL = async (req, res, next) => {
         next();
         return;
       }
-      if (roles[i].name === "TrainingL") {
+      if ((roles[i].name === "TrainingL")|| (rolesAxiom[i].name === "TrainingT") ) {
         next();
         return;
       }
