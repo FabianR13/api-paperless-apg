@@ -35,7 +35,9 @@ const createKaizen = async (req, res) => {
       savedSpace,
       savingsUnmeasured,
       beforeKaizen,
-      afterKaizen
+      afterKaizen,
+      rpnBefore,
+      rpnAfter
     } = req.body;
 
     //Retreiving the data for each Before Kaizen Image and adding to the schema
@@ -78,6 +80,8 @@ const createKaizen = async (req, res) => {
       afterKaizen,
       kaizenImagesB,
       kaizenImagesA,
+      rpnBefore,
+      rpnAfter
     });
 
     if (createdBy) {
@@ -214,7 +218,9 @@ const updateKaizen = async (req, res) => {
     status,
     implementationCost,
     modifiedBy,
-    observations
+    observations,
+    rpnBefore,
+    rpnAfter
   } = req.body;
 
   let newArea = "";
@@ -252,7 +258,9 @@ const updateKaizen = async (req, res) => {
         status,
         implementationCost,
         modifiedBy: newModifiedBy,
-        observations
+        observations,
+        rpnBefore,
+        rpnAfter
       },
     }
   );

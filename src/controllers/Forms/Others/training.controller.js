@@ -31,7 +31,10 @@ const createTrainingEvaluation = async (req, res) => {
         question11,
         question12,
         question13,
-        version
+        question14,
+        question15,
+        version,
+        recertificationLevel
     } = req.body;
 
     const isInvalidInput = (fieldValue) => {
@@ -69,7 +72,10 @@ const createTrainingEvaluation = async (req, res) => {
         question11,
         question12,
         question13,
-        version
+        question14,
+        question15,
+        version,
+        recertificationLevel
     });
 
     try {
@@ -196,7 +202,9 @@ const updateTrainingEvaluation = async (req, res) => {
         question10,
         question11,
         question12,
-        question13
+        question13,
+        question14,
+        question15
     } = req.body;
 
     if (req.body.qualifiedBy) {
@@ -229,7 +237,9 @@ const updateTrainingEvaluation = async (req, res) => {
                 question10,
                 question11,
                 question12,
-                question13
+                question13,
+                question14,
+                question15
             },
         }
     );
