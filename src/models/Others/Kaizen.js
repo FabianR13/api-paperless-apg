@@ -54,7 +54,7 @@ const kaizenSchema = new mongoose.Schema(
     savedSpace: {
       type: Number,
     },
-    savingsUnmeasured: [{ 
+    savingsUnmeasured: [{
       type: String,
     }],
     beforeKaizen: {
@@ -85,6 +85,14 @@ const kaizenSchema = new mongoose.Schema(
     ],
     version: {
       type: Number,
+    },
+    rpnBefore: {
+      type: Number,
+      default: 0
+    },
+    rpnAfter: {
+      type: Number,
+      default: 0
     },
   },
   {

@@ -67,6 +67,7 @@ const createItems = async (req, res) => {
                 existingMaterial.qty = (existingMaterial.qty || 0) + material.qty; // Manejo de qty undefined o null
                 // También puedes querer actualizar otros campos si vienen en 'material'
                 existingMaterial.image = material.image || existingMaterial.image;
+                existingMaterial.vendorItemNo = material.vendorItemNo || existingMaterial.vendorItemNo;
                 existingMaterial.description = material.description || existingMaterial.description;
                 existingMaterial.class = material.class || existingMaterial.class;
                 existingMaterial.uom = material.uom || existingMaterial.uom;
@@ -563,10 +564,22 @@ const cancelPedido = async (req, res) => {
 
 // Metodo para actualizar pedido cancelado
 const confirmPedido = async (req, res) => {
+    const formatter = new Intl.DateTimeFormat("es-MX", {
+        timeZone: "America/Mexico_City",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const hour = parts.find(p => p.type === "hour").value;
+    const minutes = parts.find(p => p.type === "minute").value;
+
+    const time = `${hour}:${minutes}`;
 
     try {
         const { idPedido } = req.params;
-        const { surtidor, pStatus } = req.body.pedido;
+        const { confirmed, pStatus } = req.body.pedido;
 
         // Buscar el pedido actual
         const pedidoActual = await Pedido.findOne({ idPedido: idPedido });
@@ -581,18 +594,20 @@ const confirmPedido = async (req, res) => {
         });
 
         // Buscar el surtidor
-        let surtidorId = null;
-        if (surtidor) {
-            const foundUsers = await User.find({ username: surtidor });
-            surtidorId = foundUsers.map((user) => user._id);
+        let confirmedId = null;
+        if (confirmed) {
+            const foundUsers = await User.find({ username: confirmed });
+            confirmedId = foundUsers.map((user) => user._id);
 
         }
 
         // Actualizar otros datos del pedido
-        if (surtidorId) {
-            nuevoMovimiento.usuario = surtidorId;
+        if (confirmedId) {
+            pedidoActual.confirmed = confirmedId;
+            nuevoMovimiento.usuario = confirmedId;
         }
 
+        pedidoActual.confirmTime = time;
         pedidoActual.pStatus = pStatus;
 
         // Guardar cambios en el pedido

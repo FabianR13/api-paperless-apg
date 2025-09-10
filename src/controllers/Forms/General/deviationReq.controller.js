@@ -1,8 +1,8 @@
 const Customer = require("../../../models/General/Customer.js");
 const Parts = require("../../../models/Quality/Parts.js");
-const DeviationRequest = require("../../../models/General/DeviationRequest.js");
+const DeviationRequest = require("../../../models/General/DeviationRequestTemp.js");
 const User = require("../../../models/User.js");
-const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessment.js");
+const DeviationRiskAssessment = require("../../../models/General/DeviationRiskAssessmentTemp.js");
 const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
 const { sendEmailMiddlewareResponse } = require("../../../middlewares/mailer.js");
@@ -174,7 +174,7 @@ const getDeviationRequest = async (req, res) => {
     .populate({ path: 'requestBy', populate: { path: "signature", model: "Signature" }, populate: { path: "employee", model: "Employees", populate: { path: "department", model: "Department" } } })
     .populate({ path: 'parts' })
     //.populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
-    .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
+    .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment" });
   res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
 // Getting deviation by Id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -500,12 +500,12 @@ const deleteDeviation = async (req, res) => {
   }
 
   let deviationRiskID;
-  if(foundPrevDeviation.deviationRisk.length !== 0){
+  if (foundPrevDeviation.deviationRisk.length !== 0) {
     deviationRiskID = foundPrevDeviation.deviationRisk[0]
-  }else{
+  } else {
     deviationRiskID = "No"
   }
-  
+
 
   // delete the deviation risk assessment
   console.log(deviationRiskID)

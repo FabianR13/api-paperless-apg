@@ -126,6 +126,8 @@ const getAllFaqs = async (req, res) => {
   const faqs = await Faq.find({
     company: { $in: CompanyId },
   }).sort({ createdAt: -1 })
+    .populate({ path: "category", })
+    .populate({ path: "subCategory", })
   res.json({ status: "200", message: "Faqs Loaded", body: faqs });
 };
 

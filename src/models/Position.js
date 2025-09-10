@@ -4,6 +4,10 @@ const positionSchema = new mongoose.Schema(
   {
     name: String,
     description: String,
+    department: {
+      ref: "Department",
+      type: mongoose.Schema.Types.ObjectId,
+    },
   },
   {
     timestamps: true,

@@ -6,7 +6,7 @@ const cors = require("cors");
 const app = express().use("*", cors());
 const config = require('../src/config')
 const { whatsapp } = require("../src/middlewares/whatsapp.js")
-const  mongoose = require("mongoose");
+const mongoose = require("mongoose");
 // const sslRedirect = require('heroku-ssl-redirect');
 require("dotenv").config();
 // Configuración básica (permitir todas las solicitudes)
@@ -43,13 +43,13 @@ app.get("/api/cors", (req, res) => {
 });
 
 //app.use((req, res, next) => {
-  //const origin = req.headers.origin;
- // res.header('Access-Control-Allow-Origin', origin);
-  //res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
-  //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  //res.header('Access-Control-Allow-Credentials', 'true');
- // next();
+//const origin = req.headers.origin;
+// res.header('Access-Control-Allow-Origin', origin);
+//res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+//res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+//res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//res.header('Access-Control-Allow-Credentials', 'true');
+// next();
 //});
 
 //app.options('*', cors(corsOptions));
@@ -67,7 +67,8 @@ const {
   createParts,
   createPartsInfo,
   createMachine,
-  updateEmployeesData
+  updateEmployeesData,
+  createDevicesAutomation
 } = require("./libs/initialSetup.js");
 
 ////Routes
@@ -88,6 +89,9 @@ const encuestasRoutes = require("./routes/encuestas.routes.js");
 const processRoutes = require("./routes/Setup/process.routes.js")
 const supermarketRoutes = require("./routes/Production/supermarket.routes.js")
 const minutaRoutes = require("./routes/General/minuta.routes.js")
+const errorProfingRoutes = require("./routes/General/errorProofing.routes.js")
+const evaluationsRoutes = require("./routes/Others/evaluations.routes.js")
+const automationDevicesRoutes = require("./routes/Automation/automationDevices.routes.js")
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -113,6 +117,7 @@ const { autoSendMessage, autoSendEmail } = require("./controllers/whatsapp.contr
 
 // Cuarto inicio//////
 // createMachine();
+// createDevicesAutomation();
 
 //Agregar camposn a empleados//
 // updateEmployeesData();
@@ -147,20 +152,23 @@ app.use("/api/validationSettings", validationSettingsRoutes);
 app.use("/api/training", trainingRoutes);
 app.use("/api/personalrequisition", PersonalRequisition);
 app.use("/api/whatsapp", whatsappRoutes);
-app.use("/api/it",itRoutes);
-app.use("/api/encuestas",encuestasRoutes);
-app.use("/api/process",processRoutes);
-app.use("/api/supermarket",supermarketRoutes);
+app.use("/api/it", itRoutes);
+app.use("/api/encuestas", encuestasRoutes);
+app.use("/api/process", processRoutes);
+app.use("/api/supermarket", supermarketRoutes);
 app.use("/api/minuta", minutaRoutes);
+app.use("/api/errorproofing", errorProfingRoutes);
+app.use("/api/evaluations", evaluationsRoutes);
+app.use("/api/automationDevices",automationDevicesRoutes);
 
 setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
 
 const date = new Date();
-    const horaActual = date.getHours()
+const horaActual = date.getHours()
 //console.log(horaActual)
 
- 
+
 
 
 

@@ -151,6 +151,22 @@ const trainingEvaluationSchema = new mongoose.Schema(
                 type: String
             }
         },
+        question14: {
+            answer: {
+                type: String
+            },
+            status: {
+                type: String
+            }
+        },
+        question15: {
+            answer: {
+                type: String
+            },
+            status: {
+                type: String
+            }
+        },
         company: [
             {
                 ref: "Company",
@@ -158,6 +174,9 @@ const trainingEvaluationSchema = new mongoose.Schema(
             }
         ],
         version: {
+            type: Number,
+        },
+        recertificationLevel: {
             type: Number,
         },
     },

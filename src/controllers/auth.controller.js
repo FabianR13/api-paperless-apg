@@ -118,11 +118,20 @@ const signIn = async (req, res) => {
       .status(404)
       .json({ token: null, message: "Invalid password", status: "404" });
 
-  const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
-    expiresIn: 86400,
-    // expiresIn: 20,
+  // const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
+  //   expiresIn: 86400,
+  //   // expiresIn: 20,
 
-  });
+  // });
+  const payload = { id: userFound._id };
+  const secret = process.env.SECRET;
+  const options = {};
+
+  if (userFound.username !== 'SupplierAPG') {
+    options.expiresIn = 86400; // 86400 segundos = 24 horas
+  }
+
+  const token = jwt.sign(payload, secret, options);
 
   const roles = await Role.find({ _id: { $in: userFound.roles } });
   const rolesAxiom = await Role.find({ _id: { $in: userFound.rolesAxiom } });
@@ -144,8 +153,12 @@ const signIn = async (req, res) => {
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
   let userAccessAXG = [
+    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
@@ -274,6 +287,39 @@ const signIn = async (req, res) => {
     }
     if (roles[i].name === "ManagementR") {
       userAccessApg[40] = "true";
+    }
+    if (roles[i].name === "TEvaluationR" || roles[i].name === "TEvaluationDM" || roles[i].name === "TEvaluationS" ||
+      roles[i].name === "TEvaluationT" || roles[i].name === "TEvaluationRHR" || roles[i].name === "TEvaluationRHS" ||
+      roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin"
+    ) {
+      userAccessApg[41] = "true";
+    }
+    if (roles[i].name === "TEvaluationDM" || roles[i].name === "admin") {
+      userAccessApg[42] = "true";
+    }
+    if (roles[i].name === "TEvaluationS" || roles[i].name === "admin") {
+      userAccessApg[43] = "true";
+    }
+    if (roles[i].name === "TEvaluationT" || roles[i].name === "admin") {
+      userAccessApg[44] = "true";
+    }
+    if (roles[i].name === "TEvaluationRHR" || roles[i].name === "admin") {
+      userAccessApg[45] = "true";
+    }
+    if (roles[i].name === "TEvaluationRHS" || roles[i].name === "admin") {
+      userAccessApg[46] = "true";
+    }
+    if (roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
+      userAccessApg[47] = "true";
+    }
+    if (roles[i].name === "ErrorPCreator") {
+      userAccessApg[48] = "true";
+    }
+    if (roles[i].name === "ErrorPValidatorA") {
+      userAccessApg[49] = "true";
+    }
+    if (roles[i].name === "ErrorPReader") {
+      userAccessApg[50] = "true";
     }
   }
   //Crear variable con los roles que tiene en axiom
@@ -563,23 +609,37 @@ const getAccess = async (req, res) => {
 //get access to directory/////////////////////////////////////////////////////////////////////////////////////////////////
 const saveTokenPush = async (req, res) => {
   try {
-    const { tokenPush, isSupplier } = req.body;
+    const { tokenPush, isSupplier, isErrorProofingInteres } = req.body;
 
     if (!tokenPush) {
-      return res.status(400).json({ message: "Token FCM requerido" });
+      return res.status(400).json({ message: "FCM token is required" });
     }
 
-    // Si ya existe ese token, actualiza el campo isSupplier
-    await PushToken.findOneAndUpdate(
-      { token: tokenPush },
-      { isSupplier },
-      { upsert: true, new: true }
+    // --- CORRECCIÓN AQUÍ ---
+    // 1. Define los datos a actualizar.
+    //    Es buena práctica construir este objeto para evitar enviar 'undefined'
+    //    si algún campo no viene en el body.
+    const updateData = {};
+    if (isSupplier !== undefined) {
+      updateData.isSupplier = isSupplier;
+    }
+    if (isErrorProofingInteres !== undefined) {
+      updateData.isErrorProofingInteres = isErrorProofingInteres;
+    }
+
+    // 2. Ejecuta findOneAndUpdate con los argumentos correctos.
+    const updatedToken = await PushToken.findOneAndUpdate(
+      { token: tokenPush },                // 1. El filtro para buscar el documento
+      { $set: updateData },                // 2. La actualización (usando $set)
+      { upsert: true, new: true }         // 3. Las opciones (crea si no existe)
     );
 
+    console.log('Token guardado/actualizado:', updatedToken);
     return res.sendStatus(204); // No Content
+
   } catch (error) {
-    console.error("Error al guardar token FCM:", error);
-    return res.status(500).json({ message: "Error interno del servidor" });
+    console.error("Error saving FCM token:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -669,6 +729,61 @@ const notificarCancelacion = async (req, res) => {
   return res.sendStatus(204);
 };
 
+// Generic function to send a notification (remains the same)
+const sendPushNotification = async (token, title, body) => {
+  const message = {
+    token,
+    notification: {
+      title, // Will use the title you pass
+      body,  // Will use the body you pass
+    },
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notification sent to:", token);
+  } catch (error) {
+    console.error("❌ Error sending to:", token, error.message);
+  }
+};
+// Controller updated with English notifications
+const notifyInteresErrorProofing = async (req, res) => {
+  const { TypeNotification, ErrorProofing } = req.params;
+  const { pushTokens } = req.body;
+
+  if (!Array.isArray(pushTokens)) {
+    return res.status(400).json({ message: "pushTokens must be an array" });
+  }
+
+  let title;
+  let body;
+
+  if (TypeNotification === 'ErrorProofing') {
+    title = "New Error Proofing File Created";
+    body = "A new file has been created. Please review it on the platform.";
+  }
+  else if (TypeNotification === 'Checklist') {
+    title = "New Checklist Added";
+    body = `A new checklist has been added to the file: ${ErrorProofing}. Please review it.`;
+  }
+  else {
+    return res.status(400).json({ message: "Invalid notification type. Use 'ErrorProofing' or 'Checklist'." });
+  }
+
+  const errorProofingInteresTokens = pushTokens.filter(p => p.isErrorProofingInteres && p.token);
+
+  if (errorProofingInteresTokens.length === 0) {
+    console.log("No interested users to notify.");
+    return res.sendStatus(204);
+  }
+
+  await Promise.all(
+    errorProofingInteresTokens.map(p => sendPushNotification(p.token, title, body))
+  );
+
+  return res.sendStatus(204);
+};
+
 module.exports = {
   signUp,
   newRole,
@@ -685,5 +800,6 @@ module.exports = {
   getTokensPush,
   sendPushToToken,
   notificarSuppliers,
-  notificarCancelacion
+  notificarCancelacion,
+  notifyInteresErrorProofing
 };

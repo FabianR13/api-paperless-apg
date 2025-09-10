@@ -685,7 +685,6 @@ const isProductionRW = async (req, res, next) => {
 };
 // Verify Accesss to company///////////////////////////////////////////////////////////////////////////////////////////////
 const isAutorized = async (req, res, next) => {
-  //console.log("autorizacion")
   const user = await User.findById(req.userId);
   const Access = [];
   const { CompanyId } = req.params;
@@ -829,7 +828,7 @@ const isTrainingL = async (req, res, next) => {
         next();
         return;
       }
-      if (roles[i].name === "TrainingL") {
+      if ((roles[i].name === "TrainingL")|| (roles[i].name === "TrainingT") ) {
         next();
         return;
       }
