@@ -87,12 +87,12 @@ const kaizenSchema = new mongoose.Schema(
       type: Number,
     },
     rpnBefore: {
-      type: Number,
-      default: 0
+      type: String,
+      default: ""
     },
     rpnAfter: {
-      type: Number,
-      default: 0
+      type: String,
+      default: ""
     },
   },
   {
