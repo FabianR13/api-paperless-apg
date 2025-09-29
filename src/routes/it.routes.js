@@ -31,7 +31,10 @@ const {
     updateChromebook,
     createNewScanner,
     getAllScanners,
-    updateScanner
+    updateScanner,
+    createNewServiceDay,
+    getScheduledService,
+    updateServiceDay
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
@@ -337,5 +340,24 @@ router.get(
     getAllFaqs
 );
 
+// Route to save new service day///
+router.post(
+    "/NewServiceDay/:CompanyId",
+    createNewServiceDay
+);
+
+// Route to get All the service days///
+router.get(
+    "/ServiceDays/:CompanyId",
+    getScheduledService
+);
+
+router.put(
+    "/UpdateServiceDay/:ServiceDayId/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isAdmin,
+    updateServiceDay
+);
 
 module.exports = router;

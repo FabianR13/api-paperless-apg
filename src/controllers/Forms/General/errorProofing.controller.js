@@ -197,7 +197,7 @@ const updateErrorProofing = async (req, res) => {
 
     res
         .status(200)
-        .json({ status: "200", message: "Deviation Updated ", body: updatedErrorProofing });
+        .json({ status: "200", message: "Error Proofing Updated ", body: updatedErrorProofing });
 };
 
 //Generar un nuevo checklist en un archivo de error proofing existente

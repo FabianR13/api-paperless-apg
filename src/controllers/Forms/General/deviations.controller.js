@@ -8,6 +8,7 @@ const AWS = require('aws-sdk');
 const { sendEmailMiddlewareResponse } = require("../../../middlewares/mailer.js");
 const Deviation = require("../../../models/General/Deviation.js");
 const Employees = require("../../../models/Employees.js");
+const Role = require("../../../models/Role.js");
 
 AWS.config.update({
     region: process.env.S3_BUCKET_REGION,
@@ -269,7 +270,7 @@ const getDeviations = async (req, res) => {
 // Updating the Kaizen All data//////////////////////////////////////////////////////////////////////////////////////////////
 const updateDeviation = async (req, res) => {
     const { deviationId } = req.params;
-    
+
     const {
         severity,
         deviationType,
@@ -454,7 +455,57 @@ const updateDeviation = async (req, res) => {
         .status(200)
         .json({ status: "200", message: "Deviation Updated ", body: updatedDeviation });
 };
+// Updating the Kaizen All data//////////////////////////////////////////////////////////////////////////////////////////////
+const validateDeviation = async (req, res) => {
+    const { deviationId } = req.params;
+    const deviationData = {};
+    const {
+        username,
+    } = req.body;
 
+    // Buscar usuario en la base de datos
+    if (username) {
+        const foundUser = await User.findOne({
+            username: { $in: username },
+        });
+        if (foundUser) {
+            const roles = await Role.find({ _id: { $in: foundUser.roles } });
+            for (let i = 0; i < roles.length; i++) {
+                
+            }
+            deviationData.qualitySign = foundUser._id;
+            deviationData.qualitySignStatus = "Signed";
+        } else {
+            console.log(`Usuario "${username}" no encontrado.`);
+        }
+    }
+
+    const {
+        qualitySign,
+        qualitySignStatus
+    } = deviationData;
+
+    const updatedDeviation = await Deviation.updateOne(
+        { _id: deviationId },
+        {
+            $set: {
+                qualitySign,
+                qualitySignStatus,
+                qualitySignDate: new Date()
+            },
+        }
+    );
+
+    if (!updatedDeviation) {
+        return res // Es buena práctica agregar un 'return' para no ejecutar el resto.
+            .status(403)
+            .json({ status: "403", message: "Deviation not Updated", body: "" });
+    }
+
+    res
+        .status(200)
+        .json({ status: "200", message: "Deviation Updated ", body: updatedDeviation });
+};
 module.exports = {
     createDeviation,
     getDeviations,
