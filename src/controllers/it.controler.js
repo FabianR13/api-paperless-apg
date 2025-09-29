@@ -12,6 +12,8 @@ const Monitors = require("../models/Monitors.js");
 const LabelPrinters = require("../models/LabelPrinters.js");
 const Chromebooks = require("../models/Chromebooks.js");
 const Scanners = require("../models/Scanners.js");
+const ScheduledService = require("../models/IT/ScheduledService.js");
+const { differenceInMonths } = require('date-fns');
 
 AWS.config.update({
     region: process.env.S3_BUCKET_REGION,
@@ -1718,6 +1720,144 @@ const updateScanner = async (req, res) => {
     });
 };
 
+
+
+const createNewServiceDay = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const {
+        selectedDate, // Fecha del nuevo servicio solicitado
+        employeeNumber
+    } = req.body;
+
+    if (employeeNumber) {
+        const foundEmployee = await Employees.findOne({
+            numberEmployee: employeeNumber,
+        });
+
+        if (!foundEmployee) {
+            return res
+                .status(404)
+                .json({ status: "404", message: "Employee not found", body: "" });
+        }
+
+        // --- NUEVO BLOQUE DE VALIDACIÓN DE FECHA ---
+        // 1. Buscar el último servicio programado para este empleado
+        const lastService = await ScheduledService.findOne({
+            employee: foundEmployee._id
+        }).sort({ selectedDate: -1 }); // Ordena por fecha descendente para obtener el más reciente
+
+        // 2. Si existe un servicio previo, calcular la diferencia
+        if (lastService) {
+            const monthDifference = differenceInMonths(
+                new Date(selectedDate),      // Fecha nueva
+                lastService.selectedDate     // Fecha del último servicio en la DB
+            );
+
+            // 3. Si la diferencia es menor a 2 meses, bloquear la solicitud
+            if (monthDifference < 2) {
+                return res
+                    .status(409) // 409 Conflict es un buen código de estado para esto
+                    .json({ status: "409", message: "This employee already has a service scheduled less than 2 months ago." });
+            }
+        }
+        // --- FIN DEL BLOQUE DE VALIDACIÓN ---
+
+        // Si la validación pasa, el código continúa...
+        const newServiceDay = new ScheduledService({
+            selectedDate,
+            serviceStatus: "Open",
+            employee: foundEmployee._id, // Asignar el empleado aquí
+        });
+
+        if (CompanyId) {
+            const foundCompany = await Company.findOne({
+                _id: CompanyId,
+            });
+            if (!foundCompany) { // Buena práctica: validar también la compañía
+                return res.status(404).json({ status: "404", message: "Company not found" });
+            }
+            newServiceDay.company = foundCompany._id;
+        }
+
+        const savedService = await newServiceDay.save();
+
+        if (!savedService) {
+            return res
+                .status(403)
+                .json({ status: "403", message: "Service not Saved", body: "" });
+        }
+
+        return res
+            .status(200)
+            .json({ status: "200", message: "Service Saved", body: savedService });
+
+    } else {
+        // Manejar el caso si no se envía un número de empleado
+        return res.status(400).json({ status: "400", message: "Employee number is required." });
+    }
+};
+
+// Getting all ScheduledService/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getScheduledService = async (req, res) => {
+
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+    const scheduledService = await ScheduledService.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .populate({ path: "employee", select: "name lastName" })
+    res.json({ status: "200", message: "ScheduledService Loaded", body: scheduledService });
+};
+
+//update scanner data//////////////////////////////////////////////////////////////////////////////////////
+const updateServiceDay = async (req, res) => {
+    const { ServiceDayId } = req.params;
+    let modifiedBy;
+
+    const {
+        serviceStatus,
+    } = req.body;
+
+    if (req.body.username) {
+        const foundUser = await User.findOne({
+            username: { $in: req.body.username },
+        });
+        modifiedBy = foundUser._id;
+    }
+
+    const updatedeServiceDay = await ScheduledService.updateOne(
+        { _id: ServiceDayId },
+        {
+            $set: {
+                serviceStatus,
+                modifiedBy,
+            },
+        }
+    );
+
+    if (!updatedeServiceDay) {
+        res
+            .status(403)
+            .json({ status: "403", message: "Service not Updated", body: "" });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "Service Updated ",
+        body: updatedeServiceDay,
+    });
+};
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -1749,5 +1889,8 @@ module.exports = {
     updateChromebook,
     createNewScanner,
     getAllScanners,
-    updateScanner
+    updateScanner,
+    createNewServiceDay,
+    getScheduledService,
+    updateServiceDay
 };
