@@ -23,7 +23,7 @@ const {
   isDeviationR
 } = require("../../middlewares/auth.Jwt.js");
 const { sendEmailMiddlewareResponse } = require("../../middlewares/mailer.js");
-const { createDeviation, getDeviations, updateDeviation, } = require("../../controllers/Forms/General/deviations.controller.js");
+const { createDeviation, getDeviations, updateDeviation, validateDeviation, } = require("../../controllers/Forms/General/deviations.controller.js");
 
 //Deviation request/////////////////////////////////
 //Route to post new Deviation ///
@@ -48,7 +48,12 @@ router.put("/UpdateDeviation/:deviationId/:CompanyId",
   isAutorized,
   isDeviationR,
   updateDeviation);
-
+//Route to update Deviation ///
+router.put("/ValidateDeviation/:deviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationR,
+  validateDeviation);
 
 
 

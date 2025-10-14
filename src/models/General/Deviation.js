@@ -65,18 +65,14 @@ const deviationSchema = new mongoose.Schema(
         other: {
             type: String,
         },
-        qualitySign: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        seniorSign: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
+        qualitySign: {
+            ref: "User",
+            type: mongoose.Schema.Types.ObjectId,
+        },
+        seniorSign: {
+            ref: "User",
+            type: mongoose.Schema.Types.ObjectId,
+        },
         customerSign: [
             {
                 ref: "User",
@@ -118,9 +114,11 @@ const deviationSchema = new mongoose.Schema(
             type: String,
         }],
         productResponsible: [{
-            ref: "Employees",
-            type: mongoose.Schema.Types.ObjectId,
-        },],
+            employee: { // <- La referencia ahora está dentro de un objeto
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Employees'
+            }
+        }],
         productDueDate: [{
             type: Date,
         }],
@@ -131,9 +129,11 @@ const deviationSchema = new mongoose.Schema(
             type: String,
         }],
         processResponsible: [{
-            ref: "Employees",
-            type: mongoose.Schema.Types.ObjectId,
-        },],
+            employee: { // <- La referencia ahora está dentro de un objeto
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Employees'
+            }
+        }],
         processDueDate: [{
             type: Date,
         }],
@@ -142,9 +142,11 @@ const deviationSchema = new mongoose.Schema(
             type: String,
         }],
         correctiveResponsible: [{
-            ref: "Employees",
-            type: mongoose.Schema.Types.ObjectId,
-        },],
+            employee: { // <- La referencia ahora está dentro de un objeto
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Employees'
+            }
+        }],
         correctiveDueDate: [{
             type: Date,
         }],
@@ -152,9 +154,11 @@ const deviationSchema = new mongoose.Schema(
             type: String,
         }],
         preventiveResponsible: [{
-            ref: "Employees",
-            type: mongoose.Schema.Types.ObjectId,
-        },],
+            employee: { // <- La referencia ahora está dentro de un objeto
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Employees'
+            }
+        }],
         preventiveDueDate: [{
             type: Date,
         }],
@@ -163,9 +167,11 @@ const deviationSchema = new mongoose.Schema(
             type: String,
         }],
         followCorrectiveResponsible: [{
-            ref: "Employees",
-            type: mongoose.Schema.Types.ObjectId,
-        },],
+            employee: { // <- La referencia ahora está dentro de un objeto
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Employees'
+            }
+        }],
         followCorrectiveDueDate: [{
             type: Date,
         }],
@@ -173,42 +179,30 @@ const deviationSchema = new mongoose.Schema(
             type: String,
         }],
         followPreventiveResponsible: [{
-            ref: "Employees",
-            type: mongoose.Schema.Types.ObjectId,
-        },],
+            employee: { // <- La referencia ahora está dentro de un objeto
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Employees'
+            }
+        }],
         followPreventiveDueDate: [{
             type: Date,
         }],
-        qualitySignRisk: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        productionSignRisk: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        processSignRisk: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        automationSignRisk: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        seniorSignRisk: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
+        qualitySignRisk: {
+            ref: "User",
+            type: mongoose.Schema.Types.ObjectId,
+        },
+        productionSignRisk: {
+            ref: "User",
+            type: mongoose.Schema.Types.ObjectId,
+        },
+        processSignRisk: {
+            ref: "User",
+            type: mongoose.Schema.Types.ObjectId,
+        },
+        automationSignRisk: {
+            ref: "User",
+            type: mongoose.Schema.Types.ObjectId,
+        },
         qualitySignStatusRisk: {
             type: String,
         },
@@ -221,9 +215,6 @@ const deviationSchema = new mongoose.Schema(
         automationSignStatusRisk: {
             type: String,
         },
-        seniorSignStatusRisk: {
-            type: String,
-        },
         qualitySignDateRisk: {
             type: Date,
         },
@@ -234,9 +225,6 @@ const deviationSchema = new mongoose.Schema(
             type: Date,
         },
         automationSignDateRisk: {
-            type: Date,
-        },
-        seniorSignDateRisk: {
             type: Date,
         },
         //IdentificaDORES

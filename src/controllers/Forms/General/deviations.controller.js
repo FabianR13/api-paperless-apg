@@ -140,57 +140,87 @@ const createDeviation = async (req, res, next) => {
         }
 
         // Buscar employee en la base de datos
-        if (productResponsible) {
-            const foundEmployees = await Employees.find({ _id: productResponsible });
-            if (foundEmployees.length === 0) {
-                return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+        if (productResponsible && productResponsible.length > 0) {
+            const uniqueIds = [...new Set(productResponsible)];
+            const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+            if (countFound !== uniqueIds.length) {
+                return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
             }
-            newDeviation.productResponsible = foundEmployees.map(e => e._id);
+            const responsablesParaGuardar = productResponsible.map(id => ({ employee: id }));
+            newDeviation.productResponsible = responsablesParaGuardar;
+        } else {
+            newDeviation.productResponsible = [];
         }
 
         // Buscar employee en la base de datos
-        if (processResponsible) {
-            const foundEmployees = await Employees.find({ _id: processResponsible });
-            if (foundEmployees.length === 0) {
-                return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+        if (processResponsible && processResponsible.length > 0) {
+            const uniqueIds = [...new Set(processResponsible)];
+            const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+            if (countFound !== uniqueIds.length) {
+                return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
             }
-            newDeviation.processResponsible = foundEmployees.map(e => e._id);
+            const responsablesParaGuardar = processResponsible.map(id => ({ employee: id }));
+            newDeviation.processResponsible = responsablesParaGuardar;
+        } else {
+            newDeviation.processResponsible = [];
         }
 
         // Buscar employee en la base de datos
-        if (correctiveResponsible) {
-            const foundEmployees = await Employees.find({ _id: correctiveResponsible });
-            if (foundEmployees.length === 0) {
-                return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+        if (correctiveResponsible && correctiveResponsible.length > 0) {
+            const uniqueIds = [...new Set(correctiveResponsible)];
+            const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+            if (countFound !== uniqueIds.length) {
+                return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
             }
-            newDeviation.correctiveResponsible = foundEmployees.map(e => e._id);
+            const responsablesParaGuardar = correctiveResponsible.map(id => ({ employee: id }));
+            newDeviation.correctiveResponsible = responsablesParaGuardar;
+        } else {
+            newDeviation.correctiveResponsible = [];
         }
 
         // Buscar employee en la base de datos
-        if (preventiveResponsible) {
-            const foundEmployees = await Employees.find({ _id: preventiveResponsible });
-            if (foundEmployees.length === 0) {
-                return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+        if (preventiveResponsible && preventiveResponsible.length > 0) {
+            const uniqueIds = [...new Set(preventiveResponsible)];
+            const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+            if (countFound !== uniqueIds.length) {
+                return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
             }
-            newDeviation.preventiveResponsible = foundEmployees.map(e => e._id);
+            const responsablesParaGuardar = preventiveResponsible.map(id => ({ employee: id }));
+            newDeviation.preventiveResponsible = responsablesParaGuardar;
+        } else {
+            newDeviation.preventiveResponsible = [];
         }
 
         // Buscar employee en la base de datos
-        if (followCorrectiveResponsible) {
-            const foundEmployees = await Employees.find({ _id: followCorrectiveResponsible });
-            if (foundEmployees.length === 0) {
-                return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+        if (followCorrectiveResponsible && followCorrectiveResponsible.length > 0) {
+            const uniqueIds = [...new Set(followCorrectiveResponsible)];
+            const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+            if (countFound !== uniqueIds.length) {
+                return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
             }
-            newDeviation.followCorrectiveResponsible = foundEmployees.map(e => e._id);
+            const responsablesParaGuardar = followCorrectiveResponsible.map(id => ({ employee: id }));
+            newDeviation.followCorrectiveResponsible = responsablesParaGuardar;
+        } else {
+            newDeviation.followCorrectiveResponsible = [];
         }
 
         // Buscar employee en la base de datos
-        if (followPreventiveResponsible) {
-            const foundEmployees = await Employees.find({ _id: followPreventiveResponsible });
-            if (foundEmployees.length === 0) {
-                return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+        if (followPreventiveResponsible && followPreventiveResponsible.length > 0) {
+            const uniqueIds = [...new Set(followPreventiveResponsible)];
+            const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+            if (countFound !== uniqueIds.length) {
+                return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
             }
-            newDeviation.followPreventiveResponsible = foundEmployees.map(e => e._id);
+            const responsablesParaGuardar = followPreventiveResponsible.map(id => ({ employee: id }));
+            newDeviation.followPreventiveResponsible = responsablesParaGuardar;
+        } else {
+            newDeviation.followPreventiveResponsible = [];
         }
 
         // Buscar compañia en la base de datos
@@ -202,13 +232,19 @@ const createDeviation = async (req, res, next) => {
             newDeviation.company = foundCompanies.map(c => c._id);
         }
 
-        const count = await Deviation.estimatedDocumentCount();
+        const anioActual = new Date().getFullYear();
 
-        if (count > 1) {
-            const deviations = await Deviation.find().sort({ consecutive: -1 }).limit(1);
-            newDeviation.consecutive = deviations[0].consecutive + 1;
+        const ultimaDesviacion = await Deviation.findOne({
+            createdAt: {
+                $gte: new Date(`${anioActual}-01-01T00:00:00.000Z`), // Desde el inicio del año actual
+                $lt: new Date(`${anioActual + 1}-01-01T00:00:00.000Z`)   // Hasta antes del inicio del siguiente año
+            }
+        }).sort({ consecutive: -1 });
+
+        if (ultimaDesviacion) {
+            newDeviation.consecutive = ultimaDesviacion.consecutive + 1;
         } else {
-            newDeviation.consecutive = 1
+            newDeviation.consecutive = 1;
         }
 
         // newDeviationReq.deviationNumber = "APG-" + yearactual + "-" + `${Number(newDeviationReq.consecutive)}`.padStart(3, "0")`
@@ -262,7 +298,19 @@ const getDeviations = async (req, res) => {
             ]
         })
         .populate({ path: 'partNumber' })
-    //.populate({ path: 'deviationRisk', model: "DeviationRiskAssessment"  });
+        .populate({
+            path: 'qualitySign',
+            populate: [
+                {
+                    path: 'signature',
+                    model: 'Signature'
+                },
+                {
+                    path: 'employee',
+                    model: 'Employees',
+                }
+            ]
+        })
     // .populate({ path: 'deviationRisk', model: "DeviationRiskAssessment" });
     res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 };
@@ -341,59 +389,87 @@ const updateDeviation = async (req, res) => {
         }
         newPartNumber = foundParts.map(p => p._id);
     }
-
     // Buscar employee en la base de datos
-    if (productResponsible) {
-        const foundEmployees = await Employees.find({ _id: productResponsible });
-        if (foundEmployees.length === 0) {
-            return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+    if (productResponsible && productResponsible.length > 0) {
+        const uniqueIds = [...new Set(productResponsible)];
+        const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+        if (countFound !== uniqueIds.length) {
+            return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
         }
-        newProductResponsible = foundEmployees.map(e => e._id);
+        const responsablesParaGuardar = productResponsible.map(id => ({ employee: id }));
+        newProductResponsible = responsablesParaGuardar;
+    } else {
+        newProductResponsible = [];
+    }
+    // Buscar employee en la base de datos
+    if (processResponsible && processResponsible.length > 0) {
+        const uniqueIds = [...new Set(processResponsible)];
+        const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+        if (countFound !== uniqueIds.length) {
+            return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
+        }
+        const responsablesParaGuardar = processResponsible.map(id => ({ employee: id }));
+        newProcessResponsible = responsablesParaGuardar;
+    } else {
+        newProcessResponsible = [];
     }
 
     // Buscar employee en la base de datos
-    if (processResponsible) {
-        const foundEmployees = await Employees.find({ _id: processResponsible });
-        if (foundEmployees.length === 0) {
-            return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+    if (correctiveResponsible && correctiveResponsible.length > 0) {
+        const uniqueIds = [...new Set(correctiveResponsible)];
+        const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+        if (countFound !== uniqueIds.length) {
+            return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
         }
-        newProcessResponsible = foundEmployees.map(e => e._id);
+        const responsablesParaGuardar = correctiveResponsible.map(id => ({ employee: id }));
+        newCorrectiveResponsible = responsablesParaGuardar;
+    } else {
+        newCorrectiveResponsible = [];
     }
 
     // Buscar employee en la base de datos
-    if (correctiveResponsible) {
-        const foundEmployees = await Employees.find({ _id: correctiveResponsible });
-        if (foundEmployees.length === 0) {
-            return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+    if (preventiveResponsible && preventiveResponsible.length > 0) {
+        const uniqueIds = [...new Set(preventiveResponsible)];
+        const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+        if (countFound !== uniqueIds.length) {
+            return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
         }
-        newCorrectiveResponsible = foundEmployees.map(e => e._id);
+        const responsablesParaGuardar = preventiveResponsible.map(id => ({ employee: id }));
+        newPreventiveResponsible = responsablesParaGuardar;
+    } else {
+        newPreventiveResponsible = [];
     }
 
     // Buscar employee en la base de datos
-    if (preventiveResponsible) {
-        const foundEmployees = await Employees.find({ _id: preventiveResponsible });
-        if (foundEmployees.length === 0) {
-            return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+    if (followCorrectiveResponsible && followCorrectiveResponsible.length > 0) {
+        const uniqueIds = [...new Set(followCorrectiveResponsible)];
+        const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
+
+        if (countFound !== uniqueIds.length) {
+            return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
         }
-        newPreventiveResponsible = foundEmployees.map(e => e._id);
+        const responsablesParaGuardar = followCorrectiveResponsible.map(id => ({ employee: id }));
+        newFollowCorrectiveResponsible = responsablesParaGuardar;
+    } else {
+        newFollowCorrectiveResponsible = [];
     }
 
     // Buscar employee en la base de datos
-    if (followCorrectiveResponsible) {
-        const foundEmployees = await Employees.find({ _id: followCorrectiveResponsible });
-        if (foundEmployees.length === 0) {
-            return res.status(404).json({ status: "error", message: "Employee no encontrado" });
-        }
-        newFollowCorrectiveResponsible = foundEmployees.map(e => e._id);
-    }
+    if (followPreventiveResponsible && followPreventiveResponsible.length > 0) {
+        const uniqueIds = [...new Set(followPreventiveResponsible)];
+        const countFound = await Employees.countDocuments({ _id: { $in: uniqueIds } });
 
-    // Buscar employee en la base de datos
-    if (followPreventiveResponsible) {
-        const foundEmployees = await Employees.find({ _id: followPreventiveResponsible });
-        if (foundEmployees.length === 0) {
-            return res.status(404).json({ status: "error", message: "Employee no encontrado" });
+        if (countFound !== uniqueIds.length) {
+            return res.status(404).json({ status: "error", message: "Uno o más IDs de empleado no fueron encontrados." });
         }
-        newFollowPreventiveResponsible = foundEmployees.map(e => e._id);
+        const responsablesParaGuardar = followPreventiveResponsible.map(id => ({ employee: id }));
+        newFollowPreventiveResponsible = responsablesParaGuardar;
+    } else {
+        newFollowPreventiveResponsible = [];
     }
 
     const updatedDeviation = await Deviation.updateOne(
@@ -455,59 +531,85 @@ const updateDeviation = async (req, res) => {
         .status(200)
         .json({ status: "200", message: "Deviation Updated ", body: updatedDeviation });
 };
-// Updating the Kaizen All data//////////////////////////////////////////////////////////////////////////////////////////////
+
+//Validar desviacion//////////////////////////////////////////////////////////////////////////////////////////////
 const validateDeviation = async (req, res) => {
     const { deviationId } = req.params;
-    const deviationData = {};
-    const {
-        username,
-    } = req.body;
+    const { username } = req.body;
 
-    // Buscar usuario en la base de datos
-    if (username) {
-        const foundUser = await User.findOne({
-            username: { $in: username },
-        });
-        if (foundUser) {
-            const roles = await Role.find({ _id: { $in: foundUser.roles } });
-            for (let i = 0; i < roles.length; i++) {
-                
+    try {
+        if (!username) {
+            return res.status(400).json({ message: "El 'username' es requerido." });
+        }
+
+        const foundUser = await User.findOne({ username });
+
+        if (!foundUser) {
+            return res.status(404).json({ message: `Usuario "${username}" no encontrado.` });
+        }
+
+        const fieldsToUpdate = {};
+        const currentDate = new Date();
+
+        const roles = await Role.find({ _id: { $in: foundUser.roles } });
+
+        for (const role of roles) {
+            if (["QualityASIns",  "QualityASEng"].includes(role.name)) {
+                fieldsToUpdate.qualitySign = foundUser._id;
+                fieldsToUpdate.qualitySignStatus = "Signed";
+                fieldsToUpdate.qualitySignDate = currentDate;
             }
-            deviationData.qualitySign = foundUser._id;
-            deviationData.qualitySignStatus = "Signed";
-        } else {
-            console.log(`Usuario "${username}" no encontrado.`);
+            if (role.name === "QualityASGer") {
+                fieldsToUpdate.qualitySignRisk = foundUser._id;
+                fieldsToUpdate.qualitySignStatusRisk = "Signed";
+                fieldsToUpdate.qualitySignDateRisk = currentDate;
+            }
+            if (role.name === "ProductionSign") {
+                fieldsToUpdate.productionSignRisk = foundUser._id;
+                fieldsToUpdate.productionSignStatusRisk = "Signed";
+                fieldsToUpdate.productionSignDateRisk = currentDate;
+            }
+            if (role.name === "AutomationSign") {
+                fieldsToUpdate.automationSignRisk = foundUser._id;
+                fieldsToUpdate.automationSignStatusRisk = "Signed";
+                fieldsToUpdate.automationSignDateRisk = currentDate;
+            }
+            if (role.name === "SeniorManagement") {
+                fieldsToUpdate.seniorSign = foundUser._id;
+                fieldsToUpdate.seniorSignStatus = "Signed";
+                fieldsToUpdate.seniorSignDate = currentDate;
+            }
+            if (role.name === "ProcessSign") {
+                fieldsToUpdate.processSignRisk = foundUser._id;
+                fieldsToUpdate.processSignStatusRisk = "Signed";
+                fieldsToUpdate.processSignDateRisk = currentDate;
+            }
         }
-    }
 
-    const {
-        qualitySign,
-        qualitySignStatus
-    } = deviationData;
-
-    const updatedDeviation = await Deviation.updateOne(
-        { _id: deviationId },
-        {
-            $set: {
-                qualitySign,
-                qualitySignStatus,
-                qualitySignDate: new Date()
-            },
+        if (Object.keys(fieldsToUpdate).length === 0) {
+            return res.status(400).json({ message: "El usuario no tiene los roles necesarios para firmar en este paso." });
         }
-    );
 
-    if (!updatedDeviation) {
-        return res // Es buena práctica agregar un 'return' para no ejecutar el resto.
-            .status(403)
-            .json({ status: "403", message: "Deviation not Updated", body: "" });
+        const updateResult = await Deviation.updateOne(
+            { _id: deviationId },
+            { $set: fieldsToUpdate }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).json({ message: "La desviación a actualizar no fue encontrada." });
+        }
+
+        res.status(200).json({ status: "200", message: "Desviación actualizada correctamente." });
+
+    } catch (error) {
+        console.error("Error al validar la desviación:", error);
+        res.status(500).json({ message: "Ocurrió un error en el servidor." });
     }
-
-    res
-        .status(200)
-        .json({ status: "200", message: "Deviation Updated ", body: updatedDeviation });
 };
+
 module.exports = {
     createDeviation,
     getDeviations,
-    updateDeviation
+    updateDeviation,
+    validateDeviation
 };

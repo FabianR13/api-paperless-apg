@@ -183,7 +183,7 @@ const signIn = async (req, res) => {
     if (roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
       userAccessApg[5] = "true";
     }
-    if (roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer") {
+    if (roles[i].name === "QualityASEng" || roles[i].name === "QualityASIns") {
       userAccessApg[6] = "true";
     }
     if (roles[i].name === "QualityASGer") {
