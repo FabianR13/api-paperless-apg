@@ -45,7 +45,7 @@ router.put(
   "/UpdateKaizen/:kaizenId/:CompanyId",
   verifyToken,
   isAutorized,
-  isKaizenRW,
+  // isKaizenRW,
   updateKaizen
 );
 ///Route to modify just the Status of a Kaizen///
@@ -61,7 +61,7 @@ router.put(
   "/UpdateKaizen/Images/:kaizenId/:CompanyId",
   verifyToken,
   isAutorized,
-  isKaizenRW,
+  // isKaizenRW,
   uploadKaizenImgs,
   modifyKaizenImg
 );
