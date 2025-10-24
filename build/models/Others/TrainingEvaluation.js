@@ -25,14 +25,17 @@ const trainingEvaluationSchema = new mongoose.Schema({
   }],
   trainer: [{
     ref: "User",
+    required: true,
     type: mongoose.Schema.Types.ObjectId
   }],
   partNumber: [{
     ref: "Parts",
+    required: true,
     type: mongoose.Schema.Types.ObjectId
   }],
   numberEmployee: [{
     ref: "Employees",
+    required: true,
     type: mongoose.Schema.Types.ObjectId
   }],
   question1: {
@@ -139,11 +142,30 @@ const trainingEvaluationSchema = new mongoose.Schema({
       type: String
     }
   },
+  question14: {
+    answer: {
+      type: String
+    },
+    status: {
+      type: String
+    }
+  },
+  question15: {
+    answer: {
+      type: String
+    },
+    status: {
+      type: String
+    }
+  },
   company: [{
     ref: "Company",
     type: mongoose.Schema.Types.ObjectId
   }],
   version: {
+    type: Number
+  },
+  recertificationLevel: {
     type: Number
   }
 }, {

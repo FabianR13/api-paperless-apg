@@ -296,6 +296,7 @@ const validateChecklist = async (req, res) => {
 
     const {
         automationResponsible,
+        checklistObservations
     } = req.body;
 
     let newAutomationResponsible = null;
@@ -317,6 +318,7 @@ const validateChecklist = async (req, res) => {
             $set: {
                 automationResponsible: newAutomationResponsible,
                 automationValidationDate: newAutomationValidationDate,
+                checklistObservations: checklistObservations
             },
         }
     );

@@ -5,11 +5,10 @@ const Company = require("../../../models/Company.js");
 
 const AWS = require('aws-sdk');
 
-const dotenv = require('dotenv');
+const Employees = require("../../../models/Employees.js");
 
-dotenv.config({
-  path: "C:\\api-paperless-apg\\src\\.env"
-});
+const Deparment = require("../../../models/Deparment.js");
+
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
   apiVersion: 'latest',
@@ -22,124 +21,135 @@ const s3 = new AWS.S3(); //Create new kaizen////////////////////////////////////
 
 const createKaizen = async (req, res) => {
   const {
-    kaizenName,
-    date,
-    createdBy,
-    area,
-    implementArea,
-    implementDate,
-    takenPlant,
-    teamKaizen,
-    money,
-    space,
-    security,
-    ergonomy,
-    fiveS,
-    environment,
-    process,
-    motivation,
-    other,
-    beforeKaizen,
-    afterKaizen,
-    status,
-    montlyRank,
-    observations,
-    lastModifyBy,
-    implementationCost,
-    company
-  } = req.body; //Retreiving the data for each Before Kaizen Image and adding to the schema
+    CompanyId
+  } = req.params;
 
-  let kaizenImagesB = [];
+  try {
+    const {
+      kaizenName,
+      createdBy,
+      teamKaizen,
+      createdDate,
+      implementDate,
+      implementationCost,
+      area,
+      implementArea,
+      takenPlant,
+      savedMoney,
+      savedSpace,
+      savingsUnmeasured,
+      beforeKaizen,
+      afterKaizen,
+      rpnBefore,
+      rpnAfter
+    } = req.body; //Retreiving the data for each Before Kaizen Image and adding to the schema
 
-  if (req.files["kaizenImagesB"]) {
-    if (req.files["kaizenImagesB"].length > 0) {
-      kaizenImagesB = req.files["kaizenImagesB"].map(file => {
-        return {
-          img: file.key
-        };
-      });
-    }
-  } //Retreiving the data for each Before Kaizen Image and adding to the schema
+    let kaizenImagesB = [];
 
-
-  let kaizenImagesA = [];
-
-  if (req.files["kaizenImagesA"]) {
-    if (req.files["kaizenImagesA"].length > 0) {
-      kaizenImagesA = req.files["kaizenImagesA"].map(file => {
-        return {
-          img: file.key
-        };
-      });
-    }
-  }
-
-  const kaizen = new Kaizen({
-    kaizenName,
-    date,
-    createdBy,
-    area,
-    implementArea,
-    implementDate,
-    takenPlant,
-    teamKaizen,
-    money,
-    space,
-    security,
-    ergonomy,
-    fiveS,
-    environment,
-    process,
-    motivation,
-    other,
-    beforeKaizen,
-    afterKaizen,
-    status,
-    montlyRank,
-    observations,
-    lastModifyBy,
-    implementationCost,
-    kaizenImagesB,
-    kaizenImagesA
-  });
-
-  if (company) {
-    const foundCompany = await Company.find({
-      _id: {
-        $in: company
+    if (req.files["kaizenImagesB"]) {
+      if (req.files["kaizenImagesB"].length > 0) {
+        kaizenImagesB = req.files["kaizenImagesB"].map(file => {
+          return {
+            img: file.key
+          };
+        });
       }
-    });
-    kaizen.company = foundCompany.map(company => company._id);
-  }
+    } //Retreiving the data for each Before Kaizen Image and adding to the schema
 
-  const kaizens = await Kaizen.find({
-    company: {
-      $in: req.body.company
+
+    let kaizenImagesA = [];
+
+    if (req.files["kaizenImagesA"]) {
+      if (req.files["kaizenImagesA"].length > 0) {
+        kaizenImagesA = req.files["kaizenImagesA"].map(file => {
+          return {
+            img: file.key
+          };
+        });
+      }
     }
-  }).sort({
-    consecutive: -1
-  }).limit(1);
 
-  if (kaizens.length === 0) {
-    kaizen.consecutive = 1;
-  } else {
-    kaizen.consecutive = kaizens[0].consecutive + 1;
-  }
-
-  kaizen.save((error, kaizen) => {
-    if (error) return res.status(400).json({
-      status: "400",
-      message: error
+    const parsedSavingsUnmeasured = savingsUnmeasured.split(',').map(item => item.trim()).filter(item => item !== '');
+    const kaizen = new Kaizen({
+      kaizenName,
+      teamKaizen,
+      createdDate,
+      implementDate,
+      implementationCost,
+      implementArea,
+      takenPlant,
+      savedMoney,
+      savedSpace,
+      savingsUnmeasured: parsedSavingsUnmeasured,
+      beforeKaizen,
+      afterKaizen,
+      kaizenImagesB,
+      kaizenImagesA,
+      rpnBefore,
+      rpnAfter
     });
 
-    if (kaizen) {
-      res.json({
-        status: "200",
-        message: "Kaizen Created",
-        body: kaizen
+    if (createdBy) {
+      const foundEmployee = await Employees.find({
+        _id: {
+          $in: createdBy
+        }
       });
+      kaizen.createdBy = foundEmployee.map(employee => employee._id);
+      kaizen.modifiedBy = foundEmployee.map(employee => employee._id);
     }
-  });
+
+    if (area) {
+      const foundDepartments = await Deparment.find({
+        _id: {
+          $in: area
+        }
+      });
+      kaizen.area = foundDepartments.map(department => department._id);
+    }
+
+    if (CompanyId) {
+      const foundCompany = await Company.find({
+        _id: {
+          $in: CompanyId
+        }
+      });
+      kaizen.company = foundCompany.map(company => company._id);
+    }
+
+    const kaizens = await Kaizen.find({
+      company: {
+        $in: CompanyId
+      }
+    }).sort({
+      consecutive: -1
+    }).limit(1);
+
+    if (kaizens.length === 0) {
+      kaizen.consecutive = 1;
+    } else {
+      kaizen.consecutive = kaizens[0].consecutive + 1;
+      kaizen.idKaizen = "APG-KZ" + (kaizens[0].consecutive + 1);
+    }
+
+    kaizen.status = "New";
+    kaizen.montlyRank = "Pending";
+    kaizen.observations = "";
+    kaizen.version = 2;
+    await kaizen.save();
+    res.status(200).json({
+      status: "200",
+      message: "Kaizen guardado exitosamente",
+      body: kaizen
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      message: "Error al guardar el kaizen",
+      error: error.message
+    });
+  }
 }; // Getting all Kaizens//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -168,6 +178,23 @@ const getKaizens = async (req, res) => {
     }
   }).sort({
     consecutive: -1
+  }).populate({
+    path: 'createdBy',
+    select: "name lastName numberEmployee picture",
+    populate: {
+      path: "department position",
+      select: "name"
+    }
+  }).populate({
+    path: 'modifiedBy',
+    select: "name lastName numberEmployee",
+    populate: {
+      path: "department position",
+      select: "name"
+    }
+  }).populate({
+    path: "area",
+    select: "name"
   });
   res.json({
     status: "200",
@@ -256,52 +283,65 @@ const updateKaizen = async (req, res) => {
   } = req.params;
   const {
     kaizenName,
-    createdBy,
     area,
     implementArea,
     implementDate,
     takenPlant,
     teamKaizen,
-    money,
-    space,
-    security,
-    ergonomy,
-    fiveS,
-    environment,
-    process,
-    motivation,
-    other,
+    savedMoney,
+    savedSpace,
+    savingsUnmeasured,
     beforeKaizen,
     afterKaizen,
     status,
-    lastModifyBy,
-    implementationCost
+    implementationCost,
+    modifiedBy,
+    observations,
+    rpnBefore,
+    rpnAfter
   } = req.body;
+  let newArea = "";
+  let newModifiedBy = "";
+
+  if (area) {
+    const foundDepartments = await Deparment.find({
+      _id: {
+        $in: area
+      }
+    });
+    newArea = foundDepartments.map(department => department._id);
+  }
+
+  if (modifiedBy) {
+    const foundEmployee = await Employees.find({
+      numberEmployee: {
+        $in: modifiedBy
+      }
+    });
+    newModifiedBy = foundEmployee.map(employee => employee._id);
+  }
+
   const updatedKaizen = await Kaizen.updateOne({
     _id: kaizenId
   }, {
     $set: {
       kaizenName,
-      createdBy,
-      area,
+      area: newArea,
       implementArea,
       implementDate,
       takenPlant,
       teamKaizen,
-      money,
-      space,
-      security,
-      ergonomy,
-      fiveS,
-      environment,
-      process,
-      motivation,
-      other,
+      savedMoney,
+      savedSpace,
+      savingsUnmeasured,
       beforeKaizen,
       afterKaizen,
       status,
-      lastModifyBy,
-      implementationCost
+      implementationCost,
+      modifiedBy: newModifiedBy,
+      observations,
+      rpnBefore,
+      rpnAfter
     }
   });
 
@@ -363,104 +403,181 @@ const modifyKaizenImg = async (req, res) => {
     kaizenId
   } = req.params; //Getting Previous Images
 
-  const foundPrevKaizen = await Kaizen.findById(kaizenId); // Deleting Images from Folder for KaizenB
+  const foundPrevKaizen = await Kaizen.findById(kaizenId);
+  const rawExistingImagesB = req.body.existingKaizenImagesB;
+  const rawExistingImagesA = req.body.existingKaizenImagesA;
+  let processedExistingImagesB = [];
+  let processedExistingImagesA = []; // console.log("Tipo de existingKaizenImagesB recibido:", typeof rawExistingImagesB);
+  // console.log("Valor de existingKaizenImagesB recibido:", rawExistingImagesB);
+  // Procesar existingKaizenImagesB
 
-  const prevKaizenImagesB = foundPrevKaizen.kaizenImagesB;
+  if (typeof rawExistingImagesB === 'string' && rawExistingImagesB.trim() !== '') {
+    processedExistingImagesB = rawExistingImagesB.split(',').map(filename => filename.trim()).filter(filename => filename !== '');
+  } else if (Array.isArray(rawExistingImagesB)) {
+    processedExistingImagesB = rawExistingImagesB.filter(item => typeof item === 'string').map(filename => filename.trim()).filter(filename => filename !== '');
+  } // Procesar existingKaizenImagesA
 
-  if (prevKaizenImagesB) {
-    // Validating if there are Images in the Field
-    if (prevKaizenImagesB.length > 0) {
-      prevKaizenImagesB.map(file => {
-        // Delete File from Folder
-        const params = {
-          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-          Key: file.img
-        };
 
-        try {
-          s3.deleteObject(params, function (err, data) {
-            if (err) console.log(err);
+  if (typeof rawExistingImagesA === 'string' && rawExistingImagesA.trim() !== '') {
+    processedExistingImagesA = rawExistingImagesA.split(',').map(filename => filename.trim()).filter(filename => filename !== '');
+  } else if (Array.isArray(rawExistingImagesA)) {
+    processedExistingImagesA = rawExistingImagesA.filter(item => typeof item === 'string').map(filename => filename.trim()).filter(filename => filename !== '');
+  } // console.log("Imágenes Existentes B (procesadas en API):", processedExistingImagesB);
+  // console.log("Imágenes Existentes A (procesadas en API):", processedExistingImagesA);
+
+
+  let updatedKaizenImagesB = [];
+  let updatedKaizenImagesA = [];
+
+  if (foundPrevKaizen && Array.isArray(foundPrevKaizen.kaizenImagesB)) {
+    foundPrevKaizen.kaizenImagesB.forEach(dbImageObject => {
+      if (dbImageObject && typeof dbImageObject.img === 'string') {
+        const dbImageFilename = dbImageObject.img;
+
+        if (processedExistingImagesB.includes(dbImageFilename)) {
+          // console.log(`CONSERVAR (B): La imagen '${dbImageFilename}' coincide y se conserva.`);
+          updatedKaizenImagesB.push({
+            img: dbImageFilename
           });
-        } catch (error) {
-          res.status(403).json({
-            status: "403",
-            message: error,
-            body: ""
-          });
+        } else {
+          // console.log(`ELIMINAR (B): La imagen '${dbImageFilename}' fue eliminada por el usuario.`);
+          const params = {
+            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+            Key: dbImageFilename
+          };
+
+          try {
+            s3.deleteObject(params, function (err, data) {
+              if (err) console.log(err);
+            });
+          } catch (error) {
+            res.status(403).json({
+              status: "403",
+              message: error,
+              body: ""
+            });
+          }
         }
-      });
-    }
-  } // Deleting Images from Folder for KaizenA
-
-
-  const prevKaizenImagesA = foundPrevKaizen.kaizenImagesA;
-
-  if (prevKaizenImagesA) {
-    // Validating if there are Images in the Field
-    if (prevKaizenImagesA.length > 0) {
-      prevKaizenImagesA.map(file => {
-        // Delete File from Folder
-        const params = {
-          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-          Key: file.img
-        };
-
-        try {
-          s3.deleteObject(params, function (err, data) {
-            if (err) console.log(err);
-          });
-        } catch (error) {
-          res.status(403).json({
-            status: "403",
-            message: error,
-            body: ""
-          });
-        }
-      });
-    }
-  } // Setting the Fields Empty in the DB
-
-
-  const updateClearImgKaizen = await Kaizen.updateOne({
-    _id: kaizenId
-  }, {
-    $set: {
-      kaizenImagesB: [],
-      kaizenImagesA: []
-    }
-  });
-
-  if (!updateClearImgKaizen) {
-    res.status(403).json({
-      status: "403",
-      message: "Kaizen not Updated - updateClearImgKaizen",
-      body: ""
+      }
     });
-  } //Retreiving the data for each Before Kaizen Image and adding to the schema
+  }
 
+  if (foundPrevKaizen && Array.isArray(foundPrevKaizen.kaizenImagesA)) {
+    foundPrevKaizen.kaizenImagesA.forEach(dbImageObject => {
+      if (dbImageObject && typeof dbImageObject.img === 'string') {
+        const dbImageFilename = dbImageObject.img;
 
-  let kaizenImagesB = [];
+        if (processedExistingImagesA.includes(dbImageFilename)) {
+          // console.log(`CONSERVAR (B): La imagen '${dbImageFilename}' coincide y se conserva.`);
+          updatedKaizenImagesA.push({
+            img: dbImageFilename
+          });
+        } else {
+          // console.log(`ELIMINAR (B): La imagen '${dbImageFilename}' fue eliminada por el usuario.`);
+          const params = {
+            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+            Key: dbImageFilename
+          };
+
+          try {
+            s3.deleteObject(params, function (err, data) {
+              if (err) console.log(err);
+            });
+          } catch (error) {
+            res.status(403).json({
+              status: "403",
+              message: error,
+              body: ""
+            });
+          }
+        }
+      }
+    });
+  } // Deleting Images from Folder for KaizenB
+  // const prevKaizenImagesB = foundPrevKaizen.kaizenImagesB;
+  // if (prevKaizenImagesB) {
+  //   // Validating if there are Images in the Field
+  //   if (prevKaizenImagesB.length > 0) {
+  //     prevKaizenImagesB.map((file) => {
+  //       // Delete File from Folder
+  //       const params = {
+  //         Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+  //         Key: file.img
+  //       };
+  //       try {
+  //         s3.deleteObject(params, function (err, data) {
+  //           if (err) console.log(err);
+  //         });
+  //       } catch (error) {
+  //         res.status(403).json({
+  //           status: "403",
+  //           message: error,
+  //           body: "",
+  //         });
+  //       }
+  //     });
+  //   }
+  // }
+  // Deleting Images from Folder for KaizenA
+  // const prevKaizenImagesA = foundPrevKaizen.kaizenImagesA;
+  // if (prevKaizenImagesA) {
+  //   // Validating if there are Images in the Field
+  //   if (prevKaizenImagesA.length > 0) {
+  //     prevKaizenImagesA.map((file) => {
+  //       // Delete File from Folder
+  //       const params = {
+  //         Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
+  //         Key: file.img
+  //       };
+  //       try {
+  //         s3.deleteObject(params, function (err, data) {
+  //           if (err) console.log(err);
+  //         });
+  //       } catch (error) {
+  //         res.status(403).json({
+  //           status: "403",
+  //           message: error,
+  //           body: "",
+  //         });
+  //       }
+  //     });
+  //   }
+  // }
+  // Setting the Fields Empty in the DB
+  // const updateClearImgKaizen = await Kaizen.updateOne(
+  //   { _id: kaizenId },
+  //   { $set: { kaizenImagesB: [], kaizenImagesA: [] } }
+  // );
+  // if (!updateClearImgKaizen) {
+  //   res.status(403).json({
+  //     status: "403",
+  //     message: "Kaizen not Updated - updateClearImgKaizen",
+  //     body: "",
+  //   });
+  // }
+  //Retreiving the data for each Before Kaizen Image and adding to the schema
+
 
   if (req.files["kaizenImagesB"]) {
     if (req.files["kaizenImagesB"].length > 0) {
-      kaizenImagesB = req.files["kaizenImagesB"].map(file => {
+      const newUploadedImagesB = req.files["kaizenImagesB"].map(file => {
         return {
           img: file.key
         };
       });
+      updatedKaizenImagesB = updatedKaizenImagesB.concat(newUploadedImagesB);
     }
   } //Retreiving the data for each Before Kaizen Image and adding to the schema
 
 
-  let kaizenImagesA = [];
-
   if (req.files["kaizenImagesA"]) {
     if (req.files["kaizenImagesA"].length > 0) {
-      kaizenImagesA = req.files["kaizenImagesA"].map(file => {
+      const newUploadedImagesA = req.files["kaizenImagesA"].map(file => {
         return {
           img: file.key
         };
       });
+      updatedKaizenImagesA = updatedKaizenImagesA.concat(newUploadedImagesA);
     }
   } // Updating the new Img Names in the fields from the DB
 
@@ -469,8 +586,8 @@ const modifyKaizenImg = async (req, res) => {
     _id: kaizenId
   }, {
     $set: {
-      kaizenImagesB,
-      kaizenImagesA
+      kaizenImagesB: updatedKaizenImagesB,
+      kaizenImagesA: updatedKaizenImagesA
     }
   });
 
@@ -485,7 +602,7 @@ const modifyKaizenImg = async (req, res) => {
   const foundKaizenNew = await Kaizen.findById(kaizenId);
   res.status(200).json({
     status: "200",
-    message: "Images Updated",
+    message: "Kaizen Updated",
     body: foundKaizenNew
   });
 }; //delete kaizen/////////////////////////////////////////////////////////////////////////////////////////////////////

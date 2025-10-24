@@ -39,7 +39,10 @@ const {
   updateChromebook,
   createNewScanner,
   getAllScanners,
-  updateScanner
+  updateScanner,
+  createNewServiceDay,
+  getScheduledService,
+  updateServiceDay
 } = require("../controllers/it.controler");
 
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
@@ -47,6 +50,13 @@ const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
 
 const uploadAccountsFile = require("../middlewares/uploadAccountsFile.js");
+
+const uploadFaqImages = require("../middlewares/uploadFaqImg.js");
+
+const {
+  createFaq,
+  getAllFaqs
+} = require("../controllers/faq.controller.js");
 
 const router = Router(); // Route to save new laptop///
 
@@ -113,5 +123,14 @@ router.post("/NewScanner/:CompanyId", verifyToken, isAutorized, isAdmin, createN
 
 router.get("/Scanners/:CompanyId", verifyToken, isAutorized, isAdmin, getAllScanners); // Route to update scanner///
 
-router.put("/UpdateScanner/:scannerId/:CompanyId", verifyToken, isAutorized, isAdmin, updateScanner);
+router.put("/UpdateScanner/:scannerId/:CompanyId", verifyToken, isAutorized, isAdmin, updateScanner); ///Route to Post a New Kaizen///
+
+router.post("/NewFaq/:CompanyId", uploadFaqImages, createFaq); // Route to get All the scanner///
+
+router.get("/Faqs/:CompanyId", getAllFaqs); // Route to save new service day///
+
+router.post("/NewServiceDay/:CompanyId", createNewServiceDay); // Route to get All the service days///
+
+router.get("/ServiceDays/:CompanyId", getScheduledService);
+router.put("/UpdateServiceDay/:ServiceDayId/:CompanyId", verifyToken, isAutorized, isAdmin, updateServiceDay);
 module.exports = router;

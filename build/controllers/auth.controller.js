@@ -2,8 +2,6 @@ const User = require("../models/User.js");
 
 const jwt = require("jsonwebtoken");
 
-const config = require("../config.js");
-
 const Role = require("../models/Role.js");
 
 const Dashboard = require("../models/Dashboard.js");
@@ -12,13 +10,11 @@ const Employees = require("../models/Employees.js");
 
 const Company = require("../models/Company.js");
 
-const dotenv = require('dotenv');
-
 const Signature = require("../models/Signatures.js");
 
-dotenv.config({
-  path: '../.env'
-}); //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
+const PushToken = require("../models/PushToken.js");
+
+console.log("ENV:", process.env.FIREBASE_CREDENTIALS_JSON ? "✅ cargada" : "❌ no encontrada"); //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const signUp = async (req, res) => {
   const {
@@ -108,7 +104,7 @@ const signUp = async (req, res) => {
     id: savedUser._id
   }, process.env.SECRET, {
     expiresIn: 86400 // 24 Horas
-    // expiresIn: 5,
+    // expiresIn: 20,
 
   });
   res.json({
@@ -168,13 +164,22 @@ const signIn = async (req, res) => {
     token: null,
     message: "Invalid password",
     status: "404"
-  });
-  const token = jwt.sign({
-    id: userFound._id
-  }, process.env.SECRET, {
-    expiresIn: 86400 // expiresIn: 5,
+  }); // const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
+  //   expiresIn: 86400,
+  //   // expiresIn: 20,
+  // });
 
-  });
+  const payload = {
+    id: userFound._id
+  };
+  const secret = process.env.SECRET;
+  const options = {};
+
+  if (userFound.username !== 'SupplierAPG') {
+    options.expiresIn = 86400; // 86400 segundos = 24 horas
+  }
+
+  const token = jwt.sign(payload, secret, options);
   const roles = await Role.find({
     _id: {
       $in: userFound.roles
@@ -198,9 +203,9 @@ const signIn = async (req, res) => {
     }
   }
 
-  let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id;
-  let userAccessApg = ["false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
-  let userAccessAXG = ["false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"]; //Crear variable con los roles que tiene en apg
+  let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id + "|" + userFound.employee[0].numberEmployee;
+  let userAccessApg = ["false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
+  let userAccessAXG = ["false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"]; //Crear variable con los roles que tiene en apg
 
   for (let i = 0; i < roles.length; i++) {
     if (roles[i].name === "admin") {
@@ -215,11 +220,11 @@ const signIn = async (req, res) => {
       userAccessApg[2] = "true";
     }
 
-    if (roles[i].name === "KaizenApproval") {
+    if (roles[i].name === "KaizenApproval" || roles[i].name === "admin") {
       userAccessApg[3] = "true";
     }
 
-    if (roles[i].name === "KaizenR" || roles[i].name === "admin" || roles[i].name === "KaizenApproval" || roles[i].name === "KaizenRW") {
+    if (roles[i].name === "KaizenR") {
       userAccessApg[4] = "true";
     }
 
@@ -227,7 +232,7 @@ const signIn = async (req, res) => {
       userAccessApg[5] = "true";
     }
 
-    if (roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer") {
+    if (roles[i].name === "QualityASEng" || roles[i].name === "QualityASIns") {
       userAccessApg[6] = "true";
     }
 
@@ -317,6 +322,94 @@ const signIn = async (req, res) => {
 
     if (roles[i].name === "PersonalReqReclu" || roles[i].name === "admin") {
       userAccessApg[28] = "true";
+    }
+
+    if (roles[i].name === "CreateMinuta" || roles[i].name === "admin") {
+      userAccessApg[29] = "true";
+    }
+
+    if (roles[i].name === "CreateMinuta" || roles[i].name === "admin") {
+      userAccessApg[30] = "true";
+    }
+
+    if (roles[i].name === "SMCreator") {
+      userAccessApg[31] = "true";
+    }
+
+    if (roles[i].name === "SMSupplier") {
+      userAccessApg[32] = "true";
+    }
+
+    if (roles[i].name === "GeneralR") {
+      userAccessApg[33] = "true";
+    }
+
+    if (roles[i].name === "SetupR") {
+      userAccessApg[34] = "true";
+    }
+
+    if (roles[i].name === "ProductionR") {
+      userAccessApg[35] = "true";
+    }
+
+    if (roles[i].name === "LogisticR") {
+      userAccessApg[36] = "true";
+    }
+
+    if (roles[i].name === "OtherR") {
+      userAccessApg[37] = "true";
+    }
+
+    if (roles[i].name === "SMReader") {
+      userAccessApg[38] = "true";
+    }
+
+    if (roles[i].name === "SMAdministrator") {
+      userAccessApg[39] = "true";
+    }
+
+    if (roles[i].name === "ManagementR") {
+      userAccessApg[40] = "true";
+    }
+
+    if (roles[i].name === "TEvaluationR" || roles[i].name === "TEvaluationDM" || roles[i].name === "TEvaluationS" || roles[i].name === "TEvaluationT" || roles[i].name === "TEvaluationRHR" || roles[i].name === "TEvaluationRHS" || roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
+      userAccessApg[41] = "true";
+    }
+
+    if (roles[i].name === "TEvaluationDM" || roles[i].name === "admin") {
+      userAccessApg[42] = "true";
+    }
+
+    if (roles[i].name === "TEvaluationS" || roles[i].name === "admin") {
+      userAccessApg[43] = "true";
+    }
+
+    if (roles[i].name === "TEvaluationT" || roles[i].name === "admin") {
+      userAccessApg[44] = "true";
+    }
+
+    if (roles[i].name === "TEvaluationRHR" || roles[i].name === "admin") {
+      userAccessApg[45] = "true";
+    }
+
+    if (roles[i].name === "TEvaluationRHS" || roles[i].name === "admin") {
+      userAccessApg[46] = "true";
+    }
+
+    if (roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
+      userAccessApg[47] = "true";
+    }
+
+    if (roles[i].name === "ErrorPCreator") {
+      userAccessApg[48] = "true";
+    }
+
+    if (roles[i].name === "ErrorPValidatorA") {
+      userAccessApg[49] = "true";
+    }
+
+    if (roles[i].name === "ErrorPReader") {
+      userAccessApg[50] = "true";
     }
   } //Crear variable con los roles que tiene en axiom
 
@@ -706,6 +799,213 @@ const getAccess = async (req, res) => {
     status: "200",
     message: "Access"
   });
+}; //get access to directory/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const saveTokenPush = async (req, res) => {
+  try {
+    const {
+      tokenPush,
+      isSupplier,
+      isErrorProofingInteres
+    } = req.body;
+
+    if (!tokenPush) {
+      return res.status(400).json({
+        message: "FCM token is required"
+      });
+    } // --- CORRECCIÓN AQUÍ ---
+    // 1. Define los datos a actualizar.
+    //    Es buena práctica construir este objeto para evitar enviar 'undefined'
+    //    si algún campo no viene en el body.
+
+
+    const updateData = {};
+
+    if (isSupplier !== undefined) {
+      updateData.isSupplier = isSupplier;
+    }
+
+    if (isErrorProofingInteres !== undefined) {
+      updateData.isErrorProofingInteres = isErrorProofingInteres;
+    } // 2. Ejecuta findOneAndUpdate con los argumentos correctos.
+
+
+    const updatedToken = await PushToken.findOneAndUpdate({
+      token: tokenPush
+    }, // 1. El filtro para buscar el documento
+    {
+      $set: updateData
+    }, // 2. La actualización (usando $set)
+    {
+      upsert: true,
+      new: true
+    } // 3. Las opciones (crea si no existe)
+    );
+    console.log('Token guardado/actualizado:', updatedToken);
+    return res.sendStatus(204); // No Content
+  } catch (error) {
+    console.error("Error saving FCM token:", error);
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+};
+
+const getTokensPush = async (req, res) => {
+  const tokens = await PushToken.find();
+  res.json({
+    status: "200",
+    message: "Tokens Loaded",
+    body: tokens
+  });
+}; // Leer desde la variable de entorno
+
+
+const admin = require("firebase-admin");
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON); // Inicializar solo una vez (por si se importa en otros módulos)
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+} // Función para enviar a un solo token
+
+
+const sendPushToToken = async token => {
+  const message = {
+    token,
+    notification: {
+      title: "Nuevo pedido creado",
+      body: "Se ha generado un nuevo pedido en la plataforma."
+    }
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notificación enviada a:", token);
+  } catch (error) {
+    console.error("❌ Error al enviar a:", token, error.message);
+  }
+}; // Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
+
+
+const notificarSuppliers = async (req, res) => {
+  const {
+    pushTokens
+  } = req.body;
+
+  if (!Array.isArray(pushTokens)) {
+    return res.status(400).json({
+      message: "pushTokens debe ser un array"
+    });
+  } // 🔍 Filtrar proveedores
+
+
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token); // 🔁 Enviar notificaciones
+
+  await Promise.all(supplierTokens.map(p => sendPushToToken(p.token)));
+  return res.sendStatus(204);
+}; // Función para enviar a un solo token
+
+
+const sendPushToTokenCancel = async token => {
+  const message = {
+    token,
+    notification: {
+      title: "Han cancelado un pedido",
+      body: "Se ha cancelado un pedido en la plataforma."
+    }
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notificación enviada a:", token);
+  } catch (error) {
+    console.error("❌ Error al enviar a:", token, error.message);
+  }
+}; // Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
+
+
+const notificarCancelacion = async (req, res) => {
+  const {
+    pushTokens
+  } = req.body;
+
+  if (!Array.isArray(pushTokens)) {
+    return res.status(400).json({
+      message: "pushTokens debe ser un array"
+    });
+  } // 🔍 Filtrar proveedores
+
+
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token); // 🔁 Enviar notificaciones
+
+  await Promise.all(supplierTokens.map(p => sendPushToTokenCancel(p.token)));
+  return res.sendStatus(204);
+}; // Generic function to send a notification (remains the same)
+
+
+const sendPushNotification = async (token, title, body) => {
+  const message = {
+    token,
+    notification: {
+      title,
+      // Will use the title you pass
+      body // Will use the body you pass
+
+    }
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notification sent to:", token);
+  } catch (error) {
+    console.error("❌ Error sending to:", token, error.message);
+  }
+}; // Controller updated with English notifications
+
+
+const notifyInteresErrorProofing = async (req, res) => {
+  const {
+    TypeNotification,
+    ErrorProofing
+  } = req.params;
+  const {
+    pushTokens
+  } = req.body;
+
+  if (!Array.isArray(pushTokens)) {
+    return res.status(400).json({
+      message: "pushTokens must be an array"
+    });
+  }
+
+  let title;
+  let body;
+
+  if (TypeNotification === 'ErrorProofing') {
+    title = "New Error Proofing File Created";
+    body = "A new file has been created. Please review it on the platform.";
+  } else if (TypeNotification === 'Checklist') {
+    title = "New Checklist Added";
+    body = `A new checklist has been added to the file: ${ErrorProofing}. Please review it.`;
+  } else {
+    return res.status(400).json({
+      message: "Invalid notification type. Use 'ErrorProofing' or 'Checklist'."
+    });
+  }
+
+  const errorProofingInteresTokens = pushTokens.filter(p => p.isErrorProofingInteres && p.token);
+
+  if (errorProofingInteresTokens.length === 0) {
+    console.log("No interested users to notify.");
+    return res.sendStatus(204);
+  }
+
+  await Promise.all(errorProofingInteresTokens.map(p => sendPushNotification(p.token, title, body)));
+  return res.sendStatus(204);
 };
 
 module.exports = {
@@ -719,5 +1019,11 @@ module.exports = {
   updatePassword,
   updateUserSign,
   getCompany,
-  getAccess
+  getAccess,
+  saveTokenPush,
+  getTokensPush,
+  sendPushToToken,
+  notificarSuppliers,
+  notificarCancelacion,
+  notifyInteresErrorProofing
 };

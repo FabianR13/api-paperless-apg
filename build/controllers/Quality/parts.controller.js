@@ -155,7 +155,7 @@ const getParts = async (req, res) => {
   }).populate({
     path: "customer"
   }).sort({
-    customer: 1
+    "partnumber": 1
   });
   res.json({
     status: "200",

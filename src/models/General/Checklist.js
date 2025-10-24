@@ -13,7 +13,7 @@ const SensorChecklistItemSchema = new Schema({
 // Schema para las categorías con 'status' (clamping, nidos, visual)
 const StatusChecklistItemSchema = new Schema({
     label: { type: String },
-    status: { type: String, enum: ['Ok', 'No Ok', ''], default: '' },
+    status: { type: String, enum: ['OK', 'NOK', ''], default: '' },
     comments: { type: String, default: '' }
 }, { _id: false });
 
@@ -38,7 +38,8 @@ const ChecklistSchema = new Schema({
         ref: "User",
         type: mongoose.Schema.Types.ObjectId,
     },
-    generalComments: { type: String, default: '' }
+    generalComments: { type: String, default: '' },
+    checklistObservations: { type: String, default: '' }
 }, {
     timestamps: true
 });

@@ -32,11 +32,13 @@ router.get("/Kaizen/:kaizenId/:CompanyId", verifyToken, isAutorized, isKaizenR, 
 
 router.post("/NewKaizen/:CompanyId", uploadKaizenImgs, createKaizen); ///Route to modify all the fields in a specific kaizen///
 
-router.put("/UpdateKaizen/:kaizenId/:CompanyId", verifyToken, isAutorized, isKaizenRW, updateKaizen); ///Route to modify just the Status of a Kaizen///
+router.put("/UpdateKaizen/:kaizenId/:CompanyId", verifyToken, isAutorized, // isKaizenRW,
+updateKaizen); ///Route to modify just the Status of a Kaizen///
 
 router.put("/UpdateKaizen/Status/:kaizenId/:CompanyId", verifyToken, isAutorized, isKaizenAprroval, updateKaizenStatus); ///Route to modify Images from the Kaizen///
 
-router.put("/UpdateKaizen/Images/:kaizenId/:CompanyId", verifyToken, isAutorized, isKaizenRW, uploadKaizenImgs, modifyKaizenImg); ///Route to get kaizens filtered///
+router.put("/UpdateKaizen/Images/:kaizenId/:CompanyId", verifyToken, isAutorized, // isKaizenRW,
+uploadKaizenImgs, modifyKaizenImg); ///Route to get kaizens filtered///
 
 router.post("/KaizensFiltered/:CompanyId", verifyToken, isAutorized, isKaizenR, getKaizensFiltered); ///Route to delete kaizen///
 

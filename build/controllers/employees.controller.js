@@ -8,13 +8,8 @@ const Department = require("../models/Deparment.js");
 
 const Position = require("../models/Position.js");
 
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk'); //Variables para acceder a s3 bucket///
 
-const dotenv = require('dotenv');
-
-dotenv.config({
-  path: "C:\\api-paperless-apg\\src\\.env"
-}); //Variables para acceder a s3 bucket///
 
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
@@ -37,6 +32,7 @@ const signEmployee = async (req, res) => {
     group,
     visualWeakness,
     user,
+    startDate,
     company
   } = req.body; //Retreiving the data for each picture Image and adding to the schema
 
@@ -54,7 +50,8 @@ const signEmployee = async (req, res) => {
     picture,
     group,
     visualWeakness,
-    user
+    user,
+    startDate
   }); //Buscar compañia y agregar id al empleado
 
   if (company) {
@@ -84,7 +81,7 @@ const signEmployee = async (req, res) => {
 
   if (position) {
     const foundPositions = await Position.find({
-      name: {
+      _id: {
         $in: position
       }
     });
@@ -117,6 +114,9 @@ const signEmployee = async (req, res) => {
 const getPositions = async (req, res) => {
   const positions = await Position.find().sort({
     name: 1
+  }).populate({
+    path: 'department',
+    select: "name"
   });
   res.json({
     status: "200",
@@ -498,6 +498,7 @@ const updateEmployee = async (req, res) => {
   empUpd.group = req.body.group;
   empUpd.visualWeakness = req.body.visualWeakness;
   empUpd.numberEmployee = req.body.numberEmployee;
+  empUpd.startDate = req.body.startDate;
   const employee = await Employees.findOne({
     numberEmployee: req.body.numberEmployee
   });
@@ -522,7 +523,7 @@ const updateEmployee = async (req, res) => {
 
   if (newPosition) {
     const foundPositions = await Position.find({
-      name: {
+      _id: {
         $in: newPosition
       }
     });
@@ -537,7 +538,8 @@ const updateEmployee = async (req, res) => {
     position,
     active,
     group,
-    visualWeakness
+    visualWeakness,
+    startDate
   } = empUpd;
   const updatedEmployee = await Employees.updateOne({
     _id: employeeId
@@ -550,7 +552,8 @@ const updateEmployee = async (req, res) => {
       position,
       active,
       group,
-      visualWeakness
+      visualWeakness,
+      startDate
     }
   });
 
