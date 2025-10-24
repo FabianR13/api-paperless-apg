@@ -628,6 +628,11 @@ const isKaizenRW = async (req, res, next) => {
         next();
         return;
       }
+
+      if (roles[i].name === "KaizenApproval") {
+        next();
+        return;
+      }
     }
   }
 
@@ -897,6 +902,73 @@ const isProductionR = async (req, res, next) => {
     message: "Production Read Role Required",
     status: "403"
   });
+}; // Verify ProductionR Role (Read)////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const isLogisticR = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "LogisticRW") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "LogisticR") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "LogisticRW") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "LogisticR") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Logistic Read Role Required",
+    status: "403"
+  });
 }; // Verify ProductionRW Role (Read and Write)///////////////////////////////////////////////////////////////////////////////
 
 
@@ -958,7 +1030,6 @@ const isProductionRW = async (req, res, next) => {
 
 
 const isAutorized = async (req, res, next) => {
-  //console.log("autorizacion")
   const user = await User.findById(req.userId);
   const Access = [];
   const {
@@ -1189,7 +1260,7 @@ const isTrainingL = async (req, res, next) => {
         return;
       }
 
-      if (roles[i].name === "TrainingL") {
+      if (roles[i].name === "TrainingL" || roles[i].name === "TrainingT") {
         next();
         return;
       }
@@ -1499,6 +1570,348 @@ const isPersonalReqReclu = async (req, res, next) => {
     message: "Personal Requisition Edit Role Required",
     status: "403"
   });
+}; //Verificar que el usuario tenga permiso de lectura para supermarket
+
+
+const isSMReader = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "SMReader" || roles[i].name === "SMCreator" || roles[i].name === "SMSupplier" || roles[i].name === "SMAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "SMReader" || rolesAxiom[i].name === "SMCreator" || rolesAxiom[i].name === "SMSupplier" || rolesAxiom[i].name === "SMAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol SMReader requerido",
+    status: "403"
+  });
+}; //Verificar que el usuario tenga permiso de administrar los items en supermarket
+
+
+const isSMAdministrator = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "SMAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "SMAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol SMReader requerido",
+    status: "403"
+  });
+}; //Verificar que el usuario tenga permiso de crear nuevos pedidos en supermarket
+
+
+const isSMCreator = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "SMCreator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "SMCreator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol SMReader requerido",
+    status: "403"
+  });
+}; //Verificar que el usuario tenga permiso de surtir los pedidos de supermarkett
+
+
+const isSMSupplier = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "SMSupplier") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "SMSupplier") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol SMReader requerido",
+    status: "403"
+  });
+}; //Verificar que el usuario tenga permiso de crear Minutas
+
+
+const isCreateMinuta = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "CreateMinuta") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "CreateMinuta") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol SMReader requerido",
+    status: "403"
+  });
+}; //Verificar que el usuario tenga permiso para acceder a pmanagement
+
+
+const isManagementR = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ManagementR") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "ManagementR") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol ManagementR requerido",
+    status: "403"
+  });
 };
 
 module.exports = {
@@ -1527,5 +1940,12 @@ module.exports = {
   isPersonalReqR,
   isPersonalReqS,
   isPersonalReqE,
-  isPersonalReqReclu
+  isPersonalReqReclu,
+  isLogisticR,
+  isSMReader,
+  isSMAdministrator,
+  isSMCreator,
+  isSMSupplier,
+  isCreateMinuta,
+  isManagementR
 };

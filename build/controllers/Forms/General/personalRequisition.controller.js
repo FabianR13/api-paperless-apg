@@ -4,13 +4,8 @@ const User = require("../../../models/User.js");
 
 const Employees = require("../../../models/Employees.js");
 
-const Company = require("../../../models/Company.js");
+const Company = require("../../../models/Company.js"); //create deviation request//////////////////////////////////////////////////////////////////////////////////////
 
-const dotenv = require('dotenv');
-
-dotenv.config({
-  path: "C:\\api-paperless-apg\\src\\.env"
-}); //create deviation request//////////////////////////////////////////////////////////////////////////////////////
 
 const createPersonalRequisition = async (req, res, next) => {
   const {

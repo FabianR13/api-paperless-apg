@@ -8,7 +8,6 @@ const {
   createDeviationRequest,
   getDeviationRequest,
   getDeviationById,
-  updateDeviation,
   updateDeviationReq,
   updateRiskStatus,
   updateDeviationStatus,
@@ -32,15 +31,24 @@ const {
 
 const {
   sendEmailMiddlewareResponse
-} = require("../../middlewares/mailer.js"); //Deviation request/////////////////////////////////
-//Route to post new Deviation Request///
+} = require("../../middlewares/mailer.js");
+
+const {
+  createDeviation,
+  getDeviations,
+  updateDeviation,
+  validateDeviation
+} = require("../../controllers/Forms/General/deviations.controller.js"); //Deviation request/////////////////////////////////
+//Route to post new Deviation ///
 
 
-router.post("/NewDeviation/:CompanyId", verifyToken, isAutorized, isDeviationR, createDeviationRequest, sendEmailMiddlewareResponse); //Route to update Deviation Request///
+router.post("/NewDeviation/:CompanyId", verifyToken, isAutorized, isDeviationR, createDeviation, sendEmailMiddlewareResponse); // Route to get All the deviations///
 
-router.put("/UpdateDeviation/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, updateDeviationReq); // Route to get All the deviations///
+router.get("/Deviations/:CompanyId", verifyToken, isAutorized, isDeviationR, getDeviations); //Route to update Deviation ///
 
-router.get("/Deviations/:CompanyId", verifyToken, isAutorized, isDeviationR, getDeviationRequest); // Route to get a Specific deviation by Id///
+router.put("/UpdateDeviation/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, updateDeviation); //Route to update Deviation ///
+
+router.put("/ValidateDeviation/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, validateDeviation); // Route to get a Specific deviation by Id///
 
 router.get("/Deviation/:deviationId/:CompanyId", verifyToken, isAutorized, isDeviationR, getDeviationById); //Route to modify just the Status de firma en desviacion rerquest///
 

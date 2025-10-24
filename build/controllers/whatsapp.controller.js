@@ -10,12 +10,6 @@ const {
 
 const mongoose = require('mongoose');
 
-const dotenv = require('dotenv');
-
-dotenv.config({
-  path: "C:\\api-paperless-apg\\src\\.env"
-});
-
 const QRCode = require("qrcode");
 
 const whatsappAutoAlert = require("../models/whatsappAutoAlert.js");

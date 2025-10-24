@@ -9,6 +9,9 @@ const employeesSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  startDate: {
+    type: Date
+  },
   numberEmployee: {
     type: String,
     required: true,

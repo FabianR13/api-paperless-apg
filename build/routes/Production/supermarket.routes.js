@@ -5,7 +5,11 @@ const {
 const {
   isAdmin,
   isAutorized,
-  verifyToken
+  verifyToken,
+  isSMReader,
+  isSMAdministrator,
+  isSMCreator,
+  isSMSupplier
 } = require("../../middlewares/auth.Jwt.js");
 
 const {
@@ -13,28 +17,27 @@ const {
   getAllItems,
   createPedido,
   getAllPedidos,
-  updatePedido
+  updatePedido,
+  getRecentPedidos,
+  cancelPedido,
+  confirmPedido
 } = require("../../controllers/Production/supermarket.controller.js");
 
 const router = Router(); // Route to save new items///
 
-router.post("/AddMaterials/:CompanyId", verifyToken, // isAutorized,
-// isAdmin,
-createItems); //route to get all items
+router.post("/AddMaterials/:CompanyId", verifyToken, isAutorized, isSMAdministrator, createItems); //route to get all items
 
-router.get("/Items/:CompanyId", verifyToken, // isAutorized,
-// isAdmin,
-getAllItems); // Route to save new pedido///
+router.get("/Items/:CompanyId", verifyToken, isAutorized, isSMReader, getAllItems); // Route to save new pedido///
 
-router.post("/CrearPedido/:CompanyId", verifyToken, // isAutorized,
-// isAdmin,
-createPedido); //route to get all pedidos
+router.post("/CrearPedido/:CompanyId", verifyToken, isAutorized, isSMCreator, createPedido); //route to get all pedidos
 
-router.get("/Pedidos/:CompanyId", verifyToken, // isAutorized,
-// isAdmin,
-getAllPedidos); //route to update pedido
+router.get("/Pedidos/:CompanyId", verifyToken, isAutorized, isSMReader, getAllPedidos); //route to update pedido
 
-router.put("/UpdatePedido/:idPedido/:CompanyId", verifyToken, // isAutorized,
-// isAdmin,
-updatePedido);
+router.put("/UpdatePedido/:idPedido/:CompanyId", verifyToken, isAutorized, isSMSupplier, updatePedido); //route to get 24h pedidos
+
+router.get("/RecentPedidos/:CompanyId", verifyToken, isAutorized, isSMReader, getRecentPedidos); //route to update pedido
+
+router.put("/CancelPedido/:idPedido/:CompanyId", verifyToken, isAutorized, isSMCreator, cancelPedido); //route to update pedido
+
+router.put("/ConfirmPedido/:idPedido/:CompanyId", verifyToken, isAutorized, isSMCreator, confirmPedido);
 module.exports = router;

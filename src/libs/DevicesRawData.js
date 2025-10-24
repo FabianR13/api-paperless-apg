@@ -639,6 +639,223 @@ const dataDevicesAutomation = [
         nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: true }],
         typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
     },
+    //Nuevos dispositivos
+    {
+        name: 'MESA DE TEST CLOSE OUT FRONT/15847-46-49 (Mesa de espumado)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 4 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 8 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: true }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: true }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: true }]
+    },
+    {
+        name: 'MESA DE TEST CLOSE OUT REAR/15847-97-98 (Mesa de espumado)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 4 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 4 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: true }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: true }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: true }]
+    },
+    {
+        name: 'MESA DE TEST HIGHLAND FR CLOSE OUT PANEL 1769191/193-01-A (Mesa de espimado)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 4 }, { name: "Magnetic Position Sensor", count: 40 }, { name: "Inductive Sensor", count: 12 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: true }, { name: "Clamp", hasMounting: true }],
+        nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: true }, { name: "Acetal", hasNest: true }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: true }]
+    },
+    {
+        name: 'MESA DE TEST CARRIER REAR FENDER FLARE FORE (RH) (LH) 1783432/433-00-D',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 11 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 11 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST CARRIER FRONT FENDER FLARE (LH) (RH) 1783428/429-00',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 10 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 10 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST (ASSY) MS, TOEBOARD BRAKET LH/RH 1563082/5999',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 4 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 4 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST M3S FR LH/RH CLOSEOUT PANEL ASSY 1092146/147 (Mesa de espumado)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 1 }, { name: "Photoelectric Sensor", count: 3 }, { name: "Magnetic Position Sensor", count: 40 }, { name: "Inductive Sensor", count: 12 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: true }, { name: "Clamp", hasMounting: true }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: true }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: true }]
+    },
+    {
+        name: 'MESA DE TEST ASSY CARRIER FRONT FENDER  FLARE AFT, LH/RH, EVEREST 1783430/31',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 4 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 4 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST ASSY CARRIER REAR FENDER  FLARE AFT, LH/RH, EVEREST 1813698/99',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 4 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 4 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST MS P2 FR/RR GRAND HANDLE -LH/RH',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 4 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST FROMT MFB LH-RH E158-71-72-103',
+        customer: "Brose",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 4 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: true }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST REAR MFB LH-RH E158-73-74-100',
+        customer: "Brose",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 4 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: true }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST FRONT MFR LH-RH E592-86-87-100',
+        customer: "Brose",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 4 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: true }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE TEST REAR MFR LH-RH E592-88-89-100',
+        customer: "Brose",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 4 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: false }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: true }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: true }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS CLOSE OUT FRONT/15847-46-49 (Mesa de espuamdo)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS CLOSE OUT REAR/15847-97-98 (Mesa de espumado)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS HIGHLAND FR CLOSE OUT PANEL 1769191/193-01-A (Mesa de espumado)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 6 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS CARRIER REAR FENDER FLARE FORE (RH) (LH) 1783432/433-00-D',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 15 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: true }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS CARRIER FRONT FENDER FLARE (LH) (RH) 1783428/429-00',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 14 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: true }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS (ASSY) MS, TOEBOARD BRAKET LH/RH 1563082/5999',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS M3S FR LH/RH CLOSEOUT PANEL ASSY 1092146/147 (Mesa de espumado)',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS ASSY CARRIER FRONT FENDER  FLARE AFT, LH/RH, EVEREST 1783430/31',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 4 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS ASSY CARRIER REAR FENDER  FLARE AFT, LH/RH, EVEREST 1813698/99',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 4 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: true }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
+    {
+        name: 'MESA DE INSERTOS MS P2 FR/RR GRAND HANDLE -LH/RH',
+        customer: "Tesla",
+        sensors: [{ name: "Laser Sensor", count: 0 }, { name: "Photoelectric Sensor", count: 0 }, { name: "Magnetic Position Sensor", count: 0 }, { name: "Inductive Sensor", count: 0 }, { name: "Capacitive Sensor", count: 0 }, { name: "IX 3D Scanner", count: 0 },
+        { name: "QR Code Sensor", count: 0 }, { name: "IV Vision Sensor", count: 0 }, { name: "Fiber Optic Sensor", count: 0 }, { name: "Torque Wrench", count: 0 }, { name: "Micro Swich", count: 0 }, { name: "T8000 Leak Test", count: 0 }],
+        clampingType: [{ name: "Vacuum", hasMounting: false }, { name: "Clamp", hasMounting: false }],
+        nestType: [{ name: "Aluminum", hasNest: true }, { name: "Steel", hasNest: false }, { name: "Acetal", hasNest: false }, { name: "Velcro-covered", hasNest: false }],
+        typeOfVisualAids: [{ name: "LED", hasAids: false }, { name: "Label", hasAids: false }, { name: "Picture", hasAids: false }, { name: "HMI", hasAids: false }]
+    },
 ];
 
 module.exports = dataDevicesAutomation;

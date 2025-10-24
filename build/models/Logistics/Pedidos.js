@@ -40,13 +40,29 @@ const PedidoSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     default: null
   },
+  confirmed: {
+    ref: "User",
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
+  },
   pStatus: {
     type: String,
     required: true
+  },
+  creationTime: {
+    type: String
+  },
+  surTime: {
+    type: String
+  },
+  confirmTime: {
+    type: String
   },
   fecha: {
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true
 });
 module.exports = mongoose.model("Pedido", PedidoSchema);

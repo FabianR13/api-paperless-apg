@@ -9,7 +9,7 @@ const RegistroMovimientosSchema = new mongoose.Schema({
   tipoAccion: {
     type: String,
     required: true,
-    enum: ["Crear pedido", "Surtir pedido", "Modificar Items", "Ingresar duplicado", "Otro"] // Puedes agregar más acciones aquí
+    enum: ["Crear pedido", "Surtir pedido", "Modificar Items", "Ingresar duplicado", "Otro", "Cancelar pedido"] // Puedes agregar más acciones aquí
 
   },
   detalles: {

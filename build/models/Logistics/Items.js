@@ -4,6 +4,9 @@ const itemsSchema = new mongoose.Schema({
   name: {
     type: String
   },
+  vendorItemNo: {
+    type: String
+  },
   description: {
     type: String
   },
@@ -29,6 +32,9 @@ const itemsSchema = new mongoose.Schema({
   selectedBy: [Number],
   version: {
     type: Number
+  },
+  image: {
+    type: String
   },
   company: [{
     ref: "Company",

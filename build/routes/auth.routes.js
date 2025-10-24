@@ -15,7 +15,13 @@ const {
   updatePassword,
   updateUserSign,
   getCompany,
-  getAccess
+  getAccess,
+  getTokensPush,
+  saveTokenPush,
+  notificarSuppliers,
+  sendPushToToken,
+  notificarCancelacion,
+  notifyInteresErrorProofing
 } = require("../controllers/auth.controller.js");
 
 const {
@@ -57,5 +63,13 @@ router.post("/Signin/:CompanyId", signIn); ///Route to have directory access///
 
 router.post("/Access", getAccess); ///Route to get dashboard///
 
-router.get("/Dashboard", verifyToken, getDashboardCards);
+router.get("/Dashboard", verifyToken, getDashboardCards); //guardar pushtoken
+
+router.post("/tokenPush", saveTokenPush); //Obtener pushtokes
+
+router.get("/getTokenPush", getTokensPush); //guardar pushtoken
+
+router.post("/notificarSuppliers", notificarSuppliers);
+router.post("/notificarCancelacion", notificarCancelacion);
+router.post("/notifyErrorInteres/:TypeNotification/:ErrorProofing", notifyInteresErrorProofing);
 module.exports = router;
