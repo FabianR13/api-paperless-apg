@@ -127,41 +127,175 @@ const getAllItems = async (req, res) => {
 
 //Metodo para guardar los pedidos
 // Método para guardar los pedidos
+// const createPedido = async (req, res) => {
+//     const formatter = new Intl.DateTimeFormat("es-MX", {
+//         timeZone: "America/Mexico_City",
+//         hour: "2-digit",
+//         minute: "2-digit",
+//         hour12: false,
+//     });
+
+//     const parts = formatter.formatToParts(new Date());
+//     const hour = parts.find(p => p.type === "hour").value;
+//     const minutes = parts.find(p => p.type === "minute").value;
+
+//     const time = `${hour}:${minutes}`;
+
+//     try {
+//         const { usuario, maquina, materiales } = req.body.pedidos;
+
+//         Validaciones básicas
+//         if (!usuario || !maquina || !materiales || materiales.length === 0) {
+//             return res.status(400).json({ status: "error", message: "Datos incompletos" });
+//         }
+
+//         Crear nuevo pedido
+//         const nuevoPedido = new Pedido({
+//             idPedido,
+//             maquina,
+//             pStatus: "pending",
+//             surtidor: null,
+//             creationTime: time,
+//         });
+
+//         Crear nuevo registro de movimientos
+//         const nuevoMovimiento = new RegistroMovimientos({
+//             tipoAccion: "Crear pedido",
+//             detalles: `Creó el pedido con id: ${idPedido}.`,
+//         });
+
+//         Buscar usuario en la base de datos
+//         if (usuario) {
+//             const foundUsers = await User.find({ username: usuario });
+//             if (foundUsers.length === 0) {
+//                 return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
+//             }
+//             nuevoPedido.usuario = foundUsers.map(u => u._id);
+//             nuevoMovimiento.usuario = foundUsers.map(u => u._id);
+//         }
+
+//         Buscar materiales por nombre
+//         if (materiales.length > 0) {
+//             const names = materiales.map(mat => mat.name);
+//             const foundMaterials = await Items.find({ name: { $in: names } });
+
+//             if (!foundMaterials || foundMaterials.length === 0) {
+//                 return res.status(404).json({ status: "error", message: "No se encontraron materiales en la base de datos" });
+//             }
+
+//             Mapear correctamente los materiales con su ID y cantidad requerida
+//             nuevoPedido.items = materiales.map(mat => {
+//                 const materialDB = foundMaterials.find(m => m.name === mat.name);
+//                 if (materialDB) {
+//                     return {
+//                         id: materialDB._id,
+//                         serial: [],
+//                         quantityReq: mat.quantityReq || 1,
+//                         quantitySur: [],
+//                         comment: mat.comment
+//                     };
+//                 }
+//             }).filter(Boolean); // filtrar nulos
+//         }
+
+//         Guardar pedido y movimiento
+//         await nuevoPedido.save();
+//         await nuevoMovimiento.save();
+
+//         res.status(200).json({ status: "success", message: "Pedido guardado exitosamente", pedido: nuevoPedido });
+
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ status: "error", message: "Error al guardar el pedido", error: error.message });
+//     }
+// };
+
 const createPedido = async (req, res) => {
-    const formatter = new Intl.DateTimeFormat("es-MX", {
+    // --- 1. CONFIGURACIÓN DE FECHA Y HORA EN ZONA HORARIA ---
+    const options = {
         timeZone: "America/Mexico_City",
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
-    });
+    };
+    // Obtener la fecha y hora actual en la zona horaria de México
+    const dateMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
 
-    const parts = formatter.formatToParts(new Date());
-    const hour = parts.find(p => p.type === "hour").value;
-    const minutes = parts.find(p => p.type === "minute").value;
+    const year = dateMX.getFullYear();
+    const month = String(dateMX.getMonth() + 1).padStart(2, '0');
+    const day = String(dateMX.getDate()).padStart(2, '0');
+    const newDate = `${year}-${month}-${day}`; // Fecha actual para el ID
 
-    const time = `${hour}:${minutes}`;
+    const hourMX = dateMX.getHours();
+    const minutesMX = dateMX.getMinutes();
+    const time = `${String(hourMX).padStart(2, '0')}:${String(minutesMX).padStart(2, '0')}`;
+    // -----------------------------------------------------------
+
+    // --- 2. DETERMINAR TURNO ACTUAL (D, A, N) ---
+    let turno;
+    // D: 7:00 a 12:59 hrs
+    if (hourMX >= 7 && hourMX < 13) {
+        turno = 'D';
+    }
+    // A: 13:00 a 22:59 hrs
+    else if (hourMX >= 13 && hourMX < 23) {
+        turno = 'A';
+    }
+    // N: 23:00 a 06:59 hrs
+    else {
+        turno = 'N';
+    }
+    // -----------------------------------------------------------
+
+    // --- 3. ENCONTRAR ÚLTIMO PEDIDO Y CALCULAR CONSECUTIVO ---
+
+    // Prefijo completo para el pedido actual (PED-YYYY-MM-DD-T)
+    const idPedidoPrefix = `PED-${newDate}-${turno}`;
+
+    // Buscar el último pedido creado en la base de datos, sin importar la fecha.
+    const lastPedido = await Pedido.findOne().sort({ idPedido: -1 });
+
+    let consecutivo = 1;
+
+    if (lastPedido && lastPedido.idPedido) {
+        const lastId = lastPedido.idPedido;
+
+        // Expresión regular para extraer: [Prefijo completo] y [Número consecutivo]
+        const idMatch = lastId.match(/(PED-\d{4}-\d{2}-\d{2}-[DAN])(\d+)$/);
+
+        if (idMatch && idMatch.length === 3) {
+            const lastPrefix = idMatch[1];
+            const lastNumber = parseInt(idMatch[2], 10);
+
+            // Si el prefijo completo (fecha + turno) coincide con el actual, 
+            // el consecutivo continúa.
+            if (idPedidoPrefix === lastPrefix) {
+                consecutivo = lastNumber + 1;
+            }
+            // Si no coincide (porque cambió la fecha O cambió el turno), 
+            // el consecutivo se mantiene en 1 (REINICIO).
+        }
+    }
+
+    const paddedConsecutivo = String(consecutivo).padStart(3, '0'); // Formato: 001, 002, ...
+    const idPedido = `${idPedidoPrefix}${paddedConsecutivo}`; // Nuevo ID
+    // -----------------------------------------------------------
 
     try {
-        const { idPedido, usuario, maquina, materiales } = req.body.pedidos;
+        const { usuario, maquina, materiales } = req.body.pedidos;
 
         // Validaciones básicas
-        if (!idPedido || !usuario || !maquina || !materiales || materiales.length === 0) {
+        if (!usuario || !maquina || !materiales || materiales.length === 0) {
             return res.status(400).json({ status: "error", message: "Datos incompletos" });
         }
 
-        // Crear nuevo pedido
+        // Crear nuevo pedido (usando el idPedido generado)
         const nuevoPedido = new Pedido({
-            idPedido,
+            idPedido: idPedido, // Usamos el ID generado
             maquina,
             pStatus: "pending",
             surtidor: null,
             creationTime: time,
-        });
-
-        // Crear nuevo registro de movimientos
-        const nuevoMovimiento = new RegistroMovimientos({
-            tipoAccion: "Crear pedido",
-            detalles: `Creó el pedido con id: ${idPedido}.`,
         });
 
         // Buscar usuario en la base de datos
@@ -171,7 +305,7 @@ const createPedido = async (req, res) => {
                 return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
             }
             nuevoPedido.usuario = foundUsers.map(u => u._id);
-            nuevoMovimiento.usuario = foundUsers.map(u => u._id);
+            // nuevoMovimiento.usuario = foundUsers.map(u => u._id);
         }
 
         // Buscar materiales por nombre
@@ -191,7 +325,8 @@ const createPedido = async (req, res) => {
                         id: materialDB._id,
                         serial: [],
                         quantityReq: mat.quantityReq || 1,
-                        quantitySur: []
+                        quantitySur: [],
+                        comment: mat.comment
                     };
                 }
             }).filter(Boolean); // filtrar nulos
@@ -199,7 +334,7 @@ const createPedido = async (req, res) => {
 
         // Guardar pedido y movimiento
         await nuevoPedido.save();
-        await nuevoMovimiento.save();
+        // await nuevoMovimiento.save();
 
         res.status(200).json({ status: "success", message: "Pedido guardado exitosamente", pedido: nuevoPedido });
 
@@ -408,7 +543,8 @@ const updatePedido = async (req, res) => {
             id: material.id,                   // Mantener el ID original
             serial: material.serial,            // Actualizar los seriales
             quantityReq: material.quantityReq,  // Mantener el quantityReq original si es necesario
-            quantitySur: material.quantitySur   // Actualizar cantidades surtidas
+            quantitySur: material.quantitySur, // Actualizar cantidades surtidas
+            comment: material.comment
         }));
 
         // Actualizar otros datos del pedido
@@ -510,7 +646,7 @@ const cancelPedido = async (req, res) => {
 
     try {
         const { idPedido } = req.params;
-        const { surtidor, pStatus } = req.body.pedido;
+        const { surtidor, pStatus, cancelReason } = req.body.pedido;
 
         // Buscar el pedido actual
         const pedidoActual = await Pedido.findOne({ idPedido: idPedido });
@@ -540,6 +676,7 @@ const cancelPedido = async (req, res) => {
 
         pedidoActual.surTime = time;
         pedidoActual.pStatus = pStatus;
+        pedidoActual.cancelReason = cancelReason
 
         // Guardar cambios en el pedido
         await pedidoActual.save();
