@@ -12,7 +12,8 @@ const PedidoSchema = new mongoose.Schema({
             id: { type: mongoose.Schema.Types.ObjectId, ref: "Items", required: true }, // ID del material
             serial: { type: [String], default: [] },  // Array vacío por defecto
             quantityReq: { type: Number },
-            quantitySur: { type: [Number], default: [] } // Array vacío por defecto
+            quantitySur: { type: [Number], default: [] }, // Array vacío por defecto
+            comment: { type: String, default: "" }
         }
     ],
     surtidor: {
@@ -26,6 +27,10 @@ const PedidoSchema = new mongoose.Schema({
         default: null
     },
     pStatus: { type: String, required: true },
+    cancelReason: {
+        type: String,
+        default: null // Por defecto es null, solo se llena si pStatus es 'canceled'
+    },
     creationTime: {
         type: String,
     },
