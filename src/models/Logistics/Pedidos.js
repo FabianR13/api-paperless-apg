@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const PedidoSchema = new mongoose.Schema({
-    idPedido: { type: String, required: true },
+    idPedido: { type: String, required: true , unique: true},
     usuario: {
         ref: "User",
         type: mongoose.Schema.Types.ObjectId,
