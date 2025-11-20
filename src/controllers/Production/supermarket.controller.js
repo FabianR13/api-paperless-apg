@@ -253,7 +253,7 @@ const createPedido = async (req, res) => {
     const idPedidoPrefix = `PED-${newDate}-${turno}`;
 
     // Buscar el último pedido creado en la base de datos, sin importar la fecha.
-    const lastPedido = await Pedido.findOne().sort({ idPedido: -1 });
+    const lastPedido = await Pedido.findOne().sort({ createdAt: -1 });
 
     let consecutivo = 1;
 
