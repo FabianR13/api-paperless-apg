@@ -234,11 +234,11 @@ const createPedido = async (req, res) => {
     // --- 2. DETERMINAR TURNO ACTUAL (D, A, N) ---
     let turno;
     // D: 7:00 a 12:59 hrs
-    if (hourMX >= 7 && hourMX < 13) {
+    if (hourMX >= 7 && hourMX < 15) {
         turno = 'D';
     }
     // A: 13:00 a 22:59 hrs
-    else if (hourMX >= 13 && hourMX < 23) {
+    else if (hourMX >= 15 && hourMX < 23) {
         turno = 'A';
     }
     // N: 23:00 a 06:59 hrs
