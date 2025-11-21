@@ -249,10 +249,10 @@ const createPedido = async (req, res) => {
 
     // --- 3. ENCONTRAR ÚLTIMO PEDIDO Y CALCULAR CONSECUTIVO ---
 
-    // Prefijo completo para el pedido actual (PED-YYYY-MM-DD-T)
+    // 1. Generamos el prefijo actual con la fecha de HOY (para el nuevo ID)
     const idPedidoPrefix = `PED-${newDate}-${turno}`;
 
-    // Buscar el último pedido creado en la base de datos, sin importar la fecha.
+    // 2. Buscar el último pedido creado
     const lastPedido = await Pedido.findOne().sort({ createdAt: -1 });
 
     let consecutivo = 1;
@@ -260,25 +260,31 @@ const createPedido = async (req, res) => {
     if (lastPedido && lastPedido.idPedido) {
         const lastId = lastPedido.idPedido;
 
-        // Expresión regular para extraer: [Prefijo completo] y [Número consecutivo]
-        const idMatch = lastId.match(/(PED-\d{4}-\d{2}-\d{2}-[DAN])(\d+)$/);
+        // CAMBIO IMPORTANTE AQUÍ:
+        // Modificamos la Regex para capturar solo la LETRA del turno y el NÚMERO.
+        // Estructura esperada: PED-YYYY-MM-DD-[LETRA][NUMERO]
+        // Group 1: ([DAN]) -> Captura la letra del turno (D, A o N)
+        // Group 2: (\d+)   -> Captura el número consecutivo
+        const idMatch = lastId.match(/PED-\d{4}-\d{2}-\d{2}-([DAN])(\d+)$/);
 
         if (idMatch && idMatch.length === 3) {
-            const lastPrefix = idMatch[1];
-            const lastNumber = parseInt(idMatch[2], 10);
+            const lastTurno = idMatch[1]; // La letra del turno anterior (ej: 'N')
+            const lastNumber = parseInt(idMatch[2], 10); // El número (ej: 23)
 
-            // Si el prefijo completo (fecha + turno) coincide con el actual, 
-            // el consecutivo continúa.
-            if (idPedidoPrefix === lastPrefix) {
+            // 3. La lógica corregida:
+            // Solo comparamos si el TURNO es el mismo que el actual.
+            // Ignoramos la fecha para decidir si sumamos o reiniciamos.
+            if (lastTurno === turno) {
+                // Si seguimos en el mismo turno (aunque haya cambiado la fecha), sumamos.
                 consecutivo = lastNumber + 1;
             }
-            // Si no coincide (porque cambió la fecha O cambió el turno), 
-            // el consecutivo se mantiene en 1 (REINICIO).
+            // Si el turno es diferente (ej: pasamos de 'A' a 'N'), 
+            // consecutivo se mantiene en 1 (REINICIO AUTOMÁTICO).
         }
     }
 
-    const paddedConsecutivo = String(consecutivo).padStart(3, '0'); // Formato: 001, 002, ...
-    const idPedido = `${idPedidoPrefix}${paddedConsecutivo}`; // Nuevo ID
+    const paddedConsecutivo = String(consecutivo).padStart(3, '0');
+    const idPedido = `${idPedidoPrefix}${paddedConsecutivo}`;
     // -----------------------------------------------------------
 
     try {
