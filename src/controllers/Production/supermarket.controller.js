@@ -249,7 +249,7 @@ const createPedido = async (req, res) => {
 
     // --- 3. ENCONTRAR ÚLTIMO PEDIDO Y CALCULAR CONSECUTIVO ---
 
-    // 1. Generamos el prefijo actual con la fecha de HOY (para el nuevo ID)
+    // 1. Generamos el prefijo actual con la fecha de HOY
     const idPedidoPrefix = `PED-${newDate}-${turno}`;
 
     // 2. Buscar el último pedido creado
@@ -260,31 +260,37 @@ const createPedido = async (req, res) => {
     if (lastPedido && lastPedido.idPedido) {
         const lastId = lastPedido.idPedido;
 
-        // CAMBIO IMPORTANTE AQUÍ:
-        // Modificamos la Regex para capturar solo la LETRA del turno y el NÚMERO.
-        // Estructura esperada: PED-YYYY-MM-DD-[LETRA][NUMERO]
-        // Group 1: ([DAN]) -> Captura la letra del turno (D, A o N)
-        // Group 2: (\d+)   -> Captura el número consecutivo
-        const idMatch = lastId.match(/PED-\d{4}-\d{2}-\d{2}-([DAN])(\d+)$/);
+        // --- EXPRESIÓN REGULAR MEJORADA ---
+        // (?:-\d+)? permite ignorar el "-1" si existe, capturando el número base en el grupo 2.
+        // Ejemplo: Si lastId es "PED-...-N001-1", captura "N" y "001".
+        const idMatch = lastId.match(/PED-\d{4}-\d{2}-\d{2}-([DAN])(\d+)(?:-\d+)?$/);
 
-        if (idMatch && idMatch.length === 3) {
+        if (idMatch && idMatch.length >= 3) {
             const lastTurno = idMatch[1]; // La letra del turno anterior (ej: 'N')
-            const lastNumber = parseInt(idMatch[2], 10); // El número (ej: 23)
+            const lastNumber = parseInt(idMatch[2], 10); // El número base (ej: 1)
 
-            // 3. La lógica corregida:
-            // Solo comparamos si el TURNO es el mismo que el actual.
-            // Ignoramos la fecha para decidir si sumamos o reiniciamos.
             if (lastTurno === turno) {
-                // Si seguimos en el mismo turno (aunque haya cambiado la fecha), sumamos.
+                // Si seguimos en el mismo turno, sumamos.
                 consecutivo = lastNumber + 1;
             }
-            // Si el turno es diferente (ej: pasamos de 'A' a 'N'), 
-            // consecutivo se mantiene en 1 (REINICIO AUTOMÁTICO).
+            // Si el turno es diferente, consecutivo se queda en 1 (reinicio).
         }
     }
 
     const paddedConsecutivo = String(consecutivo).padStart(3, '0');
-    const idPedido = `${idPedidoPrefix}${paddedConsecutivo}`;
+    let idPedido = `${idPedidoPrefix}${paddedConsecutivo}`; // Usamos 'let' para modificarlo si es necesario
+
+    // --- VALIDACIÓN DE DUPLICADOS (SOLO TURNO N) ---
+    if (turno === 'N') {
+        // Verificamos si este ID base ya existe (conflicto madrugada vs noche)
+        const existe = await Pedido.findOne({ idPedido: idPedido });
+
+        if (existe) {
+            // Si existe, simplemente agregamos "-1" para diferenciarlo.
+            // No buscamos -2, -3, etc. Siempre será -1 como indicador de duplicado de turno.
+            idPedido = `${idPedido}-1`;
+        }
+    }
     // -----------------------------------------------------------
 
     try {
@@ -295,9 +301,9 @@ const createPedido = async (req, res) => {
             return res.status(400).json({ status: "error", message: "Datos incompletos" });
         }
 
-        // Crear nuevo pedido (usando el idPedido generado)
+        // Crear nuevo pedido
         const nuevoPedido = new Pedido({
-            idPedido: idPedido, // Usamos el ID generado
+            idPedido: idPedido,
             maquina,
             pStatus: "pending",
             surtidor: null,
@@ -311,7 +317,6 @@ const createPedido = async (req, res) => {
                 return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
             }
             nuevoPedido.usuario = foundUsers.map(u => u._id);
-            // nuevoMovimiento.usuario = foundUsers.map(u => u._id);
         }
 
         // Buscar materiales por nombre
@@ -323,7 +328,7 @@ const createPedido = async (req, res) => {
                 return res.status(404).json({ status: "error", message: "No se encontraron materiales en la base de datos" });
             }
 
-            // Mapear correctamente los materiales con su ID y cantidad requerida
+            // Mapear correctamente los materiales
             nuevoPedido.items = materiales.map(mat => {
                 const materialDB = foundMaterials.find(m => m.name === mat.name);
                 if (materialDB) {
@@ -335,12 +340,11 @@ const createPedido = async (req, res) => {
                         comment: mat.comment
                     };
                 }
-            }).filter(Boolean); // filtrar nulos
+            }).filter(Boolean);
         }
 
-        // Guardar pedido y movimiento
+        // Guardar pedido
         await nuevoPedido.save();
-        // await nuevoMovimiento.save();
 
         res.status(200).json({ status: "success", message: "Pedido guardado exitosamente", pedido: nuevoPedido });
 
