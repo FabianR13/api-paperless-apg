@@ -33,6 +33,8 @@ const createTrainingEvaluation = async (req, res) => {
         question13,
         question14,
         question15,
+        question16,
+        question17,
         version,
         recertificationLevel
     } = req.body;
@@ -74,6 +76,8 @@ const createTrainingEvaluation = async (req, res) => {
         question13,
         question14,
         question15,
+        question16,
+        question17,
         version,
         recertificationLevel
     });
@@ -204,7 +208,9 @@ const updateTrainingEvaluation = async (req, res) => {
         question12,
         question13,
         question14,
-        question15
+        question15,
+        question16,
+        question17,
     } = req.body;
 
     if (req.body.qualifiedBy) {
@@ -239,7 +245,9 @@ const updateTrainingEvaluation = async (req, res) => {
                 question12,
                 question13,
                 question14,
-                question15
+                question15,
+                question16,
+                question17,
             },
         }
     );

@@ -167,6 +167,22 @@ const trainingEvaluationSchema = new mongoose.Schema(
                 type: String
             }
         },
+        question16: {
+            answer: {
+                type: String
+            },
+            status: {
+                type: String
+            }
+        },
+        question17: {
+            answer: {
+                type: String
+            },
+            status: {
+                type: String
+            }
+        },
         company: [
             {
                 ref: "Company",
