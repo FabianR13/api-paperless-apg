@@ -612,7 +612,7 @@ const getAccess = async (req, res) => {
 //get access to directory/////////////////////////////////////////////////////////////////////////////////////////////////
 const saveTokenPush = async (req, res) => {
   try {
-    const { tokenPush, isSupplier, isErrorProofingInteres } = req.body;
+    const { tokenPush, isSupplier, isErrorProofingInteres, isCoordinator } = req.body;
 
     if (!tokenPush) {
       return res.status(400).json({ message: "FCM token is required" });
@@ -628,6 +628,9 @@ const saveTokenPush = async (req, res) => {
     }
     if (isErrorProofingInteres !== undefined) {
       updateData.isErrorProofingInteres = isErrorProofingInteres;
+    }
+    if (isCoordinator !== undefined) {
+      updateData.isCoordinator = isCoordinator;
     }
 
     // 2. Ejecuta findOneAndUpdate con los argumentos correctos.
@@ -684,8 +687,8 @@ const sendPushToToken = async (token, title, body) => {
   const message = {
     token,
     notification: {
-      title: title, // Ahora es dinámico
-      body: body,   // Ahora es dinámico
+      title: title,
+      body: body,
     },
   };
 
@@ -697,21 +700,30 @@ const sendPushToToken = async (token, title, body) => {
   }
 };
 
-// Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
-const notificarSuppliers = async (req, res) => {
-  const { pushTokens } = req.body;
-  if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
+// --- NUEVO ENDPOINT GENÉRICO ---
+// Ruta sugerida: /auth/enviarNotificacionPush
+const enviarNotificacionPush = async (req, res) => {
+  // Ahora esperamos "tokens" (array de strings), "title" y "body"
+  const { tokens, title, body } = req.body;
 
-  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
+  if (!Array.isArray(tokens) || tokens.length === 0) {
+    // No devolvemos error 400 si no hay tokens, simplemente no hacemos nada (es válido que no haya destinatarios)
+    return res.status(200).json({ message: "No hay tokens destinatarios." });
+  }
 
-  // Enviamos mensaje de PEDIDO
-  await Promise.all(supplierTokens.map(p =>
-    sendPushToToken(p.token, "Nuevo pedido creado", "Se ha generado un nuevo pedido en la plataforma.")
+  if (!title || !body) {
+    return res.status(400).json({ message: "Faltan title o body." });
+  }
+
+  console.log(`📨 Enviando notificación '${title}' a ${tokens.length} dispositivos.`);
+
+  // Enviamos mensaje a la lista de tokens recibida
+  await Promise.all(tokens.map(tokenString =>
+    sendPushToToken(tokenString, title, body)
   ));
 
-  return res.sendStatus(204);
+  return res.status(200).json({ message: "Notificaciones enviadas." });
 };
-
 //Devolucion iniciada notificacion
 const notificarInicioDevolucion = async (req, res) => {
   const { pushTokens } = req.body;
@@ -850,7 +862,7 @@ module.exports = {
   saveTokenPush,
   getTokensPush,
   sendPushToToken,
-  notificarSuppliers,
+  enviarNotificacionPush,
   notificarCancelacion,
   notifyInteresErrorProofing,
   notificarInicioDevolucion,

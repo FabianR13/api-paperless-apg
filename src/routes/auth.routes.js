@@ -14,12 +14,12 @@ const {
   getAccess,
   getTokensPush,
   saveTokenPush,
-  notificarSuppliers,
   sendPushToToken,
   notificarCancelacion,
   notifyInteresErrorProofing,
   notificarInicioDevolucion,
-  notificarConfirmacionDevolucion
+  notificarConfirmacionDevolucion,
+  enviarNotificacionPush
 } = require("../controllers/auth.controller.js");
 const {
   checkDuplicateUsernameorEmail,
@@ -102,7 +102,7 @@ router.get("/getTokenPush",
   getTokensPush);
 
 //guardar pushtoken
-router.post("/notificarSuppliers", notificarSuppliers);
+router.post("/enviarNotificacionPush", enviarNotificacionPush);
 
 router.post("/notificarCancelacion", notificarCancelacion);
 
