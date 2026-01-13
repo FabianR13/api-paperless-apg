@@ -1056,7 +1056,7 @@ const isSMReader = async (req, res, next) => {
         next();
         return;
       }
-      if (roles[i].name === "SMReader" || roles[i].name === "SMCreator" || roles[i].name === "SMSupplier" || roles[i].name === "SMAdministrator") {
+      if (roles[i].name === "SMReader" || roles[i].name === "SMCreator" || roles[i].name === "SMSupplier" || roles[i].name === "SMAdministrator" || roles[i].name === "SMCoordinator") {
         next();
         return;
       }
