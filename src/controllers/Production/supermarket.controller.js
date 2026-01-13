@@ -1,6 +1,7 @@
 const Items = require("../../models/Logistics/Items.js")
 const Company = require("../../models/Company.js")
 const Pedido = require("../../models/Logistics/Pedidos.js")
+const Devolucion = require("../../models/Logistics/Devoluciones.js")
 const User = require("../../models/User.js")
 const RegistroMovimientos = require("../../models/Logistics/RegistroMovimiento.js")
 
@@ -778,6 +779,296 @@ const confirmPedido = async (req, res) => {
     }
 };
 
+// ==========================================
+const createDevolucion = async (req, res) => {
+    // 1. Configuración de Fecha/Hora (Igual que antes)
+    const options = { timeZone: "America/Mexico_City", hour: "2-digit", minute: "2-digit", hour12: false };
+    const dateMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+
+    const year = dateMX.getFullYear();
+    const month = String(dateMX.getMonth() + 1).padStart(2, '0');
+    const day = String(dateMX.getDate()).padStart(2, '0');
+    const newDate = `${year}-${month}-${day}`;
+
+    const hourMX = dateMX.getHours();
+    const minutesMX = dateMX.getMinutes();
+    const time = `${String(hourMX).padStart(2, '0')}:${String(minutesMX).padStart(2, '0')}`;
+
+    // 2. Determinar Turno
+    let turno;
+    if (hourMX >= 7 && hourMX < 15) turno = 'D';
+    else if (hourMX >= 15 && hourMX < 23) turno = 'A';
+    else turno = 'N';
+
+    // 3. Generar ID Único para Devolución
+    const idPrefix = `DEV-${newDate}-${turno}`;
+
+    // --- CAMBIO: Buscamos en el modelo Devolucion, no en Pedido ---
+    const lastDevolucion = await Devolucion.findOne({
+        idDevolucion: { $regex: new RegExp(`^${idPrefix}`) }
+    }).sort({ createdAt: -1 });
+
+    let consecutivo = 1;
+
+    if (lastDevolucion && lastDevolucion.idDevolucion) {
+        // Extraemos el último número. Ej: DEV-2026-01-09-D005 -> 005
+        const parts = lastDevolucion.idDevolucion.split(turno); // Separar por la letra del turno
+        if (parts.length > 1) {
+            // parts[1] sería "005" o "005-1"
+            const numberPart = parts[parts.length - 1].split('-')[0]; // Tomar solo el numero antes del guion si existe
+            consecutivo = parseInt(numberPart, 10) + 1;
+        }
+    }
+
+    const paddedConsecutivo = String(consecutivo).padStart(3, '0');
+    let idDevolucion = `${idPrefix}${paddedConsecutivo}`;
+
+    // Validación duplicados turno N (lógica de seguridad)
+    if (turno === 'N') {
+        const existe = await Devolucion.findOne({ idDevolucion: idDevolucion });
+        if (existe) {
+            idDevolucion = `${idDevolucion}-1`;
+        }
+    }
+
+    try {
+        const { usuario, items } = req.body.devolucion;
+        const { CompanyId } = req.params; // Necesitamos el ID de la empresa
+
+        if (!usuario || !items || items.length === 0) {
+            return res.status(400).json({ status: "error", message: "Datos incompletos" });
+        }
+
+        // Buscar usuario
+        const foundUser = await User.findOne({ username: usuario });
+        if (!foundUser) {
+            return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
+        }
+
+        // Buscar Materiales para obtener sus ObjectIds
+        const names = items.map(mat => mat.name);
+        const foundMaterials = await Items.find({ name: { $in: names } });
+
+        // Mapear items al esquema del modelo Devolucion
+        const mappedItems = items.map(itemInput => {
+            const materialDB = foundMaterials.find(m => m.name === itemInput.name);
+            if (materialDB) {
+                // Calcular total sumando el array de cantidades individuales
+                const total = itemInput.quantities.reduce((a, b) => a + Number(b), 0);
+
+                return {
+                    id: materialDB._id,
+                    serial: itemInput.serials,      // Array de strings
+                    quantities: itemInput.quantities, // Array de números
+                    totalQuantity: total,
+                    comment: "Devolución generada"
+                };
+            }
+        }).filter(Boolean);
+
+        // --- CAMBIO: Instanciar nuevo modelo Devolucion ---
+        const nuevaDevolucion = new Devolucion({
+            idDevolucion: idDevolucion,
+            usuario: foundUser._id,
+            company: CompanyId,
+            items: mappedItems,
+            dStatus: 'started',
+            creationTime: time
+        });
+
+        await nuevaDevolucion.save();
+
+        res.status(200).json({
+            status: "200",
+            message: "Devolución guardada exitosamente",
+            body: nuevaDevolucion
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Error al guardar devolución", error: error.message });
+    }
+};
+
+// ==========================================
+const getDevoluciones = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    if (!CompanyId || CompanyId.length !== 24) {
+        return res.status(400).json({ status: "error", message: "ID inválido" });
+    }
+
+    try {
+        // --- CAMBIO: Consulta directa a Devolucion, sin regex de ID ---
+        const devoluciones = await Devolucion.find({ company: CompanyId })
+            .sort({ createdAt: -1 }) // Más recientes primero
+            .limit(100)
+            .populate({
+                path: "usuario",
+                select: "employee",
+                populate: { path: "employee", select: "name lastName" }
+            })
+            .populate({
+                path: "confirmedBy",
+                select: "employee",
+                populate: { path: "employee", select: "name lastName" }
+            })
+            .populate({
+                path: "rejectedBy",
+                select: "employee",
+                populate: { path: "employee", select: "name lastName" }
+            })
+            .populate({
+                path: "validatedBy",
+                select: "employee",
+                populate: { path: "employee", select: "name lastName" }
+            })
+            .populate({
+                path: "items.id", // Nota: en el esquema items -> id es la ref
+                select: "name description vendorItemNo"
+            });
+
+        // Nota: Mapeamos un poco la respuesta si quieres que el frontend reciba 
+        // exactamente la misma estructura de nombres que en 'Pedido' 
+        // (ej. item.id.name), el populate ya lo hace.
+
+        res.json({ status: "200", message: "Devoluciones Loaded", body: devoluciones });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Error al obtener devoluciones" });
+    }
+};
+
+// ==========================================
+const updateDevolucionStatus = async (req, res) => {
+    const { idDevolucion } = req.params;
+    const { status, usuario, reason } = req.body; // status: 'confirmed', 'validated', 'rejected'
+
+    // Configuración de hora
+    const dateMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+    const hourMX = dateMX.getHours();
+    const minutesMX = dateMX.getMinutes();
+    const time = `${String(hourMX).padStart(2, '0')}:${String(minutesMX).padStart(2, '0')}`;
+
+    try {
+        const devolucion = await Devolucion.findOne({ idDevolucion });
+        if (!devolucion) return res.status(404).json({ status: "error", message: "Devolución no encontrada" });
+
+        // Buscar ID del usuario que ejecuta la acción
+        const actionUser = await User.findOne({ username: usuario });
+        if (!actionUser) return res.status(404).json({ status: "error", message: "Usuario no encontrado" });
+
+        // Lógica de transición de estados
+        switch (status) {
+            case 'confirmed':
+                // Solo se puede confirmar si está 'started' o 'rejected'
+                if (devolucion.dStatus !== 'started' && devolucion.dStatus !== 'rejected') {
+                    return res.status(400).json({ status: "error", message: "No se puede confirmar en el estado actual." });
+                }
+                devolucion.dStatus = 'confirmed';
+                devolucion.confirmedBy = actionUser._id;
+                // Si venía de rechazo, limpiamos el motivo anterior para indicar que se corrigió
+                if (devolucion.dStatus === 'rejected') {
+                    // Opcional: Podrías mantener el historial, pero aquí limpiamos para "nueva confirmación"
+                    // devolucion.rejectionReason = null; 
+                }
+                break;
+
+            case 'validated':
+                if (devolucion.dStatus !== 'confirmed') {
+                    return res.status(400).json({ status: "error", message: "Solo se pueden validar devoluciones confirmadas." });
+                }
+                devolucion.dStatus = 'validated';
+                devolucion.validatedBy = actionUser._id;
+                devolucion.actionTime = time;
+                break;
+
+            case 'rejected':
+                if (devolucion.dStatus !== 'confirmed') {
+                    return res.status(400).json({ status: "error", message: "Solo se pueden rechazar devoluciones confirmadas." });
+                }
+                if (!reason) {
+                    return res.status(400).json({ status: "error", message: "Se requiere un motivo para rechazar." });
+                }
+                devolucion.dStatus = 'rejected';
+                devolucion.rejectedBy = actionUser._id;
+                devolucion.rejectionReason = reason;
+                devolucion.actionTime = time;
+                break;
+
+            default:
+                return res.status(400).json({ status: "error", message: "Estatus inválido." });
+        }
+
+        await devolucion.save();
+
+        res.status(200).json({
+            status: "200",
+            message: `Devolución actualizada a: ${status}`,
+            body: devolucion
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Error actualizando estatus", error: error.message });
+    }
+};
+
+// ==========================================
+const updateDevolucionContent = async (req, res) => {
+    const { idDevolucion } = req.params;
+    // Recibimos: usuario (quien edita) y items (la nueva lista corregida)
+    const { usuario, items } = req.body; 
+
+    try {
+        const devolucion = await Devolucion.findOne({ idDevolucion });
+        if (!devolucion) return res.status(404).json({ status: "error", message: "Devolución no encontrada" });
+
+        // Solo permitir editar si está rechazada o iniciada (started)
+        if (devolucion.dStatus !== 'rejected' && devolucion.dStatus !== 'started') {
+            return res.status(400).json({ status: "error", message: "No se puede editar una devolución en este estado." });
+        }
+
+        // Buscar Materiales para obtener sus ObjectIds nuevamente (validación)
+        const names = items.map(mat => mat.name);
+        const foundMaterials = await Items.find({ name: { $in: names } });
+
+        // Mapear items al esquema del modelo
+        const mappedItems = items.map(itemInput => {
+            const materialDB = foundMaterials.find(m => m.name === itemInput.name);
+            if (materialDB) {
+                const total = itemInput.quantities.reduce((a, b) => a + Number(b), 0);
+                return {
+                    id: materialDB._id,
+                    serial: itemInput.serials,
+                    quantities: itemInput.quantities,
+                    totalQuantity: total,
+                    comment: "Corregido por usuario"
+                };
+            }
+        }).filter(Boolean);
+
+        // Actualizar datos
+        devolucion.items = mappedItems;
+        // Opcional: Si quieres que al editar se pase automáticamente a 'started' o se quede en 'rejected'
+        // Lo dejaremos igual para que el usuario tenga que dar clic en "Re-Confirmar" explícitamente, 
+        // o podemos cambiarlo aquí. Por ahora solo actualizamos contenido.
+        
+        await devolucion.save();
+
+        res.status(200).json({ 
+            status: "200", 
+            message: "Devolución corregida exitosamente", 
+            body: devolucion 
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Error al actualizar contenido", error: error.message });
+    }
+};
+
 module.exports = {
     createItems,
     getAllItems,
@@ -786,5 +1077,9 @@ module.exports = {
     updatePedido,
     getRecentPedidos,
     cancelPedido,
-    confirmPedido
+    confirmPedido,
+    createDevolucion,
+    getDevoluciones,
+    updateDevolucionStatus,
+    updateDevolucionContent
 }

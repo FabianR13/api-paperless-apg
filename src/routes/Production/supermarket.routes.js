@@ -8,7 +8,11 @@ const {
     updatePedido,
     getRecentPedidos,
     cancelPedido,
-    confirmPedido
+    confirmPedido,
+    createDevolucion,
+    getDevoluciones,
+    updateDevolucionStatus,
+    updateDevolucionContent
 } = require("../../controllers/Production/supermarket.controller.js");
 const router = Router();
 
@@ -82,6 +86,39 @@ router.put(
     isAutorized,
     isSMCreator,
     confirmPedido
+);
+
+// Route to save new devolucion
+router.post(
+    "/CrearDevolucion/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isSMCreator, 
+    createDevolucion
+);
+
+// Route to get recent devoluciones
+router.get(
+    "/DevolucionesRecientes/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isSMReader, 
+    getDevoluciones
+);
+
+router.put(
+    "/UpdateDevolucionStatus/:idDevolucion/:CompanyId",
+    verifyToken,
+    isAutorized,
+    updateDevolucionStatus
+);
+
+router.put(
+    "/UpdateDevolucionContent/:idDevolucion/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isSMCreator,
+    updateDevolucionContent
 );
 
 module.exports = router;

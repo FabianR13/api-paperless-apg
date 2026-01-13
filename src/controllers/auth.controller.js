@@ -321,6 +321,9 @@ const signIn = async (req, res) => {
     if (roles[i].name === "ErrorPReader") {
       userAccessApg[50] = "true";
     }
+     if (roles[i].name === "SMCoordinator") {
+      userAccessApg[51] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
@@ -660,12 +663,29 @@ if (!admin.apps.length) {
 }
 
 // Función para enviar a un solo token
-const sendPushToToken = async (token) => {
+// const sendPushToToken = async (token) => {
+//   const message = {
+//     token,
+//     notification: {
+//       title: "Nuevo pedido creado",
+//       body: "Se ha generado un nuevo pedido en la plataforma.",
+//     },
+//   };
+
+//   try {
+//     const response = await admin.messaging().send(message);
+//     console.log("✅ Notificación enviada a:", token);
+//   } catch (error) {
+//     console.error("❌ Error al enviar a:", token, error.message);
+//   }
+// };
+
+const sendPushToToken = async (token, title, body) => {
   const message = {
     token,
     notification: {
-      title: "Nuevo pedido creado",
-      body: "Se ha generado un nuevo pedido en la plataforma.",
+      title: title, // Ahora es dinámico
+      body: body,   // Ahora es dinámico
     },
   };
 
@@ -680,16 +700,44 @@ const sendPushToToken = async (token) => {
 // Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
 const notificarSuppliers = async (req, res) => {
   const { pushTokens } = req.body;
+  if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
 
-  if (!Array.isArray(pushTokens)) {
-    return res.status(400).json({ message: "pushTokens debe ser un array" });
-  }
-
-  // 🔍 Filtrar proveedores
   const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
 
-  // 🔁 Enviar notificaciones
-  await Promise.all(supplierTokens.map(p => sendPushToToken(p.token)));
+  // Enviamos mensaje de PEDIDO
+  await Promise.all(supplierTokens.map(p =>
+    sendPushToToken(p.token, "Nuevo pedido creado", "Se ha generado un nuevo pedido en la plataforma.")
+  ));
+
+  return res.sendStatus(204);
+};
+
+//Devolucion iniciada notificacion
+const notificarInicioDevolucion = async (req, res) => {
+  const { pushTokens } = req.body;
+  if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
+
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
+
+  // Enviamos mensaje de DEVOLUCIÓN INICIADA
+  await Promise.all(supplierTokens.map(p =>
+    sendPushToToken(p.token, "Devolución Iniciada 🟡", "Se ha iniciado una devolución. Pendiente de confirmación.")
+  ));
+
+  return res.sendStatus(204);
+};
+
+//Notificaciion de confirmacion de devolucion
+const notificarConfirmacionDevolucion = async (req, res) => {
+  const { pushTokens } = req.body;
+  if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
+
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
+
+  // Enviamos mensaje de DEVOLUCIÓN CONFIRMADA
+  await Promise.all(supplierTokens.map(p =>
+    sendPushToToken(p.token, "Devolución Confirmada 🟠", "Se ha confirmado una devolución. Requiere validación.")
+  ));
 
   return res.sendStatus(204);
 };
@@ -784,6 +832,9 @@ const notifyInteresErrorProofing = async (req, res) => {
   return res.sendStatus(204);
 };
 
+
+
+
 module.exports = {
   signUp,
   newRole,
@@ -801,5 +852,7 @@ module.exports = {
   sendPushToToken,
   notificarSuppliers,
   notificarCancelacion,
-  notifyInteresErrorProofing
+  notifyInteresErrorProofing,
+  notificarInicioDevolucion,
+  notificarConfirmacionDevolucion,
 };
