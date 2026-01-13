@@ -5,6 +5,7 @@ const pushTokenSchema = new mongoose.Schema({
   token: { type: String, required: true, unique: true },
   isSupplier: { type: Boolean, default: false },
   isErrorProofingInteres: { type: Boolean, default: false },
+  isCoordinator: { type: Boolean, default: false },
 }, {
   timestamps: true,
 });
