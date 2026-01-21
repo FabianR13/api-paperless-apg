@@ -4,7 +4,8 @@ const Company = require("../../../models/Company.js");
 const AWS = require('aws-sdk');
 const Employees = require("../../../models/Employees.js");
 const Deparment = require("../../../models/Deparment.js");
-
+const Suggestion = require("../../../models/Others/Suggestion.js");
+const KaizenPoints = require("../../../models/Others/KaizenPoints");
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
   apiVersion: 'latest',
@@ -589,6 +590,154 @@ const deleteKaizen = async (req, res) => {
   });
 };
 
+
+//Crear sugerencia nueva
+const createSuggestion = async (req, res) => {
+  const { CompanyId } = req.params;
+
+  try {
+    const {
+      suggestionTitle,
+      currentMethod,
+      proposedMethod,
+      benefits,
+      partNumber,
+      createdBy, // ID del empleado que viene del Frontend
+      area, 
+      createdDate,
+    } = req.body;
+
+    // 1. Procesar la firma
+    let signatureImgKey = "";
+    if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
+      signatureImgKey = req.files["signatureImage"][0].key;
+    }
+
+    // 2. Crear objeto Suggestion
+    const suggestion = new Suggestion({
+      suggestionTitle,
+      currentMethod,
+      proposedMethod,
+      benefits,
+      area,
+      partNumber,
+      createdDate,
+      signatureImg: signatureImgKey
+    });
+
+    // 3. Vincular Relaciones en el objeto Suggestion
+    if (createdBy) {
+      const foundEmployee = await Employees.find({ _id: { $in: createdBy } });
+      suggestion.createdBy = foundEmployee.map((e) => e._id);
+    }
+
+    if (CompanyId) {
+      const foundCompany = await Company.find({ _id: { $in: CompanyId } });
+      suggestion.company = foundCompany.map((c) => c._id);
+    }
+
+    // 4. Generar Consecutivo (APG-SUG-X)
+    const lastSuggestion = await Suggestion.find({
+      company: { $in: CompanyId },
+    }).sort({ consecutive: -1 }).limit(1);
+
+    if (lastSuggestion.length === 0) {
+      suggestion.consecutive = 1;
+      suggestion.idSuggestion = "APG-SUG-1";
+    } else {
+      const nextConsecutive = lastSuggestion[0].consecutive + 1;
+      suggestion.consecutive = nextConsecutive;
+      suggestion.idSuggestion = "APG-SUG-" + nextConsecutive;
+    }
+
+    // 5. Guardar la Sugerencia en BD
+    await suggestion.save();
+
+    // ---------------------------------------------------------
+    // 6. LOGICA KAIZEN POINTS (Nuevo o Actualización)
+    // ---------------------------------------------------------
+    if (createdBy) {
+      await KaizenPoints.findOneAndUpdate(
+        { employee: createdBy }, // Busca por ID de empleado
+        {
+          // $inc: Incrementa el total en 20 puntos
+          $inc: { totalPoints: 20 },
+          
+          // $push: Agrega el movimiento al historial
+          $push: {
+            history: {
+              activity: "Sugerencia generada",
+              reference: suggestion.idSuggestion, // Ej: APG-SUG-5
+              points: 20,
+              date: new Date()
+            }
+          },
+          
+          // $setOnInsert: Solo asigna la compañía si el documento es NUEVO
+          $setOnInsert: { company: CompanyId }
+        },
+        { 
+          upsert: true, // Crea el documento si no existe
+          new: true     // Devuelve el documento actualizado (opcional)
+        }
+      );
+    }
+    // ---------------------------------------------------------
+
+    res.status(200).json({
+      status: "200",
+      message: "Sugerencia guardada correctamente y puntos asignados",
+      body: suggestion
+    });
+
+  } catch (error) {
+    console.error("Error creating suggestion:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Error al guardar la sugerencia",
+      error: error.message
+    });
+  }
+};
+
+const getEmployeePoints = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const pointsRecord = await KaizenPoints.findOne({ employee: employeeId });
+
+    if (!pointsRecord) {
+      // Si no existe, devolvemos 404 para manejarlo en el front
+      return res.status(404).json({ status: "404", message: "No points found" });
+    }
+
+    res.status(200).json({ status: "200", body: pointsRecord });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// Getting all Suggestions//////////////////////////////////////////////////////////////////////////////////////////////////////
+const getSuggestions = async (req, res) => {
+  const { CompanyId } = req.params
+  if (CompanyId.length !== 24) {
+    return;
+  }
+  const company = await Company.find({
+    _id: { $in: CompanyId },
+  })
+  if (!company) {
+    return;
+  }
+  const kaizens = await Kaizen.find({
+    company: { $in: CompanyId },
+  }).sort({ consecutive: -1 })
+    .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
+    .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+  res.json({ status: "200", message: "Kaizens Loaded", body: kaizens });
+};
+
 module.exports = {
   createKaizen,
   getKaizens,
@@ -597,5 +746,8 @@ module.exports = {
   updateKaizen,
   updateKaizenStatus,
   modifyKaizenImg,
-  deleteKaizen
+  deleteKaizen,
+  createSuggestion,
+  getEmployeePoints,
+  getSuggestions
 };
