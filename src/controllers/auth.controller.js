@@ -617,7 +617,6 @@ const saveTokenPush = async (req, res) => {
     if (!tokenPush) {
       return res.status(400).json({ message: "FCM token is required" });
     }
-
     // --- CORRECCIÓN AQUÍ ---
     // 1. Define los datos a actualizar.
     //    Es buena práctica construir este objeto para evitar enviar 'undefined'

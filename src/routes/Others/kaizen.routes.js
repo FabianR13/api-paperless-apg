@@ -8,7 +8,10 @@ const {
   updateKaizen,
   updateKaizenStatus,
   modifyKaizenImg,
-  deleteKaizen
+  deleteKaizen,
+  createSuggestion,
+  getEmployeePoints,
+  getSuggestions
 } = require("../../controllers/Forms/Others/kaizen.controller.js");
 const uploadKaizenImgs = require("../../middlewares/uploadKaizenImg.js");
 const {
@@ -18,6 +21,7 @@ const {
   isKaizenAprroval,
   isAutorized
 } = require("../../middlewares/auth.Jwt.js");
+const uploadSuggestionFiles = require("../../middlewares/uploadSignatureKaizen.js");
 
 ///Route to get All the kaizens///
 router.get(
@@ -80,6 +84,21 @@ router.delete(
   isAutorized,
   isKaizenRW,
   deleteKaizen
+);
+///Route to Post a New Suggestion///
+router.post("/NewSuggestion/:CompanyId",
+  uploadSuggestionFiles,
+  createSuggestion
+);
+//Ruta para obtener puntos
+router.get("/KaizenPoints/:employeeId", getEmployeePoints);
+//Ruta para obtener sugerencias
+router.get(
+  "/Suggestions/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isKaizenR,
+  getSuggestions,
 );
 
 module.exports = router;
