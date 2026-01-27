@@ -22,6 +22,8 @@ const {
   isAutorized
 } = require("../../middlewares/auth.Jwt.js");
 const uploadSuggestionFiles = require("../../middlewares/uploadSignatureKaizen.js");
+const { getRewards, createReward, updateReward } = require("../../controllers/Others/rewardsKaizen.controller.js");
+const uploadRewardImg = require("../../middlewares/uploadRewardImg.js");
 
 ///Route to get All the kaizens///
 router.get(
@@ -100,5 +102,15 @@ router.get(
   isKaizenR,
   getSuggestions,
 );
+
+//Rutas de rewards
+// 1. Obtener todos los premios
+router.get("/rewards", getRewards);
+
+// 2. Crear un nuevo premio (Usa el middleware para la imagen)
+router.post("/rewards", uploadRewardImg, createReward);
+
+// 3. Editar un premio existente (Recibe ID por params)
+router.put("/rewards/:id", uploadRewardImg, updateReward);
 
 module.exports = router;

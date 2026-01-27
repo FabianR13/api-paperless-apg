@@ -730,12 +730,12 @@ const getSuggestions = async (req, res) => {
   if (!company) {
     return;
   }
-  const kaizens = await Kaizen.find({
+  const suggestions = await Suggestion.find({
     company: { $in: CompanyId },
   }).sort({ consecutive: -1 })
     .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
     .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
-  res.json({ status: "200", message: "Kaizens Loaded", body: kaizens });
+  res.json({ status: "200", message: "Suggestions Loaded", body: suggestions });
 };
 
 module.exports = {

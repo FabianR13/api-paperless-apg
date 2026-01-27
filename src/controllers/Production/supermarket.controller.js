@@ -385,7 +385,7 @@ const getAllPedidos = async (req, res) => {
         })
         .populate({
             path: "items",
-            populate: { path: "id", select: "name description" }
+            populate: { path: "id", select: "name description vendorItemNo" }
         });
     res.json({ status: "200", message: "Pedidos Loaded", body: pedidos });
 };
