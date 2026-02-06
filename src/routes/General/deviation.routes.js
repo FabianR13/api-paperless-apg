@@ -1,39 +1,16 @@
 const { Router } = require("express");
 const router = Router();
 const {
-  createDeviationRequest,
-  getDeviationRequest,
-  getDeviationById,
-
-  updateDeviationReq,
-  updateRiskStatus,
-  updateDeviationStatus,
-  deleteDeviation
-} = require("../../controllers/Forms/General/deviationReq.controller.js");
-const {
-  createDeviationRisk,
-  updateDeviationRisk,
-  updateDeviationRiskSignature,
-  getDeviationRiskById
-} = require("../../controllers/Forms/General/deviationRisk.controller.js");
-const uploadDeviationFile = require("../../middlewares/uploadDeviationFile.js");
-const {
-  verifyToken,
-  isAutorized,
-  isDeviationR
-} = require("../../middlewares/auth.Jwt.js");
-const { sendEmailMiddlewareResponse } = require("../../middlewares/mailer.js");
-const { createDeviation, getDeviations, updateDeviation, validateDeviation, } = require("../../controllers/Forms/General/deviations.controller.js");
-
-//Deviation request/////////////////////////////////
-//Route to post new Deviation ///
-router.post("/NewDeviation/:CompanyId",
   verifyToken,
   isAutorized,
   isDeviationR,
-  createDeviation,
-  sendEmailMiddlewareResponse
-);
+  isDeviationValidator,
+  isDeviationManager
+} = require("../../middlewares/auth.Jwt.js");
+const { sendEmailMiddlewareNext } = require("../../middlewares/mailer.js");
+const { createDeviation, getDeviations, updateDeviation, rejectDeviation, signDeviation, } = require("../../controllers/Forms/General/deviations.controller.js");
+const uploadDeviationImgs = require("../../middlewares/uploadDeviationImgs.js");
+
 // Route to get All the deviations///
 router.get(
   "/Deviations/:CompanyId",
@@ -42,93 +19,38 @@ router.get(
   isDeviationR,
   getDeviations
 );
-//Route to update Deviation ///
+
+//Route to post new Deviation ///
+router.post("/NewDeviation/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationR,
+  uploadDeviationImgs,
+  sendEmailMiddlewareNext,
+  createDeviation,
+);
+
+//Route to reject Deviation por parte de Calidad ///
+router.put("/RejectDeviation/:deviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationValidator,
+  sendEmailMiddlewareNext,
+  rejectDeviation);
+
+//Route to update Deviation Risk Assessment y Validacion Calidad ///
 router.put("/UpdateDeviation/:deviationId/:CompanyId",
   verifyToken,
   isAutorized,
-  isDeviationR,
+  isDeviationValidator,
+  uploadDeviationImgs,
   updateDeviation);
-//Route to update Deviation ///
-router.put("/ValidateDeviation/:deviationId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  validateDeviation);
 
-
-
-
-
-// Route to get a Specific deviation by Id///
-router.get(
-  "/Deviation/:deviationId/:CompanyId",
+//Ruta para firmar desviacion Gerentes y Senior///
+router.put("/SignDeviation/:deviationId/:CompanyId",
   verifyToken,
   isAutorized,
-  isDeviationR,
-  getDeviationById
-);
-//Route to modify just the Status de firma en desviacion rerquest///
-router.put(
-  "/UpdateDeviation/Signature/:deviationId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  updateDeviation
-);
-//route to update risk status///
-router.put(
-  "/UpdateDeviation/RiskStatus/:deviationId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  updateRiskStatus,
-);
-//close deviation///
-router.put(
-  "/CloseDeviation/:deviationId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  uploadDeviationFile,
-  updateDeviationStatus
-);
-
-//delete deviation///
-router.delete(
-  "/DeleteDeviation/:deviationId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  deleteDeviation
-);
-
-
-//Deviation Risk Assessment////////////////////////////////////////
-//Route to post a new Deviation Risk Assesment ///
-router.post("/NewDeviationRisk/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  createDeviationRisk,
-  // sendEmailMiddlewareResponse
-);
-//Route to update a new Deviation Risk Assesment ///
-router.put("/UpdateDeviationRisk/:deviationRiskId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  updateDeviationRisk);
-//Route to update Deviation Risk Assesment Signature///
-router.put("/UpdateDeviationRisk/Signature/:deviationRiskId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  updateDeviationRiskSignature);
-//Route to get a Deviation Risk Assesment by Id ///
-router.get("/DeviationRisk/:deviationRiskId/:CompanyId",
-  verifyToken,
-  isAutorized,
-  isDeviationR,
-  getDeviationRiskById);
+  isDeviationManager,
+  signDeviation);
 
 module.exports = router;

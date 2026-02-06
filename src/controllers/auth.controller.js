@@ -180,10 +180,10 @@ const signIn = async (req, res) => {
     if (roles[i].name === "KaizenR") {
       userAccessApg[4] = "true";
     }
-    if (roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
+    if (roles[i].name === "QualityASIns") {
       userAccessApg[5] = "true";
     }
-    if (roles[i].name === "QualityASEng" || roles[i].name === "QualityASIns") {
+    if (roles[i].name === "QualityASEng") {
       userAccessApg[6] = "true";
     }
     if (roles[i].name === "QualityASGer") {
@@ -321,7 +321,7 @@ const signIn = async (req, res) => {
     if (roles[i].name === "ErrorPReader") {
       userAccessApg[50] = "true";
     }
-     if (roles[i].name === "SMCoordinator") {
+    if (roles[i].name === "SMCoordinator") {
       userAccessApg[51] = "true";
     }
   }
