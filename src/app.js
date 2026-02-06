@@ -10,6 +10,7 @@ const mongoose = require("mongoose");
 // const sslRedirect = require('heroku-ssl-redirect');
 require("dotenv").config();
 // Configuración básica (permitir todas las solicitudes)
+const cron = require('node-cron');
 
 
 app.use(cors());
@@ -96,6 +97,7 @@ const automationDevicesRoutes = require("./routes/Automation/automationDevices.r
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
 const { autoSendMessage, autoSendEmail } = require("./controllers/whatsapp.controller.js");
+const { autoSendDeviationAlerts } = require("./controllers/emailNotification.controller.js");
 
 
 //Primer inicio de API/////
@@ -159,10 +161,18 @@ app.use("/api/supermarket", supermarketRoutes);
 app.use("/api/minuta", minutaRoutes);
 app.use("/api/errorproofing", errorProfingRoutes);
 app.use("/api/evaluations", evaluationsRoutes);
-app.use("/api/automationDevices",automationDevicesRoutes);
+app.use("/api/automationDevices", automationDevicesRoutes);
 
-setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
+//setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
+
+// cron.schedule('06 18 * * *', () => { // 0 8 donde 0 son los minutos y 8 la hora
+//   console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones");
+//   autoSendDeviationAlerts();
+// }, {
+//   scheduled: true,
+//   timezone: "America/Mexico_City" 
+// });
 
 const date = new Date();
 const horaActual = date.getHours()

@@ -719,6 +719,38 @@ const isDeviationR = async (req, res, next) => {
         next();
         return;
       }
+      if (roles[i].name === "QualityASEng") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QualityASIns") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QualityASGer") {
+        next();
+        return;
+      }
+      if (roles[i].name === "SeniorManagement") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ProductionSign") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ProcessSign") {
+        next();
+        return;
+      }
+      if (roles[i].name === "AutomationSign") {
+        next();
+        return;
+      }
+      if (roles[i].name === "CloseDeviation") {
+        next();
+        return;
+      }
     }
   }
   if (Access.company[0].name === "Axiom") {
@@ -736,6 +768,105 @@ const isDeviationR = async (req, res, next) => {
   return res
     .status(403)
     .json({ message: "Deviation Role Required", status: "403" });
+};
+//Validar que tenbga permisos para aprovar
+const isDeviationValidator = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QualityASEng") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QualityASIns") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QualityASGer") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "DeviationR") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "You are not authorized to validate or reject a deviation", status: "403" });
+};
+
+//Validar que tenbga permisos para firmar
+const isDeviationManager = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QualityASGer") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ProductionSign") {
+        next();
+        return;
+      }
+      if (roles[i].name === "AutomationSign") {
+        next();
+        return;
+      }
+      if (roles[i].name === "SeniorManagement") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ProcessSign") {
+        next();
+        return;
+      }
+    }
+  }
+  // if (Access.company[0].name === "Axiom") {
+  //   for (let i = 0; i < rolesAxiom.length; i++) {
+  //     if (rolesAxiom[i].name === "admin") {
+  //       next();
+  //       return;
+  //     }
+  //     if (rolesAxiom[i].name === "DeviationR") {
+  //       next();
+  //       return;
+  //     }
+  //   }
+  // }
+  return res
+    .status(403)
+    .json({ message: "You are not authorized to sign a deviation", status: "403" });
 };
 // Verify TraininT (Create)///////////////////////////////////////////////////////////////////////////////////////////
 const isTrainingT = async (req, res, next) => {
@@ -828,7 +959,7 @@ const isTrainingL = async (req, res, next) => {
         next();
         return;
       }
-      if ((roles[i].name === "TrainingL")|| (roles[i].name === "TrainingT") ) {
+      if ((roles[i].name === "TrainingL") || (roles[i].name === "TrainingT")) {
         next();
         return;
       }
@@ -1174,6 +1305,10 @@ const isSMSupplier = async (req, res, next) => {
         next();
         return;
       }
+      if (roles[i].name === "SMCoordinator") {
+        next();
+        return;
+      }
     }
   }
   if (Access.company[0].name === "Axiom") {
@@ -1302,5 +1437,7 @@ module.exports = {
   isSMCreator,
   isSMSupplier,
   isCreateMinuta,
-  isManagementR
+  isManagementR,
+  isDeviationValidator,
+  isDeviationManager
 };
