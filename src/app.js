@@ -76,23 +76,23 @@ const {
 const formsRoutes = require("./routes/forms.routes.js");
 const authRoutes = require("./routes/auth.routes.js");
 const userRouter = require("./routes/user.routes.js");
-const kaizenRoutes = require("./routes/Others/kaizen.routes.js");
+const kaizenRoutes = require("./routes/kaizen.routes.js");
 const employeesRoutes = require("./routes/employees.routes.js");
-const deviationRoutes = require("./routes/General/deviation.routes.js");
-const partsRoutes = require("./routes/Quality/parts.routes.js");
-const customersRoutes = require("./routes/General/customer.routes.js");
-const validationSettingsRoutes = require("./routes/General/validationSettings.routes.js");
-const trainingRoutes = require("./routes/Others/training.routes.js")
-const PersonalRequisition = require("./routes/General/personalRequisition.routes.js");
+const deviationRoutes = require("./routes/deviation.routes.js");
+const partsRoutes = require("./routes/parts.routes.js");
+const customersRoutes = require("./routes/customer.routes.js");
+const validationSettingsRoutes = require("./routes/validationSettings.routes.js");
+const trainingRoutes = require("./routes/training.routes.js")
+const PersonalRequisition = require("./routes/personalRequisition.routes.js");
 const whatsappRoutes = require("./routes/whatsapp.routes.js");
 const itRoutes = require("./routes/it.routes.js");
 const encuestasRoutes = require("./routes/encuestas.routes.js");
-const processRoutes = require("./routes/Setup/process.routes.js")
-const supermarketRoutes = require("./routes/Production/supermarket.routes.js")
-const minutaRoutes = require("./routes/General/minuta.routes.js")
-const errorProfingRoutes = require("./routes/General/errorProofing.routes.js")
-const evaluationsRoutes = require("./routes/Others/evaluations.routes.js")
-const automationDevicesRoutes = require("./routes/Automation/automationDevices.routes.js")
+const processRoutes = require("./routes/process.routes.js")
+const supermarketRoutes = require("./routes/supermarket.routes.js")
+const minutaRoutes = require("./routes/minuta.routes.js")
+const errorProfingRoutes = require("./routes/errorProofing.routes.js")
+const evaluationsRoutes = require("./routes/evaluations.routes.js")
+const automationDevicesRoutes = require("./routes/automationDevices.routes.js")
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");

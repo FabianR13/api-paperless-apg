@@ -7,17 +7,17 @@ const Employees = require("../models/Employees.js");
 const Forms = require("../models/Forms.js");
 const { dataEmployees } = require("./EmployeeRawData.js");
 const { dataForms } = require("./FormsRawData.js");
-const Customer = require("../models/General/Customer.js");
-const Parts = require("../models/Quality/Parts.js");
+const Customer = require("../models/Customer.js");
+const Parts = require("../models/Parts.js");
 const { dataParts } = require("./PartsRawData.js");
-const Kaizen = require("../models/Others/Kaizen.js");
+const Kaizen = require("../models/Kaizen.js");
 const Company = require("../models/Company.js");
 const { dataPartsInfo } = require("./PartsInfoRawData.js");
-const PartsInfo = require("../models/Quality/PartsInfo.js");
+const PartsInfo = require("../models/PartsInfo.js");
 const { dataMachine } = require("./MachineRawData.js");
-const Machine = require("../models/Setup/Machine.js");
+const Machine = require("../models/Machine.js");
 const  dataDevicesAutomation  = require("./DevicesRawData.js");
-const AutomationDevice = require("../models/Automation/AutomationDevice.js")
+const AutomationDevice = require("../models/AutomationDevice.js")
 
 //crear compañias/////////////////////////////////////////////////////////////////////////////////////////////
 const createCompanys = async () => {

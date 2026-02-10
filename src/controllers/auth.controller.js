@@ -198,7 +198,13 @@ const signIn = async (req, res) => {
     if (roles[i].name === "QualityRW" || roles[i].name === "admin") {
       userAccessApg[10] = "true";
     }
-    if (roles[i].name === "DeviationR" || roles[i].name === "admin") {
+    if (
+      roles[i].name === "DeviationR" || roles[i].name === "admin"
+      || roles[i].name === "ProductionSign" || roles[i].name === "ProcessSign"
+      || roles[i].name === "AutomationSign" || roles[i].name === "CloseDeviation"
+      || roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng"
+      || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement"
+    ) {
       userAccessApg[11] = "true";
     }
     if (roles[i].name === "ProductionSign") {
@@ -318,11 +324,14 @@ const signIn = async (req, res) => {
     if (roles[i].name === "ErrorPValidatorA") {
       userAccessApg[49] = "true";
     }
-    if (roles[i].name === "ErrorPReader") {
+    if (roles[i].name === "ErrorPReader" || roles[i].name === "ErrorPCreator" || roles[i].name === "ErrorPValidatorA" || roles[i].name === "DeviceAdministrator") {
       userAccessApg[50] = "true";
     }
     if (roles[i].name === "SMCoordinator") {
       userAccessApg[51] = "true";
+    }
+    if (roles[i].name === "DeviceAdministrator") {
+      userAccessApg[52] = "true";
     }
   }
   //Crear variable con los roles que tiene en axiom

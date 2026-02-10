@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const Deviation = require('../models/General/Deviation.js'); // Asegúrate de importar tu modelo
+const Deviation = require('../models/Deviation.js'); // Asegúrate de importar tu modelo
 const dotenv = require('dotenv');
 // Ajusta la ruta a tu .env si es necesario
 dotenv.config({ path: "D:\\Paperless GIT\\api-paperless-apg\\src\\.env" });
