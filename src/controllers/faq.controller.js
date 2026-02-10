@@ -3,7 +3,7 @@ const Company = require("../models/Company.js");
 const AWS = require('aws-sdk');
 const Dashboard = require("../models/Dashboard.js");
 const Forms = require("../models/Forms.js");
-const Faq = require("../models/IT/Faq.js");
+const Faq = require("../models/Faq.js");
 const User = require("../models/User.js");
 
 AWS.config.update({
