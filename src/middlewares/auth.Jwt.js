@@ -1442,6 +1442,110 @@ const isDeviceAdministrator = async (req, res, next) => {
     .json({ message: "Rol DeviceAdministrator requerido", status: "403" });
 };
 
+//Verificar que el usuario tenga permiso para verel apartado de Error Proofing
+const isEPReader = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ErrorPReader") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ErrorPCreator") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ErrorPValidatorA") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ErrorPValidatorP") {
+        next();
+        return;
+      }
+      if (roles[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Rol DeviceAdministrator requerido", status: "403" });
+};
+
+// VERIFICAR QUE EL USUARIO PUEDA CREAR ERROR PROOFING //
+const isEPCreator = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ErrorPCreator") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ErrorPValidatorA") {
+        next();
+        return;
+      }
+      if (roles[i].name === "ErrorPValidatorP") {
+        next();
+        return;
+      }
+      if (roles[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "Rol DeviceAdministrator requerido", status: "403" });
+};
+
 module.exports = {
   verifyToken,
   isModerator,
@@ -1478,5 +1582,7 @@ module.exports = {
   isManagementR,
   isDeviationValidator,
   isDeviationManager,
-  isDeviceAdministrator
+  isDeviceAdministrator,
+  isEPReader,
+  isEPCreator
 };

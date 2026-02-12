@@ -102,7 +102,6 @@ const createNewErrorProofing = async (req, res) => {
             startDate,
             startShift,
             startTechnician,
-            version
         } = req.body;
 
         const newErrorProfing = new ErrorProofing({
@@ -110,7 +109,6 @@ const createNewErrorProofing = async (req, res) => {
             startDate,
             startShift,
             errorProofingStatus: "Open",
-            version
         });
 
         if (startTechnician.length > 0) {

@@ -1,44 +1,49 @@
 const { Router } = require("express");
-const { verifyToken, isAutorized } = require("../middlewares/auth.Jwt");
+const { verifyToken, isAutorized, isEPReader, isEPCreator } = require("../middlewares/auth.Jwt");
 const { getErrorProofings, createNewErrorProofing, updateErrorProofing, createNewChecklist, validateChecklist } = require("../controllers/errorProofing.controller.js");
 const router = Router();
 
-// Route to get All the deviations///
+// RUTA PARA OBTENER TODOS LOS ERROR PROOFINGS //
 router.get(
     "/ErrorProofing/:CompanyId",
     verifyToken,
     isAutorized,
+    isEPReader,
     getErrorProofings
 );
 
-//Ruta para subir nueva minuta
+// RUTA PARA SUBIR UN NUEVO ERROR PROOFING //
 router.post(
     "/NewErrorproofing/:CompanyId",
     verifyToken,
     isAutorized,
+    isEPCreator,
     createNewErrorProofing
 );
 
-//Ruta para editar un error proofing
+// RUTA PARA CERRAR UN ERROR PROOFING //
 router.put(
     "/UpdateErrorProofing/:ErrorProofingId/:CompanyId",
     verifyToken,
     isAutorized,
+    isEPCreator,
     updateErrorProofing
 );
-//Ruta para guardar un checklist en un error proofing
+// RUTA PARA AGREGAR UN CHECKLIST A UN ERROR PROOFING //
 router.post(
     "/NewCheckList/:ErrorProofingId/:CompanyId",
     verifyToken,
     isAutorized,
+    isEPCreator,
     createNewChecklist
 );
 
-//Ruta para validad un checklist
+// RUTA PARA AGREGAR OBSERVACIONES A UN CHECKLIST //
 router.put(
     "/ValidateChecklist/:ChecklistId/:CompanyId",
     verifyToken,
     isAutorized,
+    isEPCreator,
     validateChecklist
 );
 
