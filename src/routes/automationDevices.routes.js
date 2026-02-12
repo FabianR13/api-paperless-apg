@@ -1,16 +1,18 @@
 const { Router } = require("express");
 const { getAutomationDevices, createAutomationDevice, updateAutomationDevice } = require("../controllers/automationDevices.controller");
-const { verifyToken, isAutorized, isDeviceAdministrator } = require("../middlewares/auth.Jwt");
+const { verifyToken, isAutorized, isDeviceAdministrator, isEPReader } = require("../middlewares/auth.Jwt");
 const router = Router();
 
-//Ruta para obtenes dispositivos existentes
+// RUTA PARA OBTENER DISPOSITIVOS EXISTENTES //
 router.get(
     "/AutomationDevices/:CompanyId",
     verifyToken,
     isAutorized,
+    isEPReader,
     getAutomationDevices
 );
-//Ruta para crear dispositivos
+
+// RUTA PARA CREAR UN DISPOSITIVO NUEVO //
 router.post(
     "/AutomationDevices/:CompanyId",
     verifyToken,
@@ -19,7 +21,7 @@ router.post(
     createAutomationDevice
 );
 
-//Ruta para actualizar dispositivos
+// RUTA PARA MODIFICAR DISPOSITIVO EXISTENTE //
 router.put(
     "/AutomationDevices/:automationDeviceId/:CompanyId",
     verifyToken,

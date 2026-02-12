@@ -318,7 +318,7 @@ const signIn = async (req, res) => {
     if (roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
       userAccessApg[47] = "true";
     }
-    if (roles[i].name === "ErrorPCreator") {
+    if (roles[i].name === "ErrorPCreator" || roles[i].name === "DeviceAdministrator") {
       userAccessApg[48] = "true";
     }
     if (roles[i].name === "ErrorPValidatorA") {

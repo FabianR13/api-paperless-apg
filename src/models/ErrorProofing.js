@@ -51,6 +51,7 @@ const ErrorProfingSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    version: { type: Number, default: 1 }
 }, {
     timestamps: true
 });
