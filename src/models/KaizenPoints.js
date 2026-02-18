@@ -3,13 +3,13 @@ const { Schema } = mongoose;
 
 const KaizenPointsSchema = new Schema({
   // Relación con el empleado (Unique asegura que solo haya un registro de puntos por empleado)
-  employee: { 
-    type: Schema.Types.ObjectId, 
-    ref: "Employees", 
-    required: true, 
-    unique: true 
+  employee: {
+    type: Schema.Types.ObjectId,
+    ref: "Employees",
+    required: true,
+    unique: true
   },
-  
+
   company: { type: Schema.Types.ObjectId, ref: "Company" },
 
   // Variable que guarda el TOTAL acumulado actual (se actualiza automáticamente con lógica de backend)
@@ -21,7 +21,12 @@ const KaizenPointsSchema = new Schema({
       activity: { type: String, required: true }, // Ej: "Sugerencia generada", "Canje de Puntos"
       reference: { type: String }, // Ej: El ID de la sugerencia (APG-SUG-001) o Nombre del Premio
       points: { type: Number, required: true }, // Ej: 20, 500, -500 (positivos suman, negativos restan)
-      date: { type: Date, default: Date.now } // Fecha del movimiento
+      date: { type: Date, default: Date.now }, // Fecha del movimiento
+      registeredBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User", // Asegúrate que tu modelo de usuarios se llame "User"
+        required: false // Esto hace que no sea obligatorio
+      }
     }
   ]
 }, {

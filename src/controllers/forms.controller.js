@@ -24,7 +24,7 @@ const getForms = async (req, res) => {
 };
 // Get Dashboard Cards by Category///////////////////////////////////////////////////////////////////////////////////////////////
 const getDashboardById = async (req, res) => {
-  const foundForms = await Forms.find({ dashboard: { $in: req.params.formsId } }).populate({ path: "dashboard", select: "name" })
+  const foundForms = await Forms.find({ dashboard: { $in: req.params.formsId } }).populate({ path: "dashboard", select: "name" }).sort({ pos: 1 })
   res.status(200).json({ status: "200", message: "Forms Loaded", body: foundForms });
 };
 //Mostrar forms de general //////////////////////////////////////////////////////////////////////////////////////////////////////

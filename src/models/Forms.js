@@ -5,6 +5,8 @@ const formsSchema = new mongoose.Schema(
     name: String,
     description: String,
     back: String,
+    path: String,
+    pos: Number,
     dashboard: [
       {
         ref: "Dashboard",

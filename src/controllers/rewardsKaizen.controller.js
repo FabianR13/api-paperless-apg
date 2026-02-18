@@ -12,15 +12,15 @@ const getNextConsecutive = async (category) => {
 
 const createReward = async (req, res) => {
   try {
-    const { name, description, category, stock, username } = req.body; // username viene del front (usuario logueado)
+    const { name, description, category, stock, username } = req.body; 
 
-    // 1. Imagen
+    // Imagen
     let imageKey = "";
     if (req.files && req.files["rewardImage"] && req.files["rewardImage"].length > 0) {
       imageKey = req.files["rewardImage"][0].key;
     }
 
-    // 2. Calcular Consecutivo
+    // Calcular Consecutivo
     const { num, full } = await getNextConsecutive(category);
 
     const newReward = new RewardsKaizen({
@@ -45,7 +45,6 @@ const createReward = async (req, res) => {
 
 const getRewards = async (req, res) => {
   try {
-    // Traemos todos (puedes filtrar por isActive: true si prefieres)
     const rewards = await RewardsKaizen.find({});
     res.status(200).json({ status: "200", body: rewards });
   } catch (error) {
@@ -55,10 +54,10 @@ const getRewards = async (req, res) => {
 
 const updateReward = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { RewardId } = req.params;
     const { name, description, category, stock, isActive, username } = req.body;
 
-    const rewardToUpdate = await RewardsKaizen.findById(id);
+    const rewardToUpdate = await RewardsKaizen.findById(RewardId);
     if (!rewardToUpdate) return res.status(404).json({ message: "No encontrado" });
 
     // Si cambió la categoría, recalcular consecutivo

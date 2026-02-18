@@ -6,6 +6,10 @@ const Employees = require("../models/Employees.js");
 const Deparment = require("../models/Deparment.js");
 const Suggestion = require("../models/Suggestion.js");
 const KaizenPoints = require("../models/KaizenPoints");
+const User = require("../models/User.js");
+const RewardsKaizen = require("../models/RewardsKaizen.js");
+const KaizenPointsRedeem = require("../models/KaizenPointsRedeem.js");
+const KaizenInvestigations = require("../models/KaizenInvestigations.js")
 AWS.config.update({
   region: process.env.S3_BUCKET_REGION,
   apiVersion: 'latest',
@@ -16,6 +20,625 @@ AWS.config.update({
 })
 
 const s3 = new AWS.S3();
+const nodemailer = require("nodemailer");
+
+// CREAR NUEVA SUGERENCIA ////////////////////////////////////////////////////////////////////////////////////////////////////////
+const createSuggestion = async (req, res) => {
+  const { CompanyId } = req.params;
+
+  try {
+    const {
+      suggestionTitle,
+      currentMethod,
+      proposedMethod,
+      benefits,
+      partNumber,
+      createdBy,
+      area,
+      createdDate,
+    } = req.body;
+
+    // Procesar la firma
+    let signatureImgKey = "";
+    if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
+      signatureImgKey = req.files["signatureImage"][0].key;
+    }
+
+    // Crear objeto Suggestion
+    const suggestion = new Suggestion({
+      suggestionTitle,
+      currentMethod,
+      proposedMethod,
+      benefits,
+      area,
+      partNumber,
+      createdDate,
+      signatureImg: signatureImgKey
+    });
+
+    // Vincular Relaciones en el objeto Suggestion
+    if (createdBy) {
+      const foundEmployee = await Employees.find({ _id: { $in: createdBy } });
+      suggestion.createdBy = foundEmployee.map((e) => e._id);
+    }
+
+    if (CompanyId) {
+      const foundCompany = await Company.find({ _id: { $in: CompanyId } });
+      suggestion.company = foundCompany.map((c) => c._id);
+    }
+
+    // Generar Consecutivo (APG-SUG-X)
+    const lastSuggestion = await Suggestion.find({
+      company: { $in: CompanyId },
+    }).sort({ consecutive: -1 }).limit(1);
+
+    if (lastSuggestion.length === 0) {
+      suggestion.consecutive = 1;
+      suggestion.idSuggestion = "APG-SUG-1";
+    } else {
+      const nextConsecutive = lastSuggestion[0].consecutive + 1;
+      suggestion.consecutive = nextConsecutive;
+      suggestion.idSuggestion = "APG-SUG-" + nextConsecutive;
+    }
+
+    //  Guardar la Sugerencia en BD
+    await suggestion.save();
+
+    // LOGICA KAIZEN POINTS
+    if (createdBy) {
+      await KaizenPoints.findOneAndUpdate(
+        { employee: createdBy },
+        {
+          $inc: { totalPoints: 20 },
+          $push: {
+            history: {
+              activity: "Sugerencia generada",
+              reference: suggestion.idSuggestion,
+              points: 20,
+              date: new Date()
+            }
+          },
+          $setOnInsert: { company: CompanyId }
+        },
+        {
+          upsert: true,
+          new: true
+        }
+      );
+    }
+
+    res.status(200).json({
+      status: "200",
+      message: "Sugerencia guardada correctamente y puntos asignados",
+      body: suggestion
+    });
+
+  } catch (error) {
+    console.error("Error creating suggestion:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Error al guardar la sugerencia",
+      error: error.message
+    });
+  }
+};
+
+// OBTENER SUGERENCIAS //////////////////////////////////////////////////////////////////////////////////////////////////////
+const getSuggestions = async (req, res) => {
+  const { CompanyId } = req.params
+  if (CompanyId.length !== 24) {
+    return;
+  }
+  const company = await Company.find({
+    _id: { $in: CompanyId },
+  })
+  if (!company) {
+    return;
+  }
+  const suggestions = await Suggestion.find({
+    company: { $in: CompanyId },
+  }).sort({ consecutive: -1 })
+    .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
+    .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+    .populate({
+      path: "investigationId", 
+      select: "-suggestionId", 
+      populate: {
+        path: "q14_advisors", 
+        select: "username employee", 
+        populate: {
+          path: "employee",
+          select: "name lastName" 
+        }
+      }
+    });
+  res.json({ status: "200", message: "Suggestions Loaded", body: suggestions });
+};
+
+// OBTENER PUNTOS DE UN EMPLEADO //////////////////////////////////////////////////////////////////////////////////////////////////////
+const getEmployeePoints = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const pointsRecord = await KaizenPoints.findOne({ employee: employeeId });
+
+    if (!pointsRecord) {
+      return res.status(404).json({ status: "404", message: "No points found" });
+    }
+
+    res.status(200).json({ status: "200", body: pointsRecord });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// FUNCION PARA OBTENER TODOS LOS PUNTOS KAIZEN ////////////////////////////////////////////////////////////////////////////////////////////////////////
+const getKaizenPoints = async (req, res) => {
+  const { CompanyId } = req.params
+  if (CompanyId.length !== 24) {
+    return;
+  }
+  const company = await Company.find({
+    _id: { $in: CompanyId },
+  })
+  if (!company) {
+    return;
+  }
+  const kaizenPoints = await KaizenPoints.find({
+    company: { $in: CompanyId },
+  }).sort({ totalPoints: -1 })
+    .populate({ path: 'employee', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
+  res.json({ status: "200", message: "Kaizen Points Loaded", body: kaizenPoints });
+};
+
+// FUNCION PARA CREAR UN NUEVO REGISTRO DE PUNTOS KAIZEN //////////////////////////////////////////////////////////////////////////////////////////////////////////
+const createNewRegister = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    const { CompanyId } = req.params;
+    const {
+      activity,
+      reference,
+      points,
+      employee
+    } = req.body;
+
+    const foundCompany = await Company.findById(CompanyId);
+    const foundEmployee = await Employees.findById(employee);
+
+    if (!foundCompany) {
+      return res.status(404).json({ status: "error", message: "Compañia no encontrada" });
+    }
+    if (!foundEmployee) {
+      return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
+    }
+
+    await KaizenPoints.findOneAndUpdate(
+      { employee: employee },
+      {
+        $inc: { totalPoints: points },
+        $push: {
+          history: {
+            activity: activity,
+            reference: reference,
+            points: points,
+            date: new Date(),
+            registeredBy: user._id
+          }
+        },
+        $setOnInsert: { company: CompanyId }
+      },
+      {
+        upsert: true,
+        new: true
+      }
+    );
+
+    res.status(200).json({ status: "200", message: 'Nuevo Registro Creado' });
+
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Error al Crear registro", error: error.message });
+  }
+}
+
+// FUNCION PARA MODIFICAR PUNTOS MANUALMENTE ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+const manualPointsUpdate = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    const { CompanyId } = req.params;
+    const { RegisterId } = req.params;
+    const {
+      activity,
+      reference,
+      points,
+      action
+    } = req.body;
+
+    if (!reference || !points || !action) {
+      return res.status(400).json({ status: "error", message: "Faltan datos requeridos (employeeId, points, action)" });
+    }
+
+    const absolutePoints = Math.abs(parseInt(points));
+
+    const finalPoints = action === 'subtract' ? -absolutePoints : absolutePoints;
+
+    const updatedRecord = await KaizenPoints.findOneAndUpdate(
+      { _id: RegisterId },
+      {
+        $inc: { totalPoints: finalPoints },
+        $push: {
+          history: {
+            activity: activity,
+            reference: reference,
+            points: finalPoints,
+            date: new Date(),
+            registeredBy: user._id
+          }
+        },
+        $setOnInsert: { company: CompanyId }
+      },
+      {
+        new: true
+      }
+    );
+
+    res.status(200).json({
+      status: "200",
+      message: action === 'add' ? "Puntos agregados correctamente" : "Puntos descontados correctamente",
+      body: updatedRecord
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Error al actualizar puntos manuales", error: error.message });
+  }
+};
+
+// FUNCION PARA INICIAR CAMBIO DE PUNTOS KAIZEN /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const createNewRedeem = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const {
+      employee,
+      reward,
+      points
+    } = req.body;
+    const currentDate = new Date();
+    const pointsValue = Number(points);
+    if (isNaN(pointsValue)) {
+      return res.status(400).json({ status: "error", message: "El valor de puntos no es válido" });
+    }
+
+    const foundCompany = await Company.findById(CompanyId);
+    const foundEmployee = await Employees.findById(employee);
+    const foundReward = await RewardsKaizen.findById(reward);
+
+    if (!foundCompany) return res.status(404).json({ status: "error", message: "Compañia no encontrada" });
+    if (!foundEmployee) return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
+    if (!foundReward) return res.status(404).json({ status: "error", message: "Premio no encontrado" });
+    if (foundReward.stock <= 0) return res.status(400).json({ status: "error", message: "Premio agotado" });
+
+    const newRedeem = new KaizenPointsRedeem({
+      employee,
+      reward,
+      company: CompanyId,
+      registerDate: currentDate,
+      redeemStatus: "New"
+    });
+
+    await newRedeem.save();
+
+    await KaizenPoints.findOneAndUpdate(
+      { employee: employee },
+      {
+        $inc: { totalPoints: -Math.abs(pointsValue) },
+        $push: {
+          history: {
+            activity: "Cambio de Puntos",
+            reference: "En proceso",
+            points: -Math.abs(pointsValue),
+            date: currentDate
+          }
+        },
+        $setOnInsert: { company: CompanyId }
+      },
+      {
+        upsert: true,
+        new: true
+      }
+    );
+
+    foundReward.stock = foundReward.stock - 1;
+    await foundReward.save();
+
+    // Envio de correo para notificar //
+    try {
+      const transporter = nodemailer.createTransport({
+        host: "smtp.office365.com",
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.MAIL_AUTH_USER,
+          pass: process.env.MAIL_AUTH_PASS
+        }
+      });
+
+      // Formato de fecha legible para el correo
+      const dateString = currentDate.toLocaleDateString('es-MX', {
+        timeZone: 'America/Mexico_City',
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      const mailOptions = {
+        from: '"Sistema Kaizen APG" <paperless@apgmexico.mx>', // Remitente
+        to: "fabian.ramos@apgmexico.mx", // Destinatario fijo
+        subject: `📢 Nuevo Canje de Puntos - ${foundEmployee.name} ${foundEmployee.lastName}`,
+        html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h2 style="color: #401875;">Solicitud de Canje de Puntos</h2>
+                    <p>Se ha registrado una nueva solicitud de canje en el sistema Paperless.</p>
+                    <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Empleado:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${foundEmployee.name} ${foundEmployee.lastName}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Número Empleado:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${foundEmployee.numberEmployee}</td>
+                        </tr>
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Premio Solicitado:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${foundReward.name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Puntos Canjeados:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${points} pts</td>
+                        </tr>
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Fecha:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${dateString}</td>
+                        </tr>
+                    </table>
+                    <p style="margin-top: 20px;">Por favor, verificar stock físico y proceder con la entrega.</p>
+                </div>
+            `
+      };
+
+      // Enviar el correo
+      await transporter.sendMail(mailOptions);
+      console.log("Correo de canje enviado");
+
+    } catch (emailError) {
+      // Si falla el correo
+      console.error("Error enviando correo de canje:", emailError);
+    }
+
+    res.status(200).json({ status: "200", message: 'Cambio de puntos en proceso' });
+
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Error al Crear registro", error: error.message });
+    console.log(error.message)
+  }
+}
+
+// FUNCION PARA OBTENR LOS CANJES DE PUNTOS KAIZEN /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const getRedemptions = async (req, res) => {
+  const { CompanyId } = req.params
+  if (CompanyId.length !== 24) {
+    return;
+  }
+  const company = await Company.find({
+    _id: { $in: CompanyId },
+  })
+  if (!company) {
+    return;
+  }
+  const redemptions = await KaizenPointsRedeem.find({
+    company: { $in: CompanyId },
+  }).sort({ totalPoints: -1 })
+    .populate({ path: 'employee', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
+    .populate({ path: 'reward' })
+    .populate({ path: "processedBy", select: "employee username", populate: { path: "employee", select: "name lastName" } })
+  res.json({ status: "200", message: "Redemptions Loaded", body: redemptions });
+};
+
+// FUNCION PARA ACEPTAR O RECHAZAR CANJE DE PUNTOS //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const completeRedeem = async (req, res) => {
+  try {
+    const { RedemptionId } = req.params;
+    const user = await User.findById(req.userId);
+    const {
+      redeemStatus,
+      points,
+    } = req.body;
+    const currentDate = new Date();
+    let pointsToAdd = 0;
+    let activityText = "";
+    let referenceText = "";
+    let updateStock = false;
+
+    // Procesar la firma
+    let signatureImgKey = "";
+    if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
+      signatureImgKey = req.files["signatureImage"][0].key;
+    }
+
+    const foundRedemption = await KaizenPointsRedeem.findById(RedemptionId);
+    if (!foundRedemption) return res.status(404).json({ status: "error", message: "Rejistro de canje no encontrado" });
+
+    const foundReward = await RewardsKaizen.findById(foundRedemption.reward);
+    if (!foundReward) return res.status(404).json({ status: "error", message: "Premio no encontrado" });
+
+    let updateData = {
+      $set: {
+        redeemStatus: redeemStatus,
+        signatureImage: signatureImgKey,
+        processedBy: user._id,
+      }
+    };
+
+    if (redeemStatus === "Rejected") {
+      updateData.$set.cancelDate = currentDate;
+    } else {
+      updateData.$set.redeemDate = currentDate;
+    }
+
+    await KaizenPointsRedeem.findOneAndUpdate(
+      { _id: RedemptionId },
+      updateData,
+      {
+        new: true
+      }
+    );
+
+    if (redeemStatus === "Rejected") {
+      pointsToAdd = Math.abs(points);
+      activityText = "Premio Rechazado";
+      referenceText = "Reemboso de puntos";
+      updateStock = true;
+    } else {
+      pointsToAdd = 0;
+      activityText = "Cambio Completado";
+      referenceText = foundReward.name;
+      updateStock = false;
+    }
+
+    await KaizenPoints.findOneAndUpdate(
+      { employee: foundRedemption.employee._id },
+      {
+        $inc: { totalPoints: pointsToAdd },
+        $push: {
+          history: {
+            activity: activityText,
+            reference: referenceText,
+            points: pointsToAdd,
+            date: currentDate,
+          }
+        },
+      },
+      { new: true }
+    );
+
+    if (updateStock) {
+      foundReward.stock = foundReward.stock + 1;
+      await foundReward.save();
+    }
+
+    res.status(200).json({ status: "200", message: 'Cambio de puntos completado' });
+
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Error al Crear registro", error: error.message });
+  }
+}
+
+// SUBIR UNA INVESTIGACION DE UNA SUGERENCIA ////////////////////////////////////////////////////////////////////////////////////////////////////////
+const createInvestigation = async (req, res) => {
+  try {
+    const { suggestionId } = req.params;
+    const body = req.body;
+
+    const existingSuggestion = await Suggestion.findById(suggestionId);
+
+    if (!existingSuggestion) {
+      return res.status(404).json({
+        status: "404",
+        message: "No se encontró la sugerencia especificada. No se puede crear la investigación."
+      });
+    }
+
+    const files = req.files || {};
+
+    const processSignatureData = (rolePrefix, fileFieldName) => {
+      const uploadedFiles = files[fileFieldName];
+      const hasFile = uploadedFiles && uploadedFiles.length > 0;
+
+      let data = {
+        [`${rolePrefix}Name`]: body[`${rolePrefix}Name`] || null,
+      };
+
+      if (hasFile) {
+        data[`${rolePrefix}SignatureUrl`] = uploadedFiles[0].key;
+        data[`${rolePrefix}Date`] = new Date();
+      } else {
+        data[`${rolePrefix}SignatureUrl`] = null;
+        data[`${rolePrefix}Date`] = null;
+      }
+
+      return data;
+    };
+
+    const advisorSigData = processSignatureData('advisor', 'advisorSignature');
+    const managerSigData = processSignatureData('manager', 'managerSignature');
+    const topManagerSigData = processSignatureData('topManager', 'topManagerSignature');
+
+    let parsedAdvisors = [];
+
+    if (body.q14_advisors) {
+      if (Array.isArray(body.q14_advisors)) {
+        parsedAdvisors = body.q14_advisors;
+      } else if (typeof body.q14_advisors === 'string') {
+        parsedAdvisors = body.q14_advisors.split(',').map(id => id.trim()).filter(id => id !== '');
+      }
+    }
+
+    if (parsedAdvisors.length > 0) {
+      const foundUsers = await User.find({
+        _id: { $in: parsedAdvisors },
+      });
+      parsedAdvisors = foundUsers.map((user) => user._id);
+    }
+
+    const investigationData = {
+      ...body,
+      suggestionId: suggestionId,
+      investigationStatus: body.investigationStatus || "Pending",
+      q14_advisors: parsedAdvisors,
+      ...advisorSigData,
+      ...managerSigData,
+      ...topManagerSigData
+    };
+
+    const newInvestigation = new KaizenInvestigations(investigationData);
+    const savedInvestigation = await newInvestigation.save();
+
+    existingSuggestion.investigationId = savedInvestigation._id;
+    await existingSuggestion.save();
+
+    return res.status(200).json({
+      status: "200",
+      message: "Investigación creada exitosamente",
+      data: savedInvestigation
+    });
+
+  } catch (error) {
+    console.error("Error createInvestigation:", error);
+    return res.status(500).json({
+      status: "500",
+      message: "Error interno",
+      error: error.message
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //Create new kaizen/////////////////////////////////////////////////////////////////////////////////////////////////////////
 const createKaizen = async (req, res) => {
@@ -591,152 +1214,22 @@ const deleteKaizen = async (req, res) => {
 };
 
 
-//Crear sugerencia nueva
-const createSuggestion = async (req, res) => {
-  const { CompanyId } = req.params;
 
-  try {
-    const {
-      suggestionTitle,
-      currentMethod,
-      proposedMethod,
-      benefits,
-      partNumber,
-      createdBy, // ID del empleado que viene del Frontend
-      area, 
-      createdDate,
-    } = req.body;
 
-    // 1. Procesar la firma
-    let signatureImgKey = "";
-    if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
-      signatureImgKey = req.files["signatureImage"][0].key;
-    }
 
-    // 2. Crear objeto Suggestion
-    const suggestion = new Suggestion({
-      suggestionTitle,
-      currentMethod,
-      proposedMethod,
-      benefits,
-      area,
-      partNumber,
-      createdDate,
-      signatureImg: signatureImgKey
-    });
 
-    // 3. Vincular Relaciones en el objeto Suggestion
-    if (createdBy) {
-      const foundEmployee = await Employees.find({ _id: { $in: createdBy } });
-      suggestion.createdBy = foundEmployee.map((e) => e._id);
-    }
 
-    if (CompanyId) {
-      const foundCompany = await Company.find({ _id: { $in: CompanyId } });
-      suggestion.company = foundCompany.map((c) => c._id);
-    }
 
-    // 4. Generar Consecutivo (APG-SUG-X)
-    const lastSuggestion = await Suggestion.find({
-      company: { $in: CompanyId },
-    }).sort({ consecutive: -1 }).limit(1);
 
-    if (lastSuggestion.length === 0) {
-      suggestion.consecutive = 1;
-      suggestion.idSuggestion = "APG-SUG-1";
-    } else {
-      const nextConsecutive = lastSuggestion[0].consecutive + 1;
-      suggestion.consecutive = nextConsecutive;
-      suggestion.idSuggestion = "APG-SUG-" + nextConsecutive;
-    }
 
-    // 5. Guardar la Sugerencia en BD
-    await suggestion.save();
 
-    // ---------------------------------------------------------
-    // 6. LOGICA KAIZEN POINTS (Nuevo o Actualización)
-    // ---------------------------------------------------------
-    if (createdBy) {
-      await KaizenPoints.findOneAndUpdate(
-        { employee: createdBy }, // Busca por ID de empleado
-        {
-          // $inc: Incrementa el total en 20 puntos
-          $inc: { totalPoints: 20 },
-          
-          // $push: Agrega el movimiento al historial
-          $push: {
-            history: {
-              activity: "Sugerencia generada",
-              reference: suggestion.idSuggestion, // Ej: APG-SUG-5
-              points: 20,
-              date: new Date()
-            }
-          },
-          
-          // $setOnInsert: Solo asigna la compañía si el documento es NUEVO
-          $setOnInsert: { company: CompanyId }
-        },
-        { 
-          upsert: true, // Crea el documento si no existe
-          new: true     // Devuelve el documento actualizado (opcional)
-        }
-      );
-    }
-    // ---------------------------------------------------------
 
-    res.status(200).json({
-      status: "200",
-      message: "Sugerencia guardada correctamente y puntos asignados",
-      body: suggestion
-    });
 
-  } catch (error) {
-    console.error("Error creating suggestion:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Error al guardar la sugerencia",
-      error: error.message
-    });
-  }
-};
 
-const getEmployeePoints = async (req, res) => {
-  try {
-    const { employeeId } = req.params;
 
-    const pointsRecord = await KaizenPoints.findOne({ employee: employeeId });
 
-    if (!pointsRecord) {
-      // Si no existe, devolvemos 404 para manejarlo en el front
-      return res.status(404).json({ status: "404", message: "No points found" });
-    }
 
-    res.status(200).json({ status: "200", body: pointsRecord });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: "error", message: error.message });
-  }
-};
 
-// Getting all Suggestions//////////////////////////////////////////////////////////////////////////////////////////////////////
-const getSuggestions = async (req, res) => {
-  const { CompanyId } = req.params
-  if (CompanyId.length !== 24) {
-    return;
-  }
-  const company = await Company.find({
-    _id: { $in: CompanyId },
-  })
-  if (!company) {
-    return;
-  }
-  const suggestions = await Suggestion.find({
-    company: { $in: CompanyId },
-  }).sort({ consecutive: -1 })
-    .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
-    .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
-  res.json({ status: "200", message: "Suggestions Loaded", body: suggestions });
-};
 
 module.exports = {
   createKaizen,
@@ -749,5 +1242,12 @@ module.exports = {
   deleteKaizen,
   createSuggestion,
   getEmployeePoints,
-  getSuggestions
+  getSuggestions,
+  getKaizenPoints,
+  createNewRegister,
+  manualPointsUpdate,
+  createNewRedeem,
+  getRedemptions,
+  completeRedeem,
+  createInvestigation
 };
