@@ -16,7 +16,7 @@ const getAutomationDevices = async (req, res) => {
         return;
     }
     const automationDevices = await AutomationDevice.find({
-        company: { $in: CompanyId }
+        company: CompanyId,
     }).sort({ cretaedAt: -1 })
         .populate({ path: "customer" });
 

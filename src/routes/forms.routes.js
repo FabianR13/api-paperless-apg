@@ -93,4 +93,13 @@ router.get(
   getDashboardById
 );
 
+///Route forms in Reports dashboard///
+router.get(
+  "/Reports/:formsId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isAdmin,
+  getDashboardById
+);
+
 module.exports = router;

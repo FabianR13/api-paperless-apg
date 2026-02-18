@@ -333,6 +333,9 @@ const signIn = async (req, res) => {
     if (roles[i].name === "DeviceAdministrator") {
       userAccessApg[52] = "true";
     }
+    if (roles[i].name === "KaizenAdviser") {
+      userAccessApg[53] = "true";
+    }
   }
   //Crear variable con los roles que tiene en axiom
   for (let i = 0; i < rolesAxiom.length; i++) {
