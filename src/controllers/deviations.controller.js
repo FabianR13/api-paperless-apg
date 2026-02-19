@@ -219,7 +219,7 @@ const getDeviations = async (req, res) => {
 
         const deviations = await Deviation.find({
             company: { $in: CompanyId },
-            version: 1
+            version: 2
         })
             .sort({ createdAt: -1 })
 
