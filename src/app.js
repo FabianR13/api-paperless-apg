@@ -93,6 +93,7 @@ const minutaRoutes = require("./routes/minuta.routes.js")
 const errorProfingRoutes = require("./routes/errorProofing.routes.js")
 const evaluationsRoutes = require("./routes/evaluations.routes.js")
 const automationDevicesRoutes = require("./routes/automationDevices.routes.js")
+const reportsRoutes = require("./routes/report.routes.js")
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -162,6 +163,7 @@ app.use("/api/minuta", minutaRoutes);
 app.use("/api/errorproofing", errorProfingRoutes);
 app.use("/api/evaluations", evaluationsRoutes);
 app.use("/api/automationDevices", automationDevicesRoutes);
+app.use("/api/reports", reportsRoutes);
 
 //setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
