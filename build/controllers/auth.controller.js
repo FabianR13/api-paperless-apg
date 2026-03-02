@@ -228,11 +228,11 @@ const signIn = async (req, res) => {
       userAccessApg[4] = "true";
     }
 
-    if (roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
+    if (roles[i].name === "QualityASIns") {
       userAccessApg[5] = "true";
     }
 
-    if (roles[i].name === "QualityASEng" || roles[i].name === "QualityASIns") {
+    if (roles[i].name === "QualityASEng") {
       userAccessApg[6] = "true";
     }
 
@@ -252,7 +252,7 @@ const signIn = async (req, res) => {
       userAccessApg[10] = "true";
     }
 
-    if (roles[i].name === "DeviationR" || roles[i].name === "admin") {
+    if (roles[i].name === "DeviationR" || roles[i].name === "admin" || roles[i].name === "ProductionSign" || roles[i].name === "ProcessSign" || roles[i].name === "AutomationSign" || roles[i].name === "CloseDeviation" || roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng" || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement") {
       userAccessApg[11] = "true";
     }
 
@@ -400,7 +400,7 @@ const signIn = async (req, res) => {
       userAccessApg[47] = "true";
     }
 
-    if (roles[i].name === "ErrorPCreator") {
+    if (roles[i].name === "ErrorPCreator" || roles[i].name === "DeviceAdministrator") {
       userAccessApg[48] = "true";
     }
 
@@ -408,8 +408,28 @@ const signIn = async (req, res) => {
       userAccessApg[49] = "true";
     }
 
-    if (roles[i].name === "ErrorPReader") {
+    if (roles[i].name === "ErrorPReader" || roles[i].name === "ErrorPCreator" || roles[i].name === "ErrorPValidatorA" || roles[i].name === "DeviceAdministrator") {
       userAccessApg[50] = "true";
+    }
+
+    if (roles[i].name === "SMCoordinator") {
+      userAccessApg[51] = "true";
+    }
+
+    if (roles[i].name === "DeviceAdministrator") {
+      userAccessApg[52] = "true";
+    }
+
+    if (roles[i].name === "KaizenAdviser") {
+      userAccessApg[53] = "true";
+    }
+
+    if (roles[i].name === "DailyAuditCreate") {
+      userAccessApg[54] = "true";
+    }
+
+    if (roles[i].name === "DailyAuditAdministrator") {
+      userAccessApg[55] = "true";
     }
   } //Crear variable con los roles que tiene en axiom
 
@@ -807,7 +827,8 @@ const saveTokenPush = async (req, res) => {
     const {
       tokenPush,
       isSupplier,
-      isErrorProofingInteres
+      isErrorProofingInteres,
+      isCoordinator
     } = req.body;
 
     if (!tokenPush) {
@@ -828,6 +849,10 @@ const saveTokenPush = async (req, res) => {
 
     if (isErrorProofingInteres !== undefined) {
       updateData.isErrorProofingInteres = isErrorProofingInteres;
+    }
+
+    if (isCoordinator !== undefined) {
+      updateData.isCoordinator = isCoordinator;
     } // 2. Ejecuta findOneAndUpdate con los argumentos correctos.
 
 
@@ -871,14 +896,29 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount)
   });
 } // Función para enviar a un solo token
+// const sendPushToToken = async (token) => {
+//   const message = {
+//     token,
+//     notification: {
+//       title: "Nuevo pedido creado",
+//       body: "Se ha generado un nuevo pedido en la plataforma.",
+//     },
+//   };
+//   try {
+//     const response = await admin.messaging().send(message);
+//     console.log("✅ Notificación enviada a:", token);
+//   } catch (error) {
+//     console.error("❌ Error al enviar a:", token, error.message);
+//   }
+// };
 
 
-const sendPushToToken = async token => {
+const sendPushToToken = async (token, title, body) => {
   const message = {
     token,
     notification: {
-      title: "Nuevo pedido creado",
-      body: "Se ha generado un nuevo pedido en la plataforma."
+      title: title,
+      body: body
     }
   };
 
@@ -888,24 +928,64 @@ const sendPushToToken = async token => {
   } catch (error) {
     console.error("❌ Error al enviar a:", token, error.message);
   }
-}; // Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
+}; // --- NUEVO ENDPOINT GENÉRICO ---
+// Ruta sugerida: /auth/enviarNotificacionPush
 
 
-const notificarSuppliers = async (req, res) => {
+const enviarNotificacionPush = async (req, res) => {
+  // Ahora esperamos "tokens" (array de strings), "title" y "body"
+  const {
+    tokens,
+    title,
+    body
+  } = req.body;
+
+  if (!Array.isArray(tokens) || tokens.length === 0) {
+    // No devolvemos error 400 si no hay tokens, simplemente no hacemos nada (es válido que no haya destinatarios)
+    return res.status(200).json({
+      message: "No hay tokens destinatarios."
+    });
+  }
+
+  if (!title || !body) {
+    return res.status(400).json({
+      message: "Faltan title o body."
+    });
+  }
+
+  console.log(`📨 Enviando notificación '${title}' a ${tokens.length} dispositivos.`); // Enviamos mensaje a la lista de tokens recibida
+
+  await Promise.all(tokens.map(tokenString => sendPushToToken(tokenString, title, body)));
+  return res.status(200).json({
+    message: "Notificaciones enviadas."
+  });
+}; //Devolucion iniciada notificacion
+
+
+const notificarInicioDevolucion = async (req, res) => {
   const {
     pushTokens
   } = req.body;
+  if (!Array.isArray(pushTokens)) return res.status(400).json({
+    message: "pushTokens debe ser un array"
+  });
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token); // Enviamos mensaje de DEVOLUCIÓN INICIADA
 
-  if (!Array.isArray(pushTokens)) {
-    return res.status(400).json({
-      message: "pushTokens debe ser un array"
-    });
-  } // 🔍 Filtrar proveedores
+  await Promise.all(supplierTokens.map(p => sendPushToToken(p.token, "Devolución Iniciada 🟡", "Se ha iniciado una devolución. Pendiente de confirmación.")));
+  return res.sendStatus(204);
+}; //Notificaciion de confirmacion de devolucion
 
 
-  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token); // 🔁 Enviar notificaciones
+const notificarConfirmacionDevolucion = async (req, res) => {
+  const {
+    pushTokens
+  } = req.body;
+  if (!Array.isArray(pushTokens)) return res.status(400).json({
+    message: "pushTokens debe ser un array"
+  });
+  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token); // Enviamos mensaje de DEVOLUCIÓN CONFIRMADA
 
-  await Promise.all(supplierTokens.map(p => sendPushToToken(p.token)));
+  await Promise.all(supplierTokens.map(p => sendPushToToken(p.token, "Devolución Confirmada 🟠", "Se ha confirmado una devolución. Requiere validación.")));
   return res.sendStatus(204);
 }; // Función para enviar a un solo token
 
@@ -1023,7 +1103,9 @@ module.exports = {
   saveTokenPush,
   getTokensPush,
   sendPushToToken,
-  notificarSuppliers,
+  enviarNotificacionPush,
   notificarCancelacion,
-  notifyInteresErrorProofing
+  notifyInteresErrorProofing,
+  notificarInicioDevolucion,
+  notificarConfirmacionDevolucion
 };

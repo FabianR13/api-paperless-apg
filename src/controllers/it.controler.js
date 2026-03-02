@@ -1098,42 +1098,108 @@ const uploadAccountsLetter = async (req, res) => {
 
 // Getting all Accounts/////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDirectory = async (req, res) => {
-    const { CompanyId } = req.params
+    const { CompanyId } = req.params;
 
     if (CompanyId.length !== 24) {
-        return;
+        return res.status(400).json({ status: "400", message: "ID de compañía inválido" });
     }
-    const company = await Company.find({
-        _id: { $in: CompanyId },
-    })
 
+    const company = await Company.findById(CompanyId).lean();
     if (!company) {
-        return;
+        return res.status(404).json({ status: "404", message: "Compañía no encontrada" });
     }
 
-    const cellphones = await Cellphones.find({
-        company: { $in: CompanyId },
-        number: { $ne: null }
-    }).sort({ createdAt: -1 })
-        .select("cellphoneName")
-        .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
-        .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
-        .populate({ path: "number" })
-    //res.json({ status: "200", message: "Cellphones Loaded", body: cellphones });
+    const [cellphones, accounts] = await Promise.all([
+        Cellphones.find({
+            company: CompanyId,
+            // Como 'number' es un arreglo, esto asegura que no esté vacío
+            number: { $exists: true, $not: { $size: 0 } }
+        })
+            .sort({ createdAt: -1 })
+            .select("cellphoneName responsibleAlt") // Agregamos responsibleAlt por si es "Stock"
+            .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+            .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+            .populate({ path: "number" })
+            .lean(),
+
+        Accounts.find({
+            company: CompanyId,
+            status: "Active",
+            email: { $ne: "" }
+        })
+            .sort({ email: 1 })
+            .select("ext email responsibleAlt")
+            .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+            .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+            .lean()
+    ]);
+
+    const directoryMap = new Map();
+
+    // Función para obtener un ID único de agrupación, extrayendo el primer elemento del arreglo
+    const getEntityId = (item) => {
+        if (item.responsible && item.responsible.length > 0) return item.responsible[0]._id.toString();
+        if (item.responsibleGroup && item.responsibleGroup.length > 0) return item.responsibleGroup[0]._id.toString();
+        if (item.responsibleAlt) return item.responsibleAlt; // Agrupa por "Stock" u otros textos
+        return item._id.toString(); // Fallback
+    };
+
+    // Función para extraer los datos limpios del responsable para el frontend
+    const getResponsibleData = (item) => {
+        if (item.responsible && item.responsible.length > 0) return item.responsible[0];
+        if (item.responsibleGroup && item.responsibleGroup.length > 0) return item.responsibleGroup[0];
+        return { isAlt: true, name: item.responsibleAlt || "Sin asignar" };
+    };
+
+    // 2. Procesar Cellphones
+    cellphones.forEach(phone => {
+        const phoneNumberInfo = phone.number && phone.number.length > 0 ? phone.number[0] : null;
+
+        if (phoneNumberInfo && String(phoneNumberInfo.number).startsWith('5')) {
+            return;
+        }
+
+        const entityId = getEntityId(phone);
+
+        if (!directoryMap.has(entityId)) {
+            directoryMap.set(entityId, {
+                responsible: getResponsibleData(phone),
+                accounts: [],
+                cellphones: []
+            });
+        }
+
+        directoryMap.get(entityId).cellphones.push({
+            _id: phone._id,
+            cellphoneName: phone.cellphoneName,
+            numberData: phoneNumberInfo
+        });
+    });
 
 
-    const Directory = await Accounts.find({
-        company: { $in: CompanyId },
-        status: { $in: "Active" },
-        email: { $ne: "" }
-    }).sort({ email: 1 })
-        .select("ext email")
-        .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
-        .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
+    // 1. Procesar Accounts
+    accounts.forEach(account => {
+        const entityId = getEntityId(account);
 
-    Directory.push(cellphones)
+        if (!directoryMap.has(entityId)) {
+            directoryMap.set(entityId, {
+                responsible: getResponsibleData(account),
+                accounts: [],
+                cellphones: []
+            });
+        }
 
-    res.json({ status: "200", message: "Accounts Loaded", body: Directory });
+        directoryMap.get(entityId).accounts.push({
+            _id: account._id,
+            email: account.email,
+            ext: account.ext
+        });
+    });
+
+
+    const unifiedDirectory = Array.from(directoryMap.values());
+
+    res.json({ status: "200", message: "Directorio cargado correctamente", body: unifiedDirectory });
 };
 
 //create deviation request//////////////////////////////////////////////////////////////////////////////////////

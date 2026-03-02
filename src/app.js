@@ -94,6 +94,7 @@ const errorProfingRoutes = require("./routes/errorProofing.routes.js")
 const evaluationsRoutes = require("./routes/evaluations.routes.js")
 const automationDevicesRoutes = require("./routes/automationDevices.routes.js")
 const reportsRoutes = require("./routes/report.routes.js")
+const dailyAuditsRoutes = require("./routes/dailyAudits.routes.js")
 
 //// Calling Middlewares
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -164,6 +165,7 @@ app.use("/api/errorproofing", errorProfingRoutes);
 app.use("/api/evaluations", evaluationsRoutes);
 app.use("/api/automationDevices", automationDevicesRoutes);
 app.use("/api/reports", reportsRoutes);
+app.use("/api/dailyAudits",dailyAuditsRoutes);
 
 //setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);

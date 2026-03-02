@@ -14,6 +14,10 @@ const pushTokenSchema = new mongoose.Schema({
   isErrorProofingInteres: {
     type: Boolean,
     default: false
+  },
+  isCoordinator: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

@@ -21,6 +21,8 @@ const mongoose = require("mongoose"); // const sslRedirect = require('heroku-ssl
 require("dotenv").config(); // Configuración básica (permitir todas las solicitudes)
 
 
+const cron = require('node-cron');
+
 app.use(cors()); // Configuración avanzada (especificar orígenes permitidos)
 
 const corsOptions = {
@@ -87,21 +89,21 @@ const authRoutes = require("./routes/auth.routes.js");
 
 const userRouter = require("./routes/user.routes.js");
 
-const kaizenRoutes = require("./routes/Others/kaizen.routes.js");
+const kaizenRoutes = require("./routes/kaizen.routes.js");
 
 const employeesRoutes = require("./routes/employees.routes.js");
 
-const deviationRoutes = require("./routes/General/deviation.routes.js");
+const deviationRoutes = require("./routes/deviation.routes.js");
 
-const partsRoutes = require("./routes/Quality/parts.routes.js");
+const partsRoutes = require("./routes/parts.routes.js");
 
-const customersRoutes = require("./routes/General/customer.routes.js");
+const customersRoutes = require("./routes/customer.routes.js");
 
-const validationSettingsRoutes = require("./routes/General/validationSettings.routes.js");
+const validationSettingsRoutes = require("./routes/validationSettings.routes.js");
 
-const trainingRoutes = require("./routes/Others/training.routes.js");
+const trainingRoutes = require("./routes/training.routes.js");
 
-const PersonalRequisition = require("./routes/General/personalRequisition.routes.js");
+const PersonalRequisition = require("./routes/personalRequisition.routes.js");
 
 const whatsappRoutes = require("./routes/whatsapp.routes.js");
 
@@ -109,17 +111,21 @@ const itRoutes = require("./routes/it.routes.js");
 
 const encuestasRoutes = require("./routes/encuestas.routes.js");
 
-const processRoutes = require("./routes/Setup/process.routes.js");
+const processRoutes = require("./routes/process.routes.js");
 
-const supermarketRoutes = require("./routes/Production/supermarket.routes.js");
+const supermarketRoutes = require("./routes/supermarket.routes.js");
 
-const minutaRoutes = require("./routes/General/minuta.routes.js");
+const minutaRoutes = require("./routes/minuta.routes.js");
 
-const errorProfingRoutes = require("./routes/General/errorProofing.routes.js");
+const errorProfingRoutes = require("./routes/errorProofing.routes.js");
 
-const evaluationsRoutes = require("./routes/Others/evaluations.routes.js");
+const evaluationsRoutes = require("./routes/evaluations.routes.js");
 
-const automationDevicesRoutes = require("./routes/Automation/automationDevices.routes.js"); //// Calling Middlewares
+const automationDevicesRoutes = require("./routes/automationDevices.routes.js");
+
+const reportsRoutes = require("./routes/report.routes.js");
+
+const dailyAuditsRoutes = require("./routes/dailyAudits.routes.js"); //// Calling Middlewares
 
 
 const sendEmailMiddleware = require("./middlewares/mailer");
@@ -127,7 +133,11 @@ const sendEmailMiddleware = require("./middlewares/mailer");
 const {
   autoSendMessage,
   autoSendEmail
-} = require("./controllers/whatsapp.controller.js"); //Primer inicio de API/////
+} = require("./controllers/whatsapp.controller.js");
+
+const {
+  autoSendDeviationAlerts
+} = require("./controllers/emailNotification.controller.js"); //Primer inicio de API/////
 // createCompanys();
 // createDashboard();
 // createRoles();
@@ -190,8 +200,16 @@ app.use("/api/minuta", minutaRoutes);
 app.use("/api/errorproofing", errorProfingRoutes);
 app.use("/api/evaluations", evaluationsRoutes);
 app.use("/api/automationDevices", automationDevicesRoutes);
-setInterval(autoSendEmail, 3600000); //Tiempo de ejecucion de 1Hora
+app.use("/api/reports", reportsRoutes);
+app.use("/api/dailyAudits", dailyAuditsRoutes); //setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
+// cron.schedule('06 18 * * *', () => { // 0 8 donde 0 son los minutos y 8 la hora
+//   console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones");
+//   autoSendDeviationAlerts();
+// }, {
+//   scheduled: true,
+//   timezone: "America/Mexico_City" 
+// });
 
 const date = new Date();
 const horaActual = date.getHours(); //console.log(horaActual)

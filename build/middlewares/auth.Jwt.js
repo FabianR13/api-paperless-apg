@@ -561,6 +561,11 @@ const isKaizenR = async (req, res, next) => {
         next();
         return;
       }
+
+      if (roles[i].name === "KaizenAdviser") {
+        next();
+        return;
+      }
     }
   }
 
@@ -1093,6 +1098,46 @@ const isDeviationR = async (req, res, next) => {
         next();
         return;
       }
+
+      if (roles[i].name === "QualityASEng") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "QualityASIns") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "QualityASGer") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "SeniorManagement") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ProductionSign") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ProcessSign") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "AutomationSign") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "CloseDeviation") {
+        next();
+        return;
+      }
     }
   }
 
@@ -1112,6 +1157,148 @@ const isDeviationR = async (req, res, next) => {
 
   return res.status(403).json({
     message: "Deviation Role Required",
+    status: "403"
+  });
+}; //Validar que tenbga permisos para aprovar
+
+
+const isDeviationValidator = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "QualityASEng") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "QualityASIns") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "QualityASGer") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "DeviationR") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "You are not authorized to validate or reject a deviation",
+    status: "403"
+  });
+}; //Validar que tenbga permisos para firmar
+
+
+const isDeviationManager = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "QualityASGer") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ProductionSign") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "AutomationSign") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "SeniorManagement") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ProcessSign") {
+        next();
+        return;
+      }
+    }
+  } // if (Access.company[0].name === "Axiom") {
+  //   for (let i = 0; i < rolesAxiom.length; i++) {
+  //     if (rolesAxiom[i].name === "admin") {
+  //       next();
+  //       return;
+  //     }
+  //     if (rolesAxiom[i].name === "DeviationR") {
+  //       next();
+  //       return;
+  //     }
+  //   }
+  // }
+
+
+  return res.status(403).json({
+    message: "You are not authorized to sign a deviation",
     status: "403"
   });
 }; // Verify TraininT (Create)///////////////////////////////////////////////////////////////////////////////////////////
@@ -1602,7 +1789,7 @@ const isSMReader = async (req, res, next) => {
         return;
       }
 
-      if (roles[i].name === "SMReader" || roles[i].name === "SMCreator" || roles[i].name === "SMSupplier" || roles[i].name === "SMAdministrator") {
+      if (roles[i].name === "SMReader" || roles[i].name === "SMCreator" || roles[i].name === "SMSupplier" || roles[i].name === "SMAdministrator" || roles[i].name === "SMCoordinator") {
         next();
         return;
       }
@@ -1777,6 +1964,11 @@ const isSMSupplier = async (req, res, next) => {
         next();
         return;
       }
+
+      if (roles[i].name === "SMCoordinator") {
+        next();
+        return;
+      }
     }
   }
 
@@ -1912,6 +2104,269 @@ const isManagementR = async (req, res, next) => {
     message: "Rol ManagementR requerido",
     status: "403"
   });
+}; //Verificar que el usuario tenga permiso para modificar dispositivos de automatizacion
+
+
+const isDeviceAdministrator = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol DeviceAdministrator requerido",
+    status: "403"
+  });
+}; //Verificar que el usuario tenga permiso para verel apartado de Error Proofing
+
+
+const isEPReader = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ErrorPReader") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ErrorPCreator") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ErrorPValidatorA") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ErrorPValidatorP") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol DeviceAdministrator requerido",
+    status: "403"
+  });
+}; // VERIFICAR QUE EL USUARIO PUEDA CREAR ERROR PROOFING //
+
+
+const isEPCreator = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ErrorPCreator") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ErrorPValidatorA") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "ErrorPValidatorP") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "DeviceAdministrator") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Rol DeviceAdministrator requerido",
+    status: "403"
+  });
+}; // Verify que tenga el rol de Adviser //////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const isKaizenAdviser = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({
+    _id: {
+      $in: user.roles
+    }
+  });
+  const rolesAxiom = await Role.find({
+    _id: {
+      $in: user.rolesAxiom
+    }
+  });
+  const Access = [];
+  const {
+    CompanyId
+  } = req.params;
+  Access.company = await Company.find({
+    _id: {
+      $in: CompanyId
+    }
+  });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (roles[i].name === "KaizenAdviser") {
+        next();
+        return;
+      }
+    }
+  }
+
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+
+      if (rolesAxiom[i].name === "KaizenAdviser") {
+        next();
+        return;
+      }
+    }
+  }
+
+  return res.status(403).json({
+    message: "Kaizen Adviser Role Required",
+    status: "403"
+  });
 };
 
 module.exports = {
@@ -1947,5 +2402,11 @@ module.exports = {
   isSMCreator,
   isSMSupplier,
   isCreateMinuta,
-  isManagementR
+  isManagementR,
+  isDeviationValidator,
+  isDeviationManager,
+  isDeviceAdministrator,
+  isEPReader,
+  isEPCreator,
+  isKaizenAdviser
 };

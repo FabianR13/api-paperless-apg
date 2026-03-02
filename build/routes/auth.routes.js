@@ -18,10 +18,12 @@ const {
   getAccess,
   getTokensPush,
   saveTokenPush,
-  notificarSuppliers,
   sendPushToToken,
   notificarCancelacion,
-  notifyInteresErrorProofing
+  notifyInteresErrorProofing,
+  notificarInicioDevolucion,
+  notificarConfirmacionDevolucion,
+  enviarNotificacionPush
 } = require("../controllers/auth.controller.js");
 
 const {
@@ -69,7 +71,9 @@ router.post("/tokenPush", saveTokenPush); //Obtener pushtokes
 
 router.get("/getTokenPush", getTokensPush); //guardar pushtoken
 
-router.post("/notificarSuppliers", notificarSuppliers);
+router.post("/enviarNotificacionPush", enviarNotificacionPush);
 router.post("/notificarCancelacion", notificarCancelacion);
 router.post("/notifyErrorInteres/:TypeNotification/:ErrorProofing", notifyInteresErrorProofing);
+router.post("/notificarInicioDevolucion", notificarInicioDevolucion);
+router.post("/notificarConfirmacionDevolucion", notificarConfirmacionDevolucion);
 module.exports = router;

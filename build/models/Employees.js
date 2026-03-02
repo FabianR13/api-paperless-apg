@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+const {
+  Schema,
+  model
+} = mongoose;
 const employeesSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -40,6 +44,36 @@ const employeesSchema = new mongoose.Schema({
   user: {
     type: Boolean
   },
+  discordId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  enrolledCourses: [{
+    courseId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course'
+    },
+    enrolledAt: {
+      type: Date,
+      default: Date.now
+    },
+    progress: {
+      type: Number,
+      default: 0
+    },
+    status: {
+      type: String,
+      default: 'In Progress'
+    },
+    currentPhase: {
+      type: Number,
+      default: 0
+    },
+    completedAt: {
+      type: Date
+    }
+  }],
   company: [{
     ref: "Company",
     type: mongoose.Schema.Types.ObjectId

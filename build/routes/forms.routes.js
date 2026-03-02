@@ -40,5 +40,7 @@ router.get("/Logistics/:formsId/:CompanyId", verifyToken, isAutorized, isLogisti
 
 router.get("/IT/:formsId/:CompanyId", verifyToken, isAutorized, isAdmin, getDashboardById); ///Route forms in IT dashboard///
 
-router.get("/Management/:formsId/:CompanyId", verifyToken, isAutorized, isManagementR, getDashboardById);
+router.get("/Management/:formsId/:CompanyId", verifyToken, isAutorized, isManagementR, getDashboardById); ///Route forms in Reports dashboard///
+
+router.get("/Reports/:formsId/:CompanyId", verifyToken, isAutorized, isAdmin, getDashboardById);
 module.exports = router;

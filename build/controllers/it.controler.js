@@ -26,7 +26,7 @@ const Chromebooks = require("../models/Chromebooks.js");
 
 const Scanners = require("../models/Scanners.js");
 
-const ScheduledService = require("../models/IT/ScheduledService.js");
+const ScheduledService = require("../models/ScheduledService.js");
 
 const {
   differenceInMonths

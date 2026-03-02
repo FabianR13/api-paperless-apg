@@ -46,6 +46,8 @@ const getDashboardById = async (req, res) => {
   }).populate({
     path: "dashboard",
     select: "name"
+  }).sort({
+    pos: 1
   });
   res.status(200).json({
     status: "200",
