@@ -115,6 +115,48 @@ const getDailyAudits = async (req, res) => {
     }
 };
 
+// CAMBIAR DATA DE AUDITORTIA //
+const updateDailyAuditData = async (req, res) => {
+    const { DailyAuditId } = req.params;
+
+    try {
+        const { comments, auditStatus, assignedTo } = req.body;
+
+        const user = await User.findById(assignedTo);
+        if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+        let currentStatus = auditStatus;
+
+        if (comments !== "" && auditStatus !== 'Completed') {
+            currentStatus = "In Process"
+        }
+
+        const updatedDailyAudit = await DailyAudits.findByIdAndUpdate(
+            { _id: DailyAuditId },
+            {
+                $set: {
+                    auditStatus: currentStatus,
+                    comments,
+                    assignedTo
+                }
+            }
+        )
+
+        if (!updatedDailyAudit) {
+            res
+                .status(403)
+                .json({ status: "403", message: "Daily Audit not Updated", body: "" });
+        }
+
+        res
+            .status(200)
+            .json({ status: "200", message: "Daily Audit Updated", body: updatedDailyAudit });
+    } catch (error) {
+        console.error("Error updating status of daily audits", error);
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
 // CAMBIAR STATUS A RETRAZADO //
 const updateDailyAuditStatus = async (req, res) => {
     const { DailyAuditId } = req.params;
@@ -144,5 +186,6 @@ const updateDailyAuditStatus = async (req, res) => {
 module.exports = {
     scheduleAudits,
     getDailyAudits,
-    updateDailyAuditStatus
+    updateDailyAuditStatus,
+    updateDailyAuditData
 }
