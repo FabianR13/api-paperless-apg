@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { verifyToken, isAutorized, isAdmin } = require("../middlewares/auth.Jwt");
+const { verifyToken, isAutorized, isDailyAuditAdministrator, isDailyAuditCreator } = require("../middlewares/auth.Jwt");
 const { scheduleAudits, getDailyAudits, updateDailyAuditStatus, updateDailyAuditData } = require("../controllers/dailyAudits.controller");
 const router = Router();
 
@@ -7,15 +7,15 @@ const router = Router();
 router.post("/ScheduleAudits/:CompanyId",
     verifyToken,
     isAutorized,
-    isAdmin,
+    isDailyAuditAdministrator,
     scheduleAudits
 );
 
-// RUTA PARA PROGRAMAR ASIGNAR AUDITORIAS //
+// RUTA PARA OBTENER AUDITORIAS //
 router.get("/DailyAudits/:CompanyId",
     verifyToken,
     isAutorized,
-    isAdmin,
+    isDailyAuditCreator,
     getDailyAudits
 );
 
@@ -23,7 +23,7 @@ router.get("/DailyAudits/:CompanyId",
 router.put("/DailyAudits/UpdateStatus/:CompanyId/:DailyAuditId",
     verifyToken,
     isAutorized,
-    isAdmin,
+    isDailyAuditCreator,
     updateDailyAuditStatus
 );
 
@@ -31,7 +31,7 @@ router.put("/DailyAudits/UpdateStatus/:CompanyId/:DailyAuditId",
 router.put("/DailyAudits/UpdateData/:CompanyId/:DailyAuditId",
     verifyToken,
     isAutorized,
-    isAdmin,
+    isDailyAuditCreator,
     updateDailyAuditData
 );
 
