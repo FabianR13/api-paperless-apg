@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
 const employeesSchema = new mongoose.Schema(
@@ -19,18 +19,18 @@ const employeesSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
-        department: [
-            {
-                ref: "Department",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        position: [
-            {
-                ref: "Position",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
+        department: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Department",
+        },
+        position: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Position",
+        },
+        company: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Company",
+        },
         active: {
             type: Boolean,
         },
@@ -55,12 +55,6 @@ const employeesSchema = new mongoose.Schema(
             currentPhase: { type: Number, default: 0 },
             completedAt: { type: Date }
         }],
-        company: [
-            {
-                ref: "Company",
-                type: mongoose.Schema.Types.ObjectId,
-            }
-        ],
     }
 );
 

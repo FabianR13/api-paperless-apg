@@ -10,26 +10,37 @@ const {
   isAutorized
 } = require("../middlewares/auth.Jwt.js");
 const {
-  signEmployee,
   getPositions,
   getDepartments,
   getEmployees,
   updateEmployeeUser,
   modifyProfileImg,
-  updateEmployee
+  updateEmployee,
+  createEmployee
 } = require("../controllers/employees.controller.js");
 const uploadPicture = require("../middlewares/uploadProfileImg.js");
 
-///Route to create new employee///
+// RUTA PARA CREAR UN NUEVO EMPLEADO //
 router.post(
   "/NewEmployee/:CompanyId",
-  checkDuplicateEmployeeNo,
   verifyToken,
   isAutorized,
   isModerator,
   uploadPicture,
-  signEmployee
+  createEmployee
 );
+
+
+
+
+
+
+
+
+
+
+
+
 ///Route to get All the positions///
 router.get(
   "/Positions",

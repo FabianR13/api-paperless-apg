@@ -17,74 +17,92 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-//nuevo empleado//////////////////////////////////////////////////////////////////////////////////////////////////
-const signEmployee = async (req, res) => {
-  const {
-    name,
-    lastName,
-    numberEmployee,
-    department,
-    position,
-    active,
-    group,
-    visualWeakness,
-    user,
-    startDate,
-    company,
-  } = req.body;
+// CREAR NUEVO EMPLEADO //////////////////////////////////////////////////////////////////////////////////////////////////
+const createEmployee = async (req, res) => {
+  try {
+    const {
+      name,
+      lastName,
+      numberEmployee,
+      department,
+      position,
+      active,
+      group,
+      visualWeakness,
+      user,
+      startDate,
+      company,
+    } = req.body;
 
-  //Retreiving the data for each picture Image and adding to the schema
-  let picture = "";
-  if (req.file) {
-    picture = req.file.key;
-  }
-  const newEmployee = new Employees({
-    name,
-    lastName,
-    numberEmployee,
-    active,
-    picture,
-    group,
-    visualWeakness,
-    user,
-    startDate
-  });
-
-  //Buscar compañia y agregar id al empleado
-  if (company) {
-    const foundCompany = await Company.find({
-      _id: { $in: company },
-    });
-    newEmployee.company = foundCompany.map((company) => company._id);
-  }
-  //buscar departamento y agregar id al empleado
-  if (department) {
-    const foundDepartments = await Department.find({
-      name: { $in: department },
-    });
-    newEmployee.department = foundDepartments.map((department) => department._id);
-  } else {
-    const department = await Deparment.findOne({ name: "GENERAL" });
-    newEmployee.department = [department._id];
-  }
-  //buscar posicion y agregar id al empleado
-  if (position) {
-    const foundPositions = await Position.find({
-      _id: { $in: position },
-    });
-    newEmployee.position = foundPositions.map((position) => position._id);
-  } else {
-    const position = await Position.findOne({ name: "Supervisor" });
-    newEmployee.position = [position._id];
-  }
-  //guardar empleado
-  newEmployee.save((error, newEmployee) => {
-    if (error) return res.status(400).json({ status: "400", message: error });
-    if (newEmployee) {
-      res.json({ status: "200", message: "Employee created", body: newEmployee });
+    let picture = "";
+    if (req.file) {
+      picture = req.file.key;
     }
-  });
+
+    const newEmployee = new Employees({
+      name,
+      lastName,
+      numberEmployee,
+      active,
+      picture,
+      group,
+      visualWeakness,
+      user,
+      startDate
+    });
+
+    if (company) {
+      const foundCompany = await Company.findById(company);
+      if (!foundCompany) {
+        return res.status(404).json({ status: "404", message: "La compañía especificada no existe." });
+      }
+      newEmployee.company = foundCompany._id;
+    }
+
+    if (department) {
+      const foundDepartment = await Department.findById(department);
+      if (!foundDepartment) {
+        return res.status(404).json({ status: "404", message: `El departamento no fue encontrado.` });
+      }
+      newEmployee.department = foundDepartment._id;
+    }
+
+    if (position) {
+      const foundPosition = await Position.findById(position);
+      if (!foundPosition) {
+        return res.status(404).json({ status: "404", message: "La posición especificada no fue encontrada." });
+      }
+      newEmployee.position = foundPosition._id;
+    }
+
+    const savedEmployee = await newEmployee.save();
+
+    return res.status(200).json({
+      status: "200",
+      message: "Employee created successfully",
+      body: savedEmployee
+    });
+
+  } catch (error) {
+    if (error.code === 11000) {
+      const duplicatedField = Object.keys(error.keyValue)[0];
+      const duplicatedValue = error.keyValue[duplicatedField];
+
+      return res.status(400).json({
+        status: "400",
+        message: `El número de empleado ${duplicatedValue} ya está en uso.`
+      });
+    }
+
+    console.error("Error en createEmployee:", error);
+    return res.status(500).json({
+      status: "500",
+      message: "Ocurrió un error en el servidor al intentar guardar el empleado.",
+      error: error.message
+    });
+  }
 };
+
 // Getting all positions////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getPositions = async (req, res) => {
   const positions = await Position.find().sort({ name: 1 }).populate({ path: 'department', select: "name" });
@@ -230,80 +248,99 @@ const updateEmployeeUser = async (req, res) => {
 };
 // Updating employee//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const updateEmployee = async (req, res) => {
-  const newDepartment = req.body.department
-  const newPosition = req.body.position
-  const { employeeId } = req.params;
-  const empUpd = [];
+  try {
+    const { employeeId } = req.params;
+    const {
+      name,
+      lastName,
+      numberEmployee,
+      department: newDepartment,
+      position: newPosition,
+      active,
+      group,
+      visualWeakness,
+      startDate
+    } = req.body;
 
-  empUpd.name = req.body.name;
-  empUpd.lastName = req.body.lastName;
-  empUpd.numberEmployee = req.body.numberEmployee;
-  empUpd.group = req.body.group;
-  empUpd.visualWeakness = req.body.visualWeakness;
-  empUpd.numberEmployee = req.body.numberEmployee;
-  empUpd.startDate = req.body.startDate;
+    const updateData = {
+      name,
+      lastName,
+      numberEmployee,
+      active,
+      group,
+      visualWeakness,
+      startDate
+    };
 
-  const employee = await Employees.findOne({ numberEmployee: req.body.numberEmployee })
-  if (employee) {
-    if (employee._id.toString() !== employeeId) return res.status(400).json({ message: 'The number employee already exists' })
-  }
-
-  empUpd.active = req.body.active;
-
-  //Verify department
-  if (newDepartment) {
-    const foundDepartments = await Department.find({
-      name: { $in: newDepartment },
-    });
-    empUpd.department = foundDepartments.map((department) => department._id);
-  }
-  //verify position
-  if (newPosition) {
-    const foundPositions = await Position.find({
-      _id: { $in: newPosition },
-    });
-    empUpd.position = foundPositions.map((position) => position._id);
-  }
-
-  const {
-    name,
-    lastName,
-    numberEmployee,
-    department,
-    position,
-    active,
-    group,
-    visualWeakness,
-    startDate
-  } = empUpd;
-
-  const updatedEmployee = await Employees.updateOne(
-    { _id: employeeId },
-    {
-      $set: {
-        name,
-        lastName,
-        numberEmployee,
-        department,
-        position,
-        active,
-        group,
-        visualWeakness,
-        startDate
-      },
+    if (numberEmployee) {
+      const existingEmployee = await Employees.findOne({ numberEmployee });
+      if (existingEmployee && existingEmployee._id.toString() !== employeeId) {
+        return res.status(400).json({
+          status: "400",
+          message: `El número de empleado ${numberEmployee} ya está en uso por otro empleado.`
+        });
+      }
     }
-  );
 
-  if (!updatedEmployee) {
-    res
-      .status(403)
-      .json({ status: "403", message: "Employee not Updated", body: "" });
+    if (newDepartment) {
+      const foundDepartment = await Department.findById(newDepartment);
+      if (!foundDepartment) {
+        return res.status(404).json({
+          status: "404",
+          message: `El departamento no fue encontrado.`
+        });
+      }
+      updateData.department = foundDepartment._id;
+    }
+
+    // 4. Verificar posición (por ID) y asignar solo un ID (ya no un arreglo)
+    if (newPosition) {
+      const foundPosition = await Position.findById(newPosition);
+      if (!foundPosition) {
+        return res.status(404).json({
+          status: "404",
+          message: "La posición especificada no fue encontrada."
+        });
+      }
+      updateData.position = foundPosition._id;
+    }
+
+    const updatedEmployee = await Employees.findByIdAndUpdate(
+      employeeId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedEmployee) {
+      return res.status(404).json({
+        status: "404",
+        message: "Empleado no encontrado o no pudo ser actualizado."
+      });
+    }
+
+    return res.status(200).json({
+      status: "200",
+      message: "Employee Updated successfully",
+      body: updatedEmployee,
+    });
+
+  } catch (error) {
+    if (error.code === 11000) {
+      const duplicatedField = Object.keys(error.keyValue)[0];
+      const duplicatedValue = error.keyValue[duplicatedField];
+      return res.status(400).json({
+        status: "400",
+        message: `El valor '${duplicatedValue}' ya está en uso en el campo ${duplicatedField}.`
+      });
+    }
+
+    console.error("Error en updateEmployee:", error);
+    return res.status(500).json({
+      status: "500",
+      message: "Ocurrió un error en el servidor al intentar actualizar el empleado.",
+      error: error.message
+    });
   }
-  res.status(200).json({
-    status: "200",
-    message: "Employee Updated",
-    body: updatedEmployee,
-  });
 };
 // Function to modify the Image from a employee///////////////////////////////////////////////////////////////////////////////////////
 const modifyProfileImg = async (req, res) => {
@@ -379,7 +416,7 @@ const modifyProfileImg = async (req, res) => {
 
 
 module.exports = {
-  signEmployee,
+  createEmployee,
   getPositions,
   getDepartments,
   getEmployees,
