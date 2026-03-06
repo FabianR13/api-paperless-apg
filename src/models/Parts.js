@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const partSchema = new mongoose.Schema(
     {
         partnumber: [{ type: String },],
-        partName: [{ type: String},],
+        partName: [{ type: String },],
         partEcl: {
             type: String,
         },
@@ -14,7 +14,7 @@ const partSchema = new mongoose.Schema(
             }
         ],
         assemblyPartNumber: [{ type: String },],
-        assemblyPartDesc: [{ type: String},],
+        assemblyPartDesc: [{ type: String },],
         company: [
             {
                 ref: "Company",
@@ -24,6 +24,7 @@ const partSchema = new mongoose.Schema(
         mould: {
             type: String,
         },
+        operations: [{ type: String }],
         status: {
             type: Boolean,
         },

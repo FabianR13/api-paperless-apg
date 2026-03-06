@@ -361,7 +361,52 @@ const getEvaluationsFiltered = async (req, res) => {
     res.json({ status: "200", message: "Evaluations Loaded New", body: trainingEvaluationsF });
 };
 
+/// TENER EVALUACIONES PARA MATRIZ //////////////////////////////////////////////////////////////////////////////////////////////////
+const getMatrixEvaluations = async (req, res) => {
+    const { CompanyId } = req.params;
 
+    if (CompanyId.length !== 24) {
+        return res.status(400).json({ status: "400", message: "Invalid Company ID" });
+    }
+
+    try {
+        const evaluations = await TrainingEvaluation.find({
+            company: CompanyId
+        })
+            // 1. SELECT: Solo pedimos los campos que la Matriz realmente dibuja
+            .select('evaluationStatus qualification evaluationType operationType numberEmployee partNumber')
+
+            // 2. POPULATE LIMITADO: Filtramos por empleado activo Y por posición
+            .populate({
+                path: 'numberEmployee',
+                match: { 
+                    active: true, 
+                    position: "6891274cb4cdc28fbceed01d" // <-- NUEVO FILTRO AGREGADO AQUÍ
+                },
+                // Opcional: Agregué 'position' al select por si quieres validar que lo trajo bien
+                select: 'numberEmployee name lastName active position' 
+            })
+
+            // 3. POPULATE LIMITADO: Solo el partnumber
+            .populate({
+                path: 'partNumber',
+                select: 'partnumber'
+            })
+
+            // 4. LEAN: Quita los métodos de Mongoose y lo hace texto puro
+            .lean();
+
+        // Filtramos para enviar al frontend SOLO las evaluaciones que sí pasaron el match de arriba
+        // (es decir, empleados que son activos Y son Machine Operator)
+        const activeEvaluations = evaluations.filter(ev => ev.numberEmployee && ev.numberEmployee.length > 0);
+
+        res.json({ status: "200", message: "Matrix Evaluations Loaded", body: activeEvaluations });
+
+    } catch (error) {
+        console.error("Error fetching matrix evaluations:", error);
+        res.status(500).json({ status: "500", message: "Server error fetching matrix data" });
+    }
+};
 
 
 module.exports = {
@@ -372,5 +417,6 @@ module.exports = {
     deleteTrainingEvaluation,
     updateEvaluationRegister,
     countEvaluations,
-    getEvaluationsFiltered
+    getEvaluationsFiltered,
+    getMatrixEvaluations
 };

@@ -7,7 +7,7 @@ const {
     isTrainingR,
     isTrainingL
 } = require("../middlewares/auth.Jwt.js");
-const { createTrainingEvaluation, getEvaluations, getEvaluationById, updateTrainingEvaluation, deleteTrainingEvaluation, updateEvaluationRegister, countEvaluations, getEvaluationsFiltered } = require("../controllers/training.controller.js");
+const { createTrainingEvaluation, getEvaluations, getEvaluationById, updateTrainingEvaluation, deleteTrainingEvaluation, updateEvaluationRegister, countEvaluations, getEvaluationsFiltered, getMatrixEvaluations } = require("../controllers/training.controller.js");
 const { sendEmailMiddlewareResponse } = require("../middlewares/mailer.js");
 
 //Route to post new Training Evaluation///
@@ -83,6 +83,15 @@ router.post(
     isAutorized,
     isTrainingR,
     getEvaluationsFiltered
-  );
+);
+
+///Route to get evaluations filtered///
+router.get(
+    "/TrainingMatrix/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isTrainingR,
+    getMatrixEvaluations
+);
 
 module.exports = router;

@@ -3,7 +3,8 @@ const router = Router();
 const {
     createPart,
     udpateParts,
-    getParts
+    getParts,
+    getActiveParts
 } = require("../controllers/parts.controller.js");
 const {
     verifyToken,
@@ -35,6 +36,13 @@ router.get("/Parts/:CompanyId",
     verifyToken,
     isAutorized,
     getParts
+);
+
+// RUTA PARA OBTENER PARTES ACTIVAS //
+router.get("/ActiveParts/:CompanyId",
+    verifyToken,
+    isAutorized,
+    getActiveParts
 );
 
 

@@ -14,6 +14,7 @@ const createPart = async (req, res) => {
     assemblyPartDesc,
     mould,
     status,
+    operations,
   } = req.body;
   const newPart = new Parts({
     partnumber,
@@ -23,6 +24,7 @@ const createPart = async (req, res) => {
     assemblyPartDesc,
     mould,
     status,
+    operations,
   });
   // console.log(req.params)
   // console.log(CompanyId)
@@ -57,7 +59,8 @@ const udpateParts = async (req, res) => {
   UpdPart.assemblyPartDesc = req.body.assemblyPartDesc;
   UpdPart.mould = req.body.mould;
   UpdPart.status = req.body.status;
-  newCustomer = req.body.customer;
+  UpdPart.operations = req.body.operations;
+  let newCustomer = req.body.customer;
 
   if (newCustomer) {
     const foundCustomers = await Customer.find({
@@ -74,6 +77,7 @@ const udpateParts = async (req, res) => {
     assemblyPartDesc,
     mould,
     status,
+    operations
   } = UpdPart;
   const updatedPart = await Parts.updateOne(
     { _id: partId },
@@ -87,6 +91,7 @@ const udpateParts = async (req, res) => {
         assemblyPartDesc,
         mould,
         status,
+        operations
       },
     }
   );
@@ -113,8 +118,41 @@ const getParts = async (req, res) => {
   res.json({ status: "200", message: "Parts loaded", body: parts });
 }
 
+// OBTENER PARTES ACTIVAS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const getActiveParts = async (req, res) => {
+  const { CompanyId } = req.params;
+
+  if (CompanyId.length !== 24) {
+    return res.status(400).json({ status: "400", message: "Invalid Company ID" });
+  }
+
+  try {
+    const company = await Company.findById(CompanyId);
+    if (!company) {
+      return res.status(404).json({ status: "404", message: "Company not found" });
+    }
+    const parts = await Parts.find({
+      company: CompanyId,
+      status: true
+    })
+      .populate({ path: "customer" })
+      .sort({ "partnumber": 1 });
+
+    res.json({
+      status: "200",
+      message: "Active parts loaded",
+      body: parts
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "500", message: "Internal server error" });
+  }
+};
+
 module.exports = {
   createPart,
   udpateParts,
-  getParts
+  getParts,
+  getActiveParts
 };
