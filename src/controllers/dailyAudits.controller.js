@@ -43,11 +43,14 @@ const scheduleAudits = async (req, res) => {
             const isExcluded = excludedDates.includes(dateString);
 
             if (!isWeekend && !isExcluded) {
+                const userIndexA = (userIndex + 1) % userslist.length;
+
                 auditsToCreate.push({
                     auditDay: new Date(currentDate),
-                    assignedTo: userslist[userIndex],
-                    auditStatus: 'Assigned',
-                    comments: '',
+                    assignedToD: userslist[userIndex],
+                    auditStatusD: 'Assigned',
+                    assignedToA: userslist[userIndexA],
+                    auditStatusA: 'Assigned',
                     company: CompanyId
                 });
 
@@ -98,7 +101,17 @@ const getDailyAudits = async (req, res) => {
             company: { $in: CompanyId }
         }).sort({ auditDay: -1 })
             .populate({
-                path: 'assignedTo',
+                path: 'assignedToD',
+                populate: [
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        populate: { path: 'department', model: 'Department' }
+                    }
+                ]
+            })
+            .populate({
+                path: 'assignedToA',
                 populate: [
                     {
                         path: 'employee',
@@ -115,71 +128,89 @@ const getDailyAudits = async (req, res) => {
     }
 };
 
-// CAMBIAR DATA DE AUDITORTIA //
+// CAMBIAR DATA DE AUDITORIA //
 const updateDailyAuditData = async (req, res) => {
     const { DailyAuditId } = req.params;
 
     try {
-        const { comments, auditStatus, assignedTo } = req.body;
+        // 1. Extraemos todos los datos nuevos que nos manda el front
+        const {
+            generalCommentsD,
+            generalCommentsA,
+            auditStatusD,
+            auditStatusA,
+            assignedToD,
+            assignedToA,
+            observations
+        } = req.body;
 
-        const user = await User.findById(assignedTo);
-        if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+        // 2. Preparamos el objeto con lo que vamos a actualizar
+        const updateFields = {
+            generalCommentsD,
+            generalCommentsA,
+            auditStatusD,
+            auditStatusA,
+            assignedToD,
+            assignedToA,
+            observations
+        };
 
-        let currentStatus = auditStatus;
-
-        if (comments !== "" && auditStatus !== 'Completed') {
-            currentStatus = "In Process"
+        // 3. LOGICA DE TIEMPOS: Si el frontend nos dice que ya se completó, 
+        // el backend genera la hora actual de forma automática para evitar trampas.
+        if (auditStatusD === 'Completed') {
+            // Genera la hora local, ej: "14:30:00"
+            updateFields.completedTimeD = new Date().toLocaleTimeString('es-MX', { hour12: false });
         }
+        if (auditStatusA === 'Completed') {
+            updateFields.completedTimeA = new Date().toLocaleTimeString('es-MX', { hour12: false });
+        }
+
+        // 4. Actualizamos la base de datos
+        const updatedDailyAudit = await DailyAudits.findByIdAndUpdate(
+            { _id: DailyAuditId },
+            { $set: updateFields },
+            { new: true } // Esto asegura que la variable guarde el documento ya con los cambios
+        );
+
+        if (!updatedDailyAudit) {
+            return res.status(403).json({ status: "403", message: "Daily Audit not Updated", body: "" });
+        }
+
+        return res.status(200).json({ status: "200", message: "Daily Audit Updated", body: updatedDailyAudit });
+    } catch (error) {
+        console.error("Error updating data of daily audit", error);
+        return res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
+// CAMBIAR STATUS A RETRASADO //
+const updateDailyAuditStatus = async (req, res) => {
+    const { DailyAuditId } = req.params;
+
+    try {
+        // Ahora el frontend nos manda exactamente qué turno está Overdue
+        // (ya que puede que el Turno D esté Overdue pero el Turno A siga "Assigned")
+        const { auditStatusD, auditStatusA } = req.body;
 
         const updatedDailyAudit = await DailyAudits.findByIdAndUpdate(
             { _id: DailyAuditId },
             {
                 $set: {
-                    auditStatus: currentStatus,
-                    comments,
-                    assignedTo
+                    auditStatusD: auditStatusD,
+                    auditStatusA: auditStatusA
                 }
-            }
-        )
+            },
+            { new: true }
+        );
 
         if (!updatedDailyAudit) {
-            res
-                .status(403)
-                .json({ status: "403", message: "Daily Audit not Updated", body: "" });
+            return res.status(403).json({ status: "403", message: "Daily Audit not Updated", body: "" });
         }
 
-        res
-            .status(200)
-            .json({ status: "200", message: "Daily Audit Updated", body: updatedDailyAudit });
+        return res.status(200).json({ status: "200", message: "Daily Audit Updated", body: updatedDailyAudit });
     } catch (error) {
         console.error("Error updating status of daily audits", error);
-        res.status(500).json({ status: "error", message: error.message });
-    }
-};
-
-// CAMBIAR STATUS A RETRAZADO //
-const updateDailyAuditStatus = async (req, res) => {
-    const { DailyAuditId } = req.params;
-
-    try {
-
-        const updatedDailyAudit = await DailyAudits.findByIdAndUpdate(
-            { _id: DailyAuditId },
-            { $set: { auditStatus: "Overdue" } }
-        )
-
-        if (!updatedDailyAudit) {
-            res
-                .status(403)
-                .json({ status: "403", message: "Daily Audit not Updated", body: "" });
-        }
-
-        res
-            .status(200)
-            .json({ status: "200", message: "Daily Audit Updated", body: updatedDailyAudit });
-    } catch (error) {
-        console.error("Error updating status of daily audits", error);
-        res.status(500).json({ status: "error", message: error.message });
+        return res.status(500).json({ status: "error", message: error.message });
     }
 };
 

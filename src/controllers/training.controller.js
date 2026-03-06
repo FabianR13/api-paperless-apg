@@ -370,44 +370,48 @@ const getMatrixEvaluations = async (req, res) => {
     }
 
     try {
-        const evaluations = await TrainingEvaluation.find({
-            company: CompanyId
-        })
-            // 1. SELECT: Solo pedimos los campos que la Matriz realmente dibuja
-            .select('evaluationStatus qualification evaluationType operationType numberEmployee partNumber')
+        const [evaluations, activeParts] = await Promise.all([
 
-            // 2. POPULATE LIMITADO: Filtramos por empleado activo Y por posición
-            .populate({
-                path: 'numberEmployee',
-                match: { 
-                    active: true, 
-                    position: "6891274cb4cdc28fbceed01d" // <-- NUEVO FILTRO AGREGADO AQUÍ
-                },
-                // Opcional: Agregué 'position' al select por si quieres validar que lo trajo bien
-                select: 'numberEmployee name lastName active position' 
+            TrainingEvaluation.find({
+                company: CompanyId
             })
+                .select('evaluationStatus qualification evaluationType operationType numberEmployee partNumber')
+                .populate({
+                    path: 'numberEmployee',
+                    match: {
+                        active: true,
+                        position: "6891274cb4cdc28fbceed01d"
+                    },
+                    select: 'numberEmployee name lastName active position'
+                })
+                .populate({
+                    path: 'partNumber',
+                    select: 'partnumber'
+                })
+                .lean(),
 
-            // 3. POPULATE LIMITADO: Solo el partnumber
-            .populate({
-                path: 'partNumber',
-                select: 'partnumber'
+            Parts.find({
+                company: CompanyId,
+                status: true
             })
+                .select('partnumber operations')
+                .lean()
+        ]);
 
-            // 4. LEAN: Quita los métodos de Mongoose y lo hace texto puro
-            .lean();
-
-        // Filtramos para enviar al frontend SOLO las evaluaciones que sí pasaron el match de arriba
-        // (es decir, empleados que son activos Y son Machine Operator)
         const activeEvaluations = evaluations.filter(ev => ev.numberEmployee && ev.numberEmployee.length > 0);
 
-        res.json({ status: "200", message: "Matrix Evaluations Loaded", body: activeEvaluations });
+        res.json({
+            status: "200",
+            message: "Matrix Data Loaded",
+            evaluations: activeEvaluations, 
+            parts: activeParts            
+        });
 
     } catch (error) {
-        console.error("Error fetching matrix evaluations:", error);
+        console.error("Error fetching matrix data:", error);
         res.status(500).json({ status: "500", message: "Server error fetching matrix data" });
     }
 };
-
 
 module.exports = {
     createTrainingEvaluation,

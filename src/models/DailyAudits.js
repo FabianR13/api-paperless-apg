@@ -3,11 +3,21 @@ const { Schema } = mongoose;
 
 const DailyAuditsSchema = new Schema({
     auditDay: { type: Date, required: true },
-    assignedTo: { type: Schema.Types.ObjectId, ref: "User" },
-    comments: { type: String },
+    assignedToD: { type: Schema.Types.ObjectId, ref: "User" },
+    assignedToA: { type: Schema.Types.ObjectId, ref: "User" },
+    generalCommentsD: { type: String },
+    generalCommentsA: { type: String },
+    auditStatusD: { type: String },
+    completedTimeD: { type: String },
+    auditStatusA: { type: String },
+    completedTimeA: { type: String },
+    observations: [{
+        location: { type: String, required: true },
+        partNumber: { type: Schema.Types.ObjectId, ref: "Parts" },
+        shift: { type: String },
+        comments: { type: String }
+    }],
     company: { type: Schema.Types.ObjectId, ref: "Company" },
-    auditStatus: { type: String },
-    completedTime: { type: String }
 }, {
     timestamps: true
 });
