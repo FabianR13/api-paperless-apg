@@ -370,7 +370,7 @@ const getMatrixEvaluations = async (req, res) => {
     }
 
     try {
-        const [evaluations, activeParts] = await Promise.all([
+        const [evaluations, activeParts, activeEmployees] = await Promise.all([
 
             TrainingEvaluation.find({
                 company: CompanyId
@@ -382,7 +382,7 @@ const getMatrixEvaluations = async (req, res) => {
                         active: true,
                         position: "6891274cb4cdc28fbceed01d"
                     },
-                    select: 'numberEmployee name lastName active position'
+                    select: 'numberEmployee name lastName'
                 })
                 .populate({
                     path: 'partNumber',
@@ -394,7 +394,19 @@ const getMatrixEvaluations = async (req, res) => {
                 company: CompanyId,
                 status: true
             })
-                .select('partnumber operations')
+                .select('partnumber operations customer')
+                .populate({
+                    path: 'customer',
+                    select: 'name'
+                })
+                .lean(),
+
+            Employees.find({
+                company: CompanyId,
+                active: true,
+                position: "6891274cb4cdc28fbceed01d"
+            })
+                .select('numberEmployee name lastName')
                 .lean()
         ]);
 
@@ -403,8 +415,9 @@ const getMatrixEvaluations = async (req, res) => {
         res.json({
             status: "200",
             message: "Matrix Data Loaded",
-            evaluations: activeEvaluations, 
-            parts: activeParts            
+            evaluations: activeEvaluations,
+            parts: activeParts,
+            employees: activeEmployees
         });
 
     } catch (error) {
