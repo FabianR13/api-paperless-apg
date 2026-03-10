@@ -3,13 +3,19 @@ const nodemailer = require('nodemailer');
 const User = require('../models/User'); // Ajusta la ruta a tu modelo User
 const Role = require('../models/Role'); // Ajusta la ruta a tu modelo Role
 
+const dotenv = require('dotenv');
+dotenv.config({ path: "D:\\Paperless GIT\\api-paperless-apg\\src\\.env" });
+
 // Configuración de tu servidor de correos (Ajusta con tus credenciales reales o variables de entorno)
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // o tu proveedor (outlook, hostinger, etc.)
+let transporter = nodemailer.createTransport({
+    host: "smtp.office365.com",
+    port: 587,
     auth: {
-        user: process.env.EMAIL_USER || 'tu_correo@gmail.com',
-        pass: process.env.EMAIL_PASS || 'tu_contraseña_de_aplicacion'
-    }
+        user: process.env.MAIL_AUTH_USER,
+        pass: process.env.MAIL_AUTH_PASS,
+    },
+    secureConnection: false,
+    tls: { ciphers: "SSLv3" },
 });
 
 const sendAuditCompletionEmail = async (audit, shiftName) => {
