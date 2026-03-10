@@ -39,7 +39,7 @@ const sendAuditCompletionEmail = async (audit, shiftName) => {
         // 3. Extraer la información dependiendo de qué turno se completó
         let auditorName = 'Unknown';
         let generalComments = 'No comments';
-        
+
         if (shiftName === 'Shift 1') {
             const emp = audit.assignedToD?.employee?.[0];
             if (emp) auditorName = `${emp.name} ${emp.lastName}`;
@@ -74,8 +74,8 @@ const sendAuditCompletionEmail = async (audit, shiftName) => {
 
         // 6. Configurar el correo y enviarlo
         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: emails.join(','), // Manda copia oculta o directa a todos los correos
+            from: process.env.MAIL_AUTH_USER,
+            to: emails.join(','), 
             subject: `✅ Daily Audit Completed - ${shiftName} (${formattedDate})`,
             html: `
                 <div style="font-family: Arial, sans-serif; color: #333;">
