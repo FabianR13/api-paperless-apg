@@ -75,7 +75,7 @@ const sendAuditCompletionEmail = async (audit, shiftName) => {
         // 6. Configurar el correo y enviarlo
         const mailOptions = {
             from: process.env.MAIL_AUTH_USER,
-            to: emails.join(','), 
+            to: emails.join(','),
             subject: `✅ Daily Audit Completed - ${shiftName} (${formattedDate})`,
             html: `
                 <div style="font-family: Arial, sans-serif; color: #333;">
@@ -95,7 +95,7 @@ const sendAuditCompletionEmail = async (audit, shiftName) => {
                     ${obsHtml}
                     
                     <p style="margin-top: 30px; font-size: 12px; color: #888;">
-                        This is an automated notification from your Audit System.
+                        This is an automated notification from AxiomPaperless, please do not reply.
                     </p>
                 </div>
             `
