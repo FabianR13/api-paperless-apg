@@ -1,7 +1,7 @@
 const Company = require("../models/Company");
 const DailyAudits = require("../models/DailyAudits");
 const User = require("../models/User");
-
+const { sendAuditCompletionEmail } = require('../utils/emailNotifier');
 
 // CREAR DAILY AUDITS AIGNANDO EL DIA AL EMPLEADO ////////////////////////////////////////////////////////////////////////////////////////////
 const scheduleAudits = async (req, res) => {
@@ -133,47 +133,58 @@ const updateDailyAuditData = async (req, res) => {
     const { DailyAuditId } = req.params;
 
     try {
-        // 1. Extraemos todos los datos nuevos que nos manda el front
         const {
-            generalCommentsD,
-            generalCommentsA,
-            auditStatusD,
-            auditStatusA,
-            assignedToD,
-            assignedToA,
+            generalCommentsD, generalCommentsA,
+            auditStatusD, auditStatusA,
+            assignedToD, assignedToA,
             observations
         } = req.body;
 
+        // 1. Buscamos el estado ANTERIOR para saber si acaba de cambiar a "Completed"
+        const oldAudit = await DailyAudits.findById(DailyAuditId);
+        if (!oldAudit) return res.status(404).json({ status: "error", message: "Audit not found" });
+
+        const isNewlyCompletedD = oldAudit.auditStatusD !== 'Completed' && auditStatusD === 'Completed';
+        const isNewlyCompletedA = oldAudit.auditStatusA !== 'Completed' && auditStatusA === 'Completed';
+
         // 2. Preparamos el objeto con lo que vamos a actualizar
         const updateFields = {
-            generalCommentsD,
-            generalCommentsA,
-            auditStatusD,
-            auditStatusA,
-            assignedToD,
-            assignedToA,
+            generalCommentsD, generalCommentsA,
+            auditStatusD, auditStatusA,
+            assignedToD, assignedToA,
             observations
         };
 
-        // 3. LOGICA DE TIEMPOS: Si el frontend nos dice que ya se completó, 
-        // el backend genera la hora actual de forma automática para evitar trampas.
         if (auditStatusD === 'Completed') {
-            // Genera la hora local, ej: "14:30:00"
             updateFields.completedTimeD = new Date().toLocaleTimeString('es-MX', { hour12: false });
         }
         if (auditStatusA === 'Completed') {
             updateFields.completedTimeA = new Date().toLocaleTimeString('es-MX', { hour12: false });
         }
 
-        // 4. Actualizamos la base de datos
+        // 3. Actualizamos y HACEMOS POPULATE de los campos referenciados
         const updatedDailyAudit = await DailyAudits.findByIdAndUpdate(
             { _id: DailyAuditId },
             { $set: updateFields },
-            { new: true } // Esto asegura que la variable guarde el documento ya con los cambios
-        );
+            { new: true }
+        )
+            .populate({
+                path: 'assignedToD assignedToA',
+                populate: { path: 'employee' } // Traemos el nombre del empleado
+            })
+            .populate('observations.partNumber'); // Traemos la info de las piezas
 
         if (!updatedDailyAudit) {
-            return res.status(403).json({ status: "403", message: "Daily Audit not Updated", body: "" });
+            return res.status(403).json({ status: "403", message: "Daily Audit not Updated" });
+        }
+
+        // 4. DISPARAMOS LOS CORREOS (Solo si acaban de ser completados)
+        if (isNewlyCompletedD) {
+            // Se manda de forma asíncrona (no usamos await aquí para no trabar la respuesta al frontend)
+            sendAuditCompletionEmail(updatedDailyAudit, 'Shift 1');
+        }
+        if (isNewlyCompletedA) {
+            sendAuditCompletionEmail(updatedDailyAudit, 'Shift 2');
         }
 
         return res.status(200).json({ status: "200", message: "Daily Audit Updated", body: updatedDailyAudit });
