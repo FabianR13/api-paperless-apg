@@ -85,14 +85,14 @@ const createNewLaptop = async (req, res) => {
 
     if (responsible) {
         const foundEmployee = await Employees.find({
-            numberEmployee: { $in: responsible },
+            _id: { $in: responsible },
         });
         newLaptop.responsible = foundEmployee.map((employee) => employee._id);
     }
 
     if (newLaptop.responsible.length === 0) {
         const foundAccounts = await GenericAccount.find({
-            groupName: { $in: responsible },
+            _id: { $in: responsible },
         });
         newLaptop.responsibleGroup = foundAccounts.map((account) => account._id);
     }
@@ -180,14 +180,14 @@ const updateLaptop = async (req, res) => {
 
     if (req.body.responsible) {
         const foundEmployee = await Employees.find({
-            numberEmployee: { $in: req.body.responsible },
+            _id: { $in: req.body.responsible },
         });
         responsible = foundEmployee.map((employee) => employee._id);
     }
 
     if (responsible.length === 0) {
         const foundAccounts = await GenericAccount.find({
-            groupName: { $in: req.body.responsible },
+            _id: { $in: req.body.responsible },
         });
         responsibleGroup = foundAccounts.map((account) => account._id);
     }
@@ -918,14 +918,14 @@ const createNewAccounts = async (req, res) => {
 
     if (responsible) {
         const foundEmployee = await Employees.find({
-            numberEmployee: { $in: responsible },
+            _id: { $in: responsible },
         });
         newAccounts.responsible = foundEmployee.map((employee) => employee._id);
     }
 
     if (newAccounts.responsible.length === 0) {
         const foundAccounts = await GenericAccount.find({
-            groupName: { $in: responsible },
+            _id: { $in: responsible },
         });
         newAccounts.responsibleGroup = foundAccounts.map((account) => account._id);
     }
