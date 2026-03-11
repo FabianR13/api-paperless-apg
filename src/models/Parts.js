@@ -25,6 +25,9 @@ const partSchema = new mongoose.Schema(
             type: String,
         },
         operations: [{ type: String }],
+        countOperations: {
+            type: Number,
+        },
         status: {
             type: Boolean,
         },

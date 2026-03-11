@@ -15,6 +15,7 @@ const createPart = async (req, res) => {
     mould,
     status,
     operations,
+    countOperations
   } = req.body;
   const newPart = new Parts({
     partnumber,
@@ -25,6 +26,7 @@ const createPart = async (req, res) => {
     mould,
     status,
     operations,
+    countOperations
   });
   // console.log(req.params)
   // console.log(CompanyId)
@@ -60,6 +62,7 @@ const udpateParts = async (req, res) => {
   UpdPart.mould = req.body.mould;
   UpdPart.status = req.body.status;
   UpdPart.operations = req.body.operations;
+  UpdPart.countOperations = req.body.countOperations;
   let newCustomer = req.body.customer;
 
   if (newCustomer) {
@@ -77,7 +80,8 @@ const udpateParts = async (req, res) => {
     assemblyPartDesc,
     mould,
     status,
-    operations
+    operations,
+    countOperations
   } = UpdPart;
   const updatedPart = await Parts.updateOne(
     { _id: partId },
@@ -91,7 +95,8 @@ const udpateParts = async (req, res) => {
         assemblyPartDesc,
         mould,
         status,
-        operations
+        operations,
+        countOperations
       },
     }
   );

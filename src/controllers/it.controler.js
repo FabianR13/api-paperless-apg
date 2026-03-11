@@ -14,6 +14,7 @@ const Chromebooks = require("../models/Chromebooks.js");
 const Scanners = require("../models/Scanners.js");
 const ScheduledService = require("../models/ScheduledService.js");
 const { differenceInMonths } = require('date-fns');
+const mongoose = require('mongoose');
 
 AWS.config.update({
     region: process.env.S3_BUCKET_REGION,
@@ -83,18 +84,18 @@ const createNewLaptop = async (req, res) => {
         newLaptop.modifiedBy = foundUsers.map((user) => user._id);
     }
 
-    if (responsible) {
-        const foundEmployee = await Employees.find({
-            _id: { $in: responsible },
-        });
-        newLaptop.responsible = foundEmployee.map((employee) => employee._id);
-    }
+    if (mongoose.Types.ObjectId.isValid(responsible)) {
 
-    if (newLaptop.responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            _id: { $in: responsible },
-        });
-        newLaptop.responsibleGroup = foundAccounts.map((account) => account._id);
+        const foundEmployee = await Employees.find({ _id: responsible });
+
+        if (foundEmployee.length > 0) {
+            newLaptop.responsible = foundEmployee.map((employee) => employee._id);
+        } else {
+            const foundAccounts = await GenericAccount.find({ _id: responsible });
+            if (foundAccounts.length > 0) {
+                newLaptop.responsibleGroup = foundAccounts.map((account) => account._id);
+            }
+        }
     }
 
     if ((newLaptop.responsible.length === 0) && (newLaptop.responsibleGroup.length === 0)) {
@@ -148,7 +149,7 @@ const getAllLaptops = async (req, res) => {
 const updateLaptop = async (req, res) => {
     const { laptopId } = req.params;
     let responsible;
-    let responsibleAlt = "";
+    let responsibleAlt;
     let responsibleGroup;
     let modifiedBy;
 
@@ -179,21 +180,27 @@ const updateLaptop = async (req, res) => {
     }
 
     if (req.body.responsible) {
-        const foundEmployee = await Employees.find({
-            _id: { $in: req.body.responsible },
-        });
-        responsible = foundEmployee.map((employee) => employee._id);
-    }
+        responsible = [];
+        responsibleGroup = [];
+        responsibleAlt = "";
 
-    if (responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            _id: { $in: req.body.responsible },
-        });
-        responsibleGroup = foundAccounts.map((account) => account._id);
-    }
+        if (mongoose.Types.ObjectId.isValid(req.body.responsible)) {
 
-    if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
-        responsibleAlt = req.body.responsible;
+            const foundEmployee = await Employees.find({ _id: req.body.responsible });
+
+            if (foundEmployee.length > 0) {
+                responsible = foundEmployee.map((employee) => employee._id);
+            } else {
+                const foundAccounts = await GenericAccount.find({ _id: req.body.responsible });
+                if (foundAccounts.length > 0) {
+                    responsibleGroup = foundAccounts.map((account) => account._id);
+                }
+            }
+        }
+
+        if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
+            responsibleAlt = req.body.responsible;
+        }
     }
 
     const updatedLaptopDevice = await Laptops.updateOne(
@@ -916,18 +923,18 @@ const createNewAccounts = async (req, res) => {
         newAccounts.modifiedBy = foundUsers.map((user) => user._id);
     }
 
-    if (responsible) {
-        const foundEmployee = await Employees.find({
-            _id: { $in: responsible },
-        });
-        newAccounts.responsible = foundEmployee.map((employee) => employee._id);
-    }
+    if (mongoose.Types.ObjectId.isValid(responsible)) {
 
-    if (newAccounts.responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            _id: { $in: responsible },
-        });
-        newAccounts.responsibleGroup = foundAccounts.map((account) => account._id);
+        const foundEmployee = await Employees.find({ _id: responsible });
+
+        if (foundEmployee.length > 0) {
+            newAccounts.responsible = foundEmployee.map((employee) => employee._id);
+        } else {
+            const foundAccounts = await GenericAccount.find({ _id: responsible });
+            if (foundAccounts.length > 0) {
+                newAccounts.responsibleGroup = foundAccounts.map((account) => account._id);
+            }
+        }
     }
 
     if ((newAccounts.responsible.length === 0) && (newAccounts.responsibleGroup.length === 0)) {
