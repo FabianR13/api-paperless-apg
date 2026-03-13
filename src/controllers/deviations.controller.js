@@ -237,7 +237,17 @@ const getDeviations = async (req, res) => {
                     }
                 ]
             })
-
+            .populate({
+                path: 'rejectedBy', // Quien creó la desviación
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        populate: { path: 'department', model: 'Department' }
+                    }
+                ]
+            })
             // --- 2. RESPONSABLES EN LAS TABLAS DE RIESGO ---
             // Ahora están anidados, así que accedemos con puntos (.)
             .populate({ path: 'riskAssessment.product.responsible', model: 'Employees', select: 'name lastName' })
