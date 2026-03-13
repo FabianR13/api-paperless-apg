@@ -4,6 +4,7 @@ const monitorSchema = new mongoose.Schema(
     {
         monitorName: {
             type: String,
+             unique: true
         },
         responsible: [
             {

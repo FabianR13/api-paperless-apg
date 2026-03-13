@@ -4,6 +4,7 @@ const laptopsSchema = new mongoose.Schema(
     {
         laptopName: {
             type: String,
+            unique: true
         },
         responsible: [
             {

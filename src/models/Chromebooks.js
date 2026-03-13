@@ -4,6 +4,7 @@ const chromebookSchema = new mongoose.Schema(
     {
         chromebookName: {
             type: String,
+            unique: true
         },
         location: {
             type: String,

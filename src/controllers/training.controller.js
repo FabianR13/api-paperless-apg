@@ -149,22 +149,42 @@ const countEvaluations = async (req, res) => {
 
 // Getting all Evaluations/////////////////////////////////////////////////////////////////////////////////////////////////////
 const getEvaluations = async (req, res) => {
-    const { limit } = req.body
-    const { CompanyId } = req.params
+    const { limit } = req.body;
+    const { CompanyId } = req.params;
 
     if (CompanyId.length !== 24) {
-        return;
+        return res.status(400).json({ status: "400", message: "Invalid Company ID" });
     }
 
-    const evaluations = await TrainingEvaluation.find({
-        company: { $in: CompanyId },
-    }).sort({ createdAt: -1 })
-        .limit(limit)
-        .populate({ path: 'numberEmployee' })
-        .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
-        .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] })
-        .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } });
-    res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+    try {
+        const activeEmployees = await Employees.find({
+            company: CompanyId,
+            active: true,
+            position: "6891274cb4cdc28fbceed01d"
+        }).select('_id');
+
+        const activeEmployeeIds = activeEmployees.map(emp => emp._id);
+
+        const evaluations = await TrainingEvaluation.find({
+            company: CompanyId,
+            numberEmployee: { $in: activeEmployeeIds }
+        })
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .populate({
+                path: 'numberEmployee',
+                select: 'numberEmployee name lastName'
+            })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] })
+            .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } });
+
+        res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
+
+    } catch (error) {
+        console.error("Error fetching evaluations:", error);
+        res.status(500).json({ status: "500", message: "Error fetching evaluations" });
+    }
 };
 
 // Getting Evaluation by Id////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -317,48 +337,62 @@ const updateEvaluationRegister = async (req, res) => {
     });
 };
 
-// Getting Kaizens Filtered///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// OBTENER EVALUACIONES POR FILTRO /////
 const getEvaluationsFiltered = async (req, res) => {
-    const { start, end, status, partNo, operator, company } = req.body
+    const { start, end, status, partNo, operator, company } = req.body;
     let options = {};
 
-    //Date range filter
-    if (req.body.start && req.body.end) {
-        if (!options["evaluationDate"]) options["evaluationDate"] = {};
+    try {
+        if (start && end) {
+            options["evaluationDate"] = {
+                $gte: new Date(start),
+                $lte: new Date(end)
+            };
+        }
 
-        options["evaluationDate"]["$gte"] = new Date(start);
-        options["evaluationDate"]["$lte"] = new Date(end);
-    }
-    // Filter by Area
-    if (status) {
-        options["evaluationStatus"] = status;
-    }
-    // Filter Created By
-    if (partNo) {
-        const foundParts = await Parts.find({
-            _id: { $in: partNo },
-        });
-        options["partNumber"] = foundParts.map((parts) => parts._id);
-    }
-    // Filter MontlyRank
-    if (operator) {
-        const foundEmployee = await Employees.find({
-            numberEmployee: { $in: operator },
-        });
-        options["numberEmployee"] = foundEmployee.map((employee) => employee._id);
-    }
-    // Filter Company
-    if (company) {
-        options["company"] = company
-    }
+        if (status) {
+            options["evaluationStatus"] = status;
+        }
+        if (partNo) {
+            options["partNumber"] = { $in: partNo };
+        }
 
-    const trainingEvaluationsF = await TrainingEvaluation.find(options)
-        .populate({ path: 'numberEmployee' })
-        .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
-        .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] })
-        .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
-        .sort({ createdAt: -1 });
-    res.json({ status: "200", message: "Evaluations Loaded New", body: trainingEvaluationsF });
+        if (company) {
+            options["company"] = company;
+        }
+
+        let employeeQuery = {
+            company: company,
+            active: true,
+            position: "6891274cb4cdc28fbceed01d"
+        };
+
+        if (operator) {
+            employeeQuery.numberEmployee = operator;
+        }
+
+        const validEmployees = await Employees.find(employeeQuery).select('_id');
+        const validEmployeeIds = validEmployees.map(emp => emp._id);
+
+        options["numberEmployee"] = { $in: validEmployeeIds };
+
+        const trainingEvaluationsF = await TrainingEvaluation.find(options)
+            .populate({
+                path: 'numberEmployee',
+                select: 'numberEmployee name lastName'
+            })
+            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
+            .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] })
+            .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } })
+            .sort({ createdAt: -1 });
+
+        res.json({ status: "200", message: "Evaluations Loaded New", body: trainingEvaluationsF });
+
+    } catch (error) {
+        console.error("Error filtrando evaluaciones:", error);
+        res.status(500).json({ status: "500", message: "Error en el servidor al filtrar datos" });
+    }
 };
 
 /// TENER EVALUACIONES PARA MATRIZ //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,9 +426,10 @@ const getMatrixEvaluations = async (req, res) => {
 
             Parts.find({
                 company: CompanyId,
-                status: true
+                status: true,
+                // showInTraining: true
             })
-                .select('partnumber operations customer')
+                .select('partnumber operations customer countOperations')
                 .populate({
                     path: 'customer',
                     select: 'name'

@@ -4,7 +4,8 @@ const {
     createPart,
     udpateParts,
     getParts,
-    getActiveParts
+    getActiveParts,
+    getTrainingParts
 } = require("../controllers/parts.controller.js");
 const {
     verifyToken,
@@ -45,6 +46,12 @@ router.get("/ActiveParts/:CompanyId",
     getActiveParts
 );
 
+// RUTA PARA OBTENER PARTES PARA TRAINING //
+router.get("/TrainingParts/:CompanyId",
+    verifyToken,
+    isAutorized,
+    getTrainingParts
+);
 
 ///Route to create part info///
 router.post(

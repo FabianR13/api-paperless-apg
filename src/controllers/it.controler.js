@@ -663,18 +663,18 @@ const createNewCellphone = async (req, res) => {
         newCellphone.number = foundLine.map((line) => line._id);
     }
 
-    if (responsible) {
-        const foundEmployee = await Employees.find({
-            numberEmployee: { $in: responsible },
-        });
-        newCellphone.responsible = foundEmployee.map((employee) => employee._id);
-    }
+    if (mongoose.Types.ObjectId.isValid(responsible)) {
 
-    if (newCellphone.responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            groupName: { $in: responsible },
-        });
-        newCellphone.responsibleGroup = foundAccounts.map((account) => account._id);
+        const foundEmployee = await Employees.find({ _id: responsible });
+
+        if (foundEmployee.length > 0) {
+            newCellphone.responsible = foundEmployee.map((employee) => employee._id);
+        } else {
+            const foundAccounts = await GenericAccount.find({ _id: responsible });
+            if (foundAccounts.length > 0) {
+                newCellphone.responsibleGroup = foundAccounts.map((account) => account._id);
+            }
+        }
     }
 
     if ((newCellphone.responsible.length === 0) && (newCellphone.responsibleGroup.length === 0)) {
@@ -729,7 +729,7 @@ const getAllCellphones = async (req, res) => {
 const updateCellphone = async (req, res) => {
     const { cellphoneId } = req.params;
     let responsible;
-    let responsibleAlt = "";
+    let responsibleAlt;
     let number = [];
     let responsibleGroup;
     let modifiedBy;
@@ -763,21 +763,27 @@ const updateCellphone = async (req, res) => {
     }
 
     if (req.body.responsible) {
-        const foundEmployee = await Employees.find({
-            numberEmployee: { $in: req.body.responsible },
-        });
-        responsible = foundEmployee.map((employee) => employee._id);
-    }
+        responsible = [];
+        responsibleGroup = [];
+        responsibleAlt = "";
 
-    if (responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            groupName: { $in: req.body.responsible },
-        });
-        responsibleGroup = foundAccounts.map((account) => account._id);
-    }
+        if (mongoose.Types.ObjectId.isValid(req.body.responsible)) {
 
-    if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
-        responsibleAlt = req.body.responsible;
+            const foundEmployee = await Employees.find({ _id: req.body.responsible });
+
+            if (foundEmployee.length > 0) {
+                responsible = foundEmployee.map((employee) => employee._id);
+            } else {
+                const foundAccounts = await GenericAccount.find({ _id: req.body.responsible });
+                if (foundAccounts.length > 0) {
+                    responsibleGroup = foundAccounts.map((account) => account._id);
+                }
+            }
+        }
+
+        if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
+            responsibleAlt = req.body.responsible;
+        }
     }
 
     const updatedCellphoneDevice = await Cellphones.updateOne(
@@ -1247,18 +1253,18 @@ const createNewMonitor = async (req, res) => {
         newMonitor.modifiedBy = foundUsers.map((user) => user._id);
     }
 
-    if (responsible) {
-        const foundEmployee = await Employees.find({
-            numberEmployee: { $in: responsible },
-        });
-        newMonitor.responsible = foundEmployee.map((employee) => employee._id);
-    }
+    if (mongoose.Types.ObjectId.isValid(responsible)) {
 
-    if (newMonitor.responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            groupName: { $in: responsible },
-        });
-        newMonitor.responsibleGroup = foundAccounts.map((account) => account._id);
+        const foundEmployee = await Employees.find({ _id: responsible });
+
+        if (foundEmployee.length > 0) {
+            newMonitor.responsible = foundEmployee.map((employee) => employee._id);
+        } else {
+            const foundAccounts = await GenericAccount.find({ _id: responsible });
+            if (foundAccounts.length > 0) {
+                newMonitor.responsibleGroup = foundAccounts.map((account) => account._id);
+            }
+        }
     }
 
     if ((newMonitor.responsible.length === 0) && (newMonitor.responsibleGroup.length === 0)) {
@@ -1313,7 +1319,7 @@ const getAllMonitors = async (req, res) => {
 const updateMonitor = async (req, res) => {
     const { monitorId } = req.params;
     let responsible;
-    let responsibleAlt = "";
+    let responsibleAlt;
     let responsibleGroup;
     let modifiedBy;
 
@@ -1335,21 +1341,27 @@ const updateMonitor = async (req, res) => {
     }
 
     if (req.body.responsible) {
-        const foundEmployee = await Employees.find({
-            numberEmployee: { $in: req.body.responsible },
-        });
-        responsible = foundEmployee.map((employee) => employee._id);
-    }
+        responsible = [];
+        responsibleGroup = [];
+        responsibleAlt = "";
 
-    if (responsible.length === 0) {
-        const foundAccounts = await GenericAccount.find({
-            groupName: { $in: req.body.responsible },
-        });
-        responsibleGroup = foundAccounts.map((account) => account._id);
-    }
+        if (mongoose.Types.ObjectId.isValid(req.body.responsible)) {
 
-    if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
-        responsibleAlt = req.body.responsible;
+            const foundEmployee = await Employees.find({ _id: req.body.responsible });
+
+            if (foundEmployee.length > 0) {
+                responsible = foundEmployee.map((employee) => employee._id);
+            } else {
+                const foundAccounts = await GenericAccount.find({ _id: req.body.responsible });
+                if (foundAccounts.length > 0) {
+                    responsibleGroup = foundAccounts.map((account) => account._id);
+                }
+            }
+        }
+
+        if ((responsible.length === 0) && (responsibleGroup.length === 0)) {
+            responsibleAlt = req.body.responsible;
+        }
     }
 
     const updatedMonitorDevice = await Monitors.updateOne(

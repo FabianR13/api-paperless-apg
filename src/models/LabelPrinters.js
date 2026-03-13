@@ -4,6 +4,7 @@ const labelPrinterSchema = new mongoose.Schema(
     {
         printerName: {
             type: String,
+            unique: true
         },
         location: {
             type: String,

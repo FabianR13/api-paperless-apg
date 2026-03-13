@@ -4,6 +4,7 @@ const cellphonesSchema = new mongoose.Schema(
     {
         cellphoneName: {
             type: String,
+            unique: true
         },
         responsible: [
             {

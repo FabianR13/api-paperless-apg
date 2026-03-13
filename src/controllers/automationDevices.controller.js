@@ -18,7 +18,8 @@ const getAutomationDevices = async (req, res) => {
     const automationDevices = await AutomationDevice.find({
         company: CompanyId,
     }).sort({ cretaedAt: -1 })
-        .populate({ path: "customer" });
+        .populate({ path: "customer" })
+        .populate({ path: "partNumber" });
 
     res.json({ status: "200", message: "Automation Devices Loaded", body: automationDevices });
 }
