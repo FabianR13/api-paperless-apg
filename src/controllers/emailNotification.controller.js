@@ -111,7 +111,7 @@ const autoSendDeviationAlerts = async () => {
 
         const mailOptions = {
             from: 'paperless@apgmexico.mx',
-            to: 'fabian.ramos@apgmexico.mx', // para mas correos usar comas para separarlos
+            to: 'isabel.sierra@apgmexico.mx', // para mas correos usar comas para separarlos
             subject: `⚠️ APG Deviations Alert - ${new Date().toLocaleDateString()}`,
             html: htmlContent,
         };

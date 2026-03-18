@@ -1,18 +1,50 @@
 // index.js
-const app = require("./app.js");
-require("./database"); // Al requerirlo, se ejecuta tu conexión a Mongo automáticamente
+const cluster = require('cluster');
+const os = require('os');
 
-// 1. IMPORTAMOS LA FUNCIÓN DEL BOT
-// (Asegúrate que la ruta sea correcta. Si index.js está en 'src', esto está bien)
-// const { connectDiscordBot } = require("./discord/bot.js"); 
+const WORKERS = process.env.WEB_CONCURRENCY || process.env.WORKERS_LOCAL || os.cpus().length;
 
-app.set('port', process.env.PORT || 4000);
+if (cluster.isPrimary) {
+    console.log(`[Master] Hilo principal PID ${process.pid} en ejecución`);
+    console.log(`[Master] Iniciando ${WORKERS} workers para aprovechar el Performance-M...`);
 
-// Iniciamos el servidor Web
-app.listen(app.get('port'), () => {
-    console.log("Server listen on port", app.get('port'));
-    
-    // 2. INICIAMOS EL BOT DE DISCORD
-    // Lo ponemos aquí para que arranque junto con el servidor
+    require("./database");
+
+    // --- CRON JOBS MOVIDOS AL MASTER ---
+    const cron = require('node-cron');
+    const { autoSendDeviationAlerts } = require("./controllers/emailNotification.controller.js");
+
+    cron.schedule('06 18 * * *', () => {
+        console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones (Desde el Master)");
+        autoSendDeviationAlerts();
+    }, {
+        scheduled: true,
+        timezone: "America/Mexico_City"
+    });
+
+    // Clonamos la API
+    for (let i = 0; i < WORKERS; i++) {
+        cluster.fork();
+    }
+
+    // Si un worker crashea por falta de memoria u otro error, levantamos uno nuevo
+    cluster.on('exit', (worker, code, signal) => {
+        console.log(`[Worker] PID ${worker.process.pid} se detuvo. Levantando un nuevo clon...`);
+        cluster.fork();
+    });
+
+} else {
+    // --- ESPACIO DE LOS WORKERS ---
+    const app = require("./app.js");
+    require("./database");
+
+    // bot de Discord
+    // const { connectDiscordBot } = require("./discord/bot.js"); 
     // connectDiscordBot();
-});
+
+    app.set('port', process.env.PORT || 4000);
+
+    app.listen(app.get('port'), () => {
+        console.log(`[Worker] PID ${process.pid} escuchando en el puerto ${app.get('port')}`);
+    });
+}
