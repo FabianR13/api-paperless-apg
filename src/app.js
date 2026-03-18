@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 // Configuración básica (permitir todas las solicitudes)
 const cron = require('node-cron');
+const compression = require("compression");
 
 
 app.use(cors());
