@@ -508,10 +508,60 @@ const signDeviation = async (req, res) => {
     }
 };
 
+//FUNCION PARA CERRAR UNA DEWSVIACION //////////////////////////////////////////////////////////////////////////////////////////////
+const closeDeviation = async (req, res) => {
+    const { deviationId } = req.params;
+    const closedBy = await User.findById(req.userId);
+
+    if (!closedBy) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                status: "error",
+                message: "Closure evidence (PDF file) is required"
+            });
+        }
+
+        const closureFileName = req.file.key;
+
+        const dateMX = new Date();
+
+        const updatedDeviation = await Deviation.findByIdAndUpdate(
+            deviationId,
+            {
+                $set: {
+                    deviationStatus: "Closed",
+                    closedBy: closedBy,
+                    closureDate: dateMX,
+                    closureFile: closureFileName
+                }
+            },
+            { new: true }
+        )
+            .populate({ path: 'closedBy', model: 'User', select: 'employee' });
+
+        if (!updatedDeviation) {
+            return res.status(404).json({ status: "error", message: "Deviation not found" });
+        }
+
+        res.json({
+            status: "200",
+            message: "Deviation Closed Successfully",
+            body: updatedDeviation
+        });
+
+    } catch (error) {
+        console.error("Error closing deviation:", error);
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
 module.exports = {
     createDeviation,
     getDeviations,
     updateDeviation,
     rejectDeviation,
-    signDeviation
+    signDeviation,
+    closeDeviation
 };

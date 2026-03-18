@@ -170,13 +170,13 @@ app.use("/api/dailyAudits",dailyAuditsRoutes);
 //setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);
 
-// cron.schedule('06 18 * * *', () => { // 0 8 donde 0 son los minutos y 8 la hora
-//   console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones");
-//   autoSendDeviationAlerts();
-// }, {
-//   scheduled: true,
-//   timezone: "America/Mexico_City" 
-// });
+cron.schedule('06 18 * * *', () => { // 0 8 donde 0 son los minutos y 8 la hora
+  console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones");
+  autoSendDeviationAlerts();
+}, {
+  scheduled: true,
+  timezone: "America/Mexico_City" 
+});
 
 const date = new Date();
 const horaActual = date.getHours()

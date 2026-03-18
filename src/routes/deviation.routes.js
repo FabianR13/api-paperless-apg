@@ -8,8 +8,9 @@ const {
   isDeviationManager
 } = require("../middlewares/auth.Jwt.js");
 const { sendEmailMiddlewareNext } = require("../middlewares/mailer.js");
-const { createDeviation, getDeviations, updateDeviation, rejectDeviation, signDeviation, } = require("../controllers/deviations.controller.js");
+const { createDeviation, getDeviations, updateDeviation, rejectDeviation, signDeviation, closeDeviation, } = require("../controllers/deviations.controller.js");
 const uploadDeviationImgs = require("../middlewares/uploadDeviationImgs.js");
+const uploadClosingFile = require("../middlewares/uploadClosingFile.js");
 
 // Route to get All the deviations///
 router.get(
@@ -52,5 +53,14 @@ router.put("/SignDeviation/:deviationId/:CompanyId",
   isAutorized,
   isDeviationManager,
   signDeviation);
+
+//RUTA PARA CERRAR DESVIACION //
+router.put(
+  "/CloseDeviation/:deviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  uploadClosingFile, // Pasamos por Multer primero
+  closeDeviation     // Luego vamos al controlador
+);
 
 module.exports = router;
