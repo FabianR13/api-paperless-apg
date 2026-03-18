@@ -1,13 +1,14 @@
 // index.js
+
 const cluster = require('cluster');
 const os = require('os');
 
-const WORKERS = process.env.WEB_CONCURRENCY || process.env.WORKERS_LOCAL || os.cpus().length;
+const WORKERS = process.env.WEB_CONCURRENCY || 2;
 
 if (cluster.isPrimary) {
     console.log(`[Master] Hilo principal PID ${process.pid} en ejecución`);
     console.log(`[Master] Iniciando ${WORKERS} workers para aprovechar el Performance-M...`);
-
+    require('dotenv').config();
     require("./database");
 
     // --- CRON JOBS MOVIDOS AL MASTER ---
@@ -35,6 +36,7 @@ if (cluster.isPrimary) {
 
 } else {
     // --- ESPACIO DE LOS WORKERS ---
+    require('dotenv').config();
     const app = require("./app.js");
     require("./database");
 

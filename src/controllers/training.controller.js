@@ -171,13 +171,35 @@ const getEvaluations = async (req, res) => {
         })
             .sort({ createdAt: -1 })
             .limit(limit)
+            .select('-company -createdAt -updatedAt -__v')
             .populate({
                 path: 'numberEmployee',
                 select: 'numberEmployee name lastName'
             })
-            .populate({ path: 'partNumber', populate: { path: "customer", model: "Customer" } })
-            .populate({ path: 'qualifiedBy', populate: [{ path: "signature" }, { path: "employee", model: "Employees" }] })
-            .populate({ path: 'trainer', populate: { path: "employee", model: "Employees" } });
+            .populate({
+                path: 'partNumber',
+                select: 'partnumber partName customer', 
+                populate: {
+                    path: "customer",
+                    select: 'name'
+                }
+            })
+            .populate({
+                path: 'qualifiedBy',
+                select: 'username employee', 
+                populate: {
+                    path: "employee",
+                    select: 'numberEmployee name lastName' 
+                }
+            })
+            .populate({
+                path: 'trainer',
+                select: 'username employee', 
+                populate: {
+                    path: "employee",
+                    select: 'numberEmployee name lastName'
+                }
+            });
 
         res.json({ status: "200", message: "Evaluations Loaded", body: evaluations });
 

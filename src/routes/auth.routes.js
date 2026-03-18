@@ -31,6 +31,16 @@ const {
   isAutorized
 } = require("../middlewares/auth.Jwt.js");
 
+// RUTA PARA OBTENER USUARIOS //
+router.get("/Users/:CompanyId",
+  verifyToken,
+  isAutorized,
+  getUsers);
+
+
+
+
+
 ///Route to create new user///
 router.post(
   "/Signup/:CompanyId",
@@ -69,11 +79,10 @@ router.put(
 // isAdmin,
 ////// updateUserSign
 //);
-///Route to get all users///
-router.get("/Users/:CompanyId",
-  verifyToken,
-  isAutorized,
-  getUsers);
+
+
+
+
 ///Route to get all roles///
 router.get("/Roles",
   verifyToken,

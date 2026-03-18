@@ -23,6 +23,7 @@ const corsOptions = {
   allowedHeaders: 'Content-Type,Authorization',
 };
 app.use(cors(corsOptions));
+app.use(compression());
 
 // Middlewares
 app.set("pkg", pkg);
@@ -133,7 +134,7 @@ app.get("/api/cors", (req, res) => {
 app.set("pkg", pkg);
 app.use(morgan("dev"));
 app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 // app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/", (req, res) => {
   res.json({
@@ -165,7 +166,7 @@ app.use("/api/errorproofing", errorProfingRoutes);
 app.use("/api/evaluations", evaluationsRoutes);
 app.use("/api/automationDevices", automationDevicesRoutes);
 app.use("/api/reports", reportsRoutes);
-app.use("/api/dailyAudits",dailyAuditsRoutes);
+app.use("/api/dailyAudits", dailyAuditsRoutes);
 
 //setInterval(autoSendEmail, 3600000);//Tiempo de ejecucion de 1Hora
 //setInterval(autoSendEmail, 10000);

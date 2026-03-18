@@ -113,115 +113,62 @@ const getDepartments = async (req, res) => {
   const departments = await Deparment.find().sort({ name: 1 });
   res.json({ status: "200", message: "Department Loaded", body: departments });
 };
+
+
 // Getting all employees///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getEmployees = async (req, res) => {
-  const { filter, order } = req.body
-  const { employeeStatus } = req.params
-  const { CompanyId } = req.params
+  const { filter, order } = req.body;
+  const { employeeStatus, CompanyId } = req.params;
+  const { simple } = req.query; 
+
   if (CompanyId.length !== 24) {
-    return;
+    return res.status(400).json({ status: "400", message: "Invalid Company ID" });
   }
-  const company = await Company.find({
-    _id: { $in: CompanyId },
-  })
+
+  const company = await Company.exists({ _id: CompanyId });
   if (!company) {
-    return;
+    return res.status(404).json({ status: "404", message: "Company not found" });
   }
 
-  if (filter === "name") {
-    if (order === "acend") {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ name: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    } else {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ name: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }
-
-  }
-  if (filter === "lastName") {
-    if (order === "acend") {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ lastName: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    } else {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ lastName: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }
-
-  }
-  if (filter === "employeeNo") {
-    if (order === "acend") {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ numberEmployee: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    } else {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ numberEmployee: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }
-  }
-  if (filter === "department") {
-    if (order === "acend") {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ department: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    } else {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ department: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }
-  }
-  if (filter === "position") {
-    if (order === "acend") {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ position: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    } else {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ position: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }
-  }
-  if (filter === "group") {
-    if (order === "acend") {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ group: 1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    } else {
-      const employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      }).sort({ group: -1 }).populate({ path: 'department', select: "name" }).populate({ path: 'position', select: "name" });
-      res.json({ status: "200", message: "Employees Loaded", body: employees });
-    }
+  const sortOptions = {};
+  if (filter) {
+    const sortField = filter === "employeeNo" ? "numberEmployee" : filter;
+    const sortDirection = order === "acend" ? 1 : -1;
+    sortOptions[sortField] = sortDirection;
+  } else {
+    sortOptions['name'] = 1;
   }
 
+  try {
+    let employees;
+
+    if (simple === 'true') {
+      employees = await Employees.find({
+        company: { $in: CompanyId },
+        active: { $in: employeeStatus },
+      })
+        .sort(sortOptions)
+        .select('name lastName numberEmployee active picture department position')
+        .populate({ path: 'department', select: 'name' })
+        .populate({ path: 'position', select: 'name' });
+    } else {
+      employees = await Employees.find({
+        company: { $in: CompanyId },
+        active: { $in: employeeStatus },
+      })
+        .sort(sortOptions)
+        .populate({ path: 'department', select: 'name' })
+        .populate({ path: 'position', select: 'name' });
+    }
+
+    res.json({ status: "200", message: "Employees Loaded", body: employees });
+
+  } catch (error) {
+    console.error("Error fetching employees:", error);
+    res.status(500).json({ status: "500", message: "Error fetching employees" });
+  }
 };
+
 // Updating the employee user////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const updateEmployeeUser = async (req, res) => {
   const { employeeId } = req.params;

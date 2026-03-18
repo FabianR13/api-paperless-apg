@@ -8,6 +8,52 @@ const Signature = require("../models/Signatures.js");
 const PushToken = require("../models/PushToken.js");
 console.log("ENV:", process.env.FIREBASE_CREDENTIALS_JSON ? "✅ cargada" : "❌ no encontrada");
 
+// Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const getUsers = async (req, res) => {
+  const { CompanyId } = req.params;
+  const { simple } = req.query;
+
+  if (CompanyId.length !== 24) {
+    return;
+  }
+
+  const company = await Company.find({
+    _id: { $in: CompanyId },
+  });
+
+  if (!company) {
+    return;
+  }
+
+  let users;
+
+  if (simple === 'true') {
+    users = await User.find({ company: { $in: CompanyId } })
+      .select('username email employee roles rolesAxiom signature')
+      .populate({
+        path: 'employee',
+        select: 'name lastName numberEmployee department position active',
+        populate: [
+          { path: "department", select: 'name' },
+          { path: "position", select: 'name' }
+        ]
+      })
+      .populate({ path: "roles", select: 'name' })
+      .populate({ path: "rolesAxiom", select: 'name' })
+      .populate({ path: 'signature', select: 'signature' });
+  } else {
+
+    users = await User.find({ company: { $in: CompanyId } })
+      .populate({ path: 'employee', populate: [{ path: "department", select: 'name' }, { path: "position", select: 'name' }] })
+      .populate({ path: "roles", select: 'name' })
+      .populate({ path: "rolesAxiom", select: 'name' })
+      .populate({ path: "companyAccess" })
+      .populate({ path: 'signature', select: 'signature' });
+  }
+
+  res.json({ status: "200", message: "Users Loaded", body: users });
+};
+
 //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const signUp = async (req, res) => {
   const { username, email, password, signature, roles, rolesAxiom, employee, companyAccess, company } = req.body;
@@ -448,36 +494,11 @@ const getDashboardCards = async (req, res) => {
   const cardsFound = await Dashboard.find().sort({ pos: 1 });
   res.json({ status: "200", message: "Dashboard Loaded", body: cardsFound });
 };
-// Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const getUsers = async (req, res) => {
-  const origin = req.headers.origin;
-  //console.log(origin)
-  //res.header('Access-Control-Allow-Origin', origin);
-  //res.header('Access-Control-Allow-Origin', ['https://www.axiompaperless.com', 'https://axiompaperless.com']);
-  //res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  //res.header('Access-Control-Allow-Credentials', 'true');
-  const { CompanyId } = req.params
-  if (CompanyId.length !== 24) {
-    return;
-  }
-  const company = await Company.find({
-    _id: { $in: CompanyId },
-  })
-  if (!company) {
-    return;
-  }
-  //console.log("casi final")
 
-  const users = await User.find({
-    company: { $in: CompanyId },
-  })
-    .populate({ path: 'employee', populate: [{ path: "department" }, { path: "position" }] })
-    .populate({ path: "roles" }).populate({ path: "rolesAxiom" })
-    .populate({ path: "companyAccess" })
-    .populate({ path: 'signature' });
-  res.json({ status: "200", message: "Users Loaded", body: users });
-};
+
+
+
+
 // Getting all Roles//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getRoles = async (req, res) => {
   const origin = req.headers.origin;
