@@ -142,12 +142,18 @@ const updateDailyAuditData = async (req, res) => {
 
         if (req.files) {
             if (req.files['imagesD']) {
-                newImagesD = req.files['imagesD'].map(file => file.key); 
+                newImagesD = req.files['imagesD'].map(file => file.key);
             }
             if (req.files['imagesA']) {
                 newImagesA = req.files['imagesA'].map(file => file.key);
             }
         }
+
+        const oldAudit = await DailyAudits.findById(DailyAuditId);
+        if (!oldAudit) return res.status(404).json({ status: "error", message: "Audit not found" });
+
+        const isNewlyCompletedD = oldAudit.auditStatusD !== 'Completed' && auditStatusD === 'Completed';
+        const isNewlyCompletedA = oldAudit.auditStatusA !== 'Completed' && auditStatusA === 'Completed';
 
         const updateFields = {
             generalCommentsD, generalCommentsA,
@@ -172,9 +178,9 @@ const updateDailyAuditData = async (req, res) => {
         )
             .populate({
                 path: 'assignedToD assignedToA',
-                populate: { path: 'employee' } 
+                populate: { path: 'employee' }
             })
-            .populate('observations.partNumber'); 
+            .populate('observations.partNumber');
 
         if (!updatedDailyAudit) {
             return res.status(403).json({ status: "403", message: "Daily Audit not Updated" });
