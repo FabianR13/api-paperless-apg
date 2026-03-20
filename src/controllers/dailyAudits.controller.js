@@ -157,6 +157,13 @@ const updateDailyAuditData = async (req, res) => {
 
         const parsedObservations = observations ? JSON.parse(observations) : [];
 
+        const cleanObservations = parsedObservations.map(obs => {
+            if (obs.partNumber === "") {
+                obs.partNumber = null;
+            }
+            return obs;
+        });
+
         const parsedDeletesD = imagesToDeleteD ? JSON.parse(imagesToDeleteD) : [];
         const parsedDeletesA = imagesToDeleteA ? JSON.parse(imagesToDeleteA) : [];
 
@@ -182,7 +189,7 @@ const updateDailyAuditData = async (req, res) => {
             generalCommentsD, generalCommentsA,
             auditStatusD, auditStatusA,
             assignedToD, assignedToA,
-            observations: parsedObservations
+            observations: cleanObservations
         };
 
         if (auditStatusD === 'Completed') updateFields.completedTimeD = new Date().toLocaleTimeString('es-MX', { hour12: false });
