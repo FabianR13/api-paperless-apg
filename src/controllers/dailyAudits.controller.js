@@ -2,6 +2,19 @@ const Company = require("../models/Company");
 const DailyAudits = require("../models/DailyAudits");
 const User = require("../models/User");
 const { sendAuditCompletionEmail } = require('../utils/emailNotifier');
+const AWS = require('aws-sdk');
+dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
+
+AWS.config.update({
+    region: process.env.S3_BUCKET_REGION,
+    apiVersion: 'latest',
+    credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
+    }
+});
+
+const s3 = new AWS.S3();
 
 // CREAR DAILY AUDITS AIGNANDO EL DIA AL EMPLEADO ////////////////////////////////////////////////////////////////////////////////////////////
 const scheduleAudits = async (req, res) => {
@@ -133,9 +146,18 @@ const updateDailyAuditData = async (req, res) => {
     const { DailyAuditId } = req.params;
 
     try {
-        let { generalCommentsD, generalCommentsA, auditStatusD, auditStatusA, assignedToD, assignedToA, observations } = req.body;
+        let {
+            generalCommentsD, generalCommentsA,
+            auditStatusD, auditStatusA,
+            assignedToD, assignedToA,
+            observations,
+            imagesToDeleteD, imagesToDeleteA
+        } = req.body;
 
         const parsedObservations = observations ? JSON.parse(observations) : [];
+
+        const parsedDeletesD = imagesToDeleteD ? JSON.parse(imagesToDeleteD) : [];
+        const parsedDeletesA = imagesToDeleteA ? JSON.parse(imagesToDeleteA) : [];
 
         let newImagesD = [];
         let newImagesA = [];
@@ -172,6 +194,10 @@ const updateDailyAuditData = async (req, res) => {
                 $push: {
                     imagesD: { $each: newImagesD },
                     imagesA: { $each: newImagesA }
+                },
+                $pull: {
+                    imagesD: { $in: parsedDeletesD },
+                    imagesA: { $in: parsedDeletesA }
                 }
             },
             { new: true }
@@ -184,6 +210,24 @@ const updateDailyAuditData = async (req, res) => {
 
         if (!updatedDailyAudit) {
             return res.status(403).json({ status: "403", message: "Daily Audit not Updated" });
+        }
+
+        const allKeysToDelete = [...parsedDeletesD, ...parsedDeletesA];
+
+        if (allKeysToDelete.length > 0) {
+            const folderPath = "Uploads/DailyAuditsImgs/";
+
+            const deleteParams = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Delete: {
+                    Objects: allKeysToDelete.map(key => ({ Key: folderPath + key }))
+                }
+            };
+
+            s3.deleteObjects(deleteParams, (err, data) => {
+                if (err) console.error("Error borrando objetos huérfanos en S3:", err);
+                else console.log("Objetos borrados de S3 exitosamente:", data);
+            });
         }
 
         if (isNewlyCompletedD) {
