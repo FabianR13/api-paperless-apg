@@ -188,6 +188,18 @@ const updateDailyAuditData = async (req, res) => {
         if (auditStatusD === 'Completed') updateFields.completedTimeD = new Date().toLocaleTimeString('es-MX', { hour12: false });
         if (auditStatusA === 'Completed') updateFields.completedTimeA = new Date().toLocaleTimeString('es-MX', { hour12: false });
 
+        if (parsedDeletesD.length > 0 || parsedDeletesA.length > 0) {
+            await DailyAudits.updateOne(
+                { _id: DailyAuditId },
+                {
+                    $pull: {
+                        imagesD: { $in: parsedDeletesD },
+                        imagesA: { $in: parsedDeletesA }
+                    }
+                }
+            );
+        }
+
         const updatedDailyAudit = await DailyAudits.findByIdAndUpdate(
             { _id: DailyAuditId },
             {
@@ -196,10 +208,6 @@ const updateDailyAuditData = async (req, res) => {
                     imagesD: { $each: newImagesD },
                     imagesA: { $each: newImagesA }
                 },
-                $pull: {
-                    imagesD: { $in: parsedDeletesD },
-                    imagesA: { $in: parsedDeletesA }
-                }
             },
             { new: true }
         )
