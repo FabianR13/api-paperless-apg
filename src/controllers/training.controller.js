@@ -178,7 +178,7 @@ const getEvaluations = async (req, res) => {
             })
             .populate({
                 path: 'partNumber',
-                select: 'partnumber partName customer', 
+                select: 'partnumber partName customer',
                 populate: {
                     path: "customer",
                     select: 'name'
@@ -186,15 +186,15 @@ const getEvaluations = async (req, res) => {
             })
             .populate({
                 path: 'qualifiedBy',
-                select: 'username employee', 
+                select: 'username employee',
                 populate: {
                     path: "employee",
-                    select: 'numberEmployee name lastName' 
+                    select: 'numberEmployee name lastName'
                 }
             })
             .populate({
                 path: 'trainer',
-                select: 'username employee', 
+                select: 'username employee',
                 populate: {
                     path: "employee",
                     select: 'numberEmployee name lastName'
@@ -442,6 +442,10 @@ const getMatrixEvaluations = async (req, res) => {
                 })
                 .populate({
                     path: 'partNumber',
+                    match: {
+                        status: true,
+                        showInTraining: true
+                    },
                     select: 'partnumber'
                 })
                 .lean(),
@@ -449,7 +453,7 @@ const getMatrixEvaluations = async (req, res) => {
             Parts.find({
                 company: CompanyId,
                 status: true,
-                // showInTraining: true
+                showInTraining: true
             })
                 .select('partnumber operations customer countOperations')
                 .populate({
