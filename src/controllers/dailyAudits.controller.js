@@ -133,54 +133,54 @@ const updateDailyAuditData = async (req, res) => {
     const { DailyAuditId } = req.params;
 
     try {
-        const {
-            generalCommentsD, generalCommentsA,
-            auditStatusD, auditStatusA,
-            assignedToD, assignedToA,
-            observations
-        } = req.body;
+        let { generalCommentsD, generalCommentsA, auditStatusD, auditStatusA, assignedToD, assignedToA, observations } = req.body;
 
-        // 1. Buscamos el estado ANTERIOR para saber si acaba de cambiar a "Completed"
-        const oldAudit = await DailyAudits.findById(DailyAuditId);
-        if (!oldAudit) return res.status(404).json({ status: "error", message: "Audit not found" });
+        const parsedObservations = observations ? JSON.parse(observations) : [];
 
-        const isNewlyCompletedD = oldAudit.auditStatusD !== 'Completed' && auditStatusD === 'Completed';
-        const isNewlyCompletedA = oldAudit.auditStatusA !== 'Completed' && auditStatusA === 'Completed';
+        let newImagesD = [];
+        let newImagesA = [];
 
-        // 2. Preparamos el objeto con lo que vamos a actualizar
+        if (req.files) {
+            if (req.files['imagesD']) {
+                newImagesD = req.files['imagesD'].map(file => file.key); 
+            }
+            if (req.files['imagesA']) {
+                newImagesA = req.files['imagesA'].map(file => file.key);
+            }
+        }
+
         const updateFields = {
             generalCommentsD, generalCommentsA,
             auditStatusD, auditStatusA,
             assignedToD, assignedToA,
-            observations
+            observations: parsedObservations
         };
 
-        if (auditStatusD === 'Completed') {
-            updateFields.completedTimeD = new Date().toLocaleTimeString('es-MX', { hour12: false });
-        }
-        if (auditStatusA === 'Completed') {
-            updateFields.completedTimeA = new Date().toLocaleTimeString('es-MX', { hour12: false });
-        }
+        if (auditStatusD === 'Completed') updateFields.completedTimeD = new Date().toLocaleTimeString('es-MX', { hour12: false });
+        if (auditStatusA === 'Completed') updateFields.completedTimeA = new Date().toLocaleTimeString('es-MX', { hour12: false });
 
-        // 3. Actualizamos y HACEMOS POPULATE de los campos referenciados
         const updatedDailyAudit = await DailyAudits.findByIdAndUpdate(
             { _id: DailyAuditId },
-            { $set: updateFields },
+            {
+                $set: updateFields,
+                $push: {
+                    imagesD: { $each: newImagesD },
+                    imagesA: { $each: newImagesA }
+                }
+            },
             { new: true }
         )
             .populate({
                 path: 'assignedToD assignedToA',
-                populate: { path: 'employee' } // Traemos el nombre del empleado
+                populate: { path: 'employee' } 
             })
-            .populate('observations.partNumber'); // Traemos la info de las piezas
+            .populate('observations.partNumber'); 
 
         if (!updatedDailyAudit) {
             return res.status(403).json({ status: "403", message: "Daily Audit not Updated" });
         }
 
-        // 4. DISPARAMOS LOS CORREOS (Solo si acaban de ser completados)
         if (isNewlyCompletedD) {
-            // Se manda de forma asíncrona (no usamos await aquí para no trabar la respuesta al frontend)
             sendAuditCompletionEmail(updatedDailyAudit, 'Shift 1');
         }
         if (isNewlyCompletedA) {

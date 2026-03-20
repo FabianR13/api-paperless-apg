@@ -11,6 +11,8 @@ const DailyAuditsSchema = new Schema({
     completedTimeD: { type: String },
     auditStatusA: { type: String },
     completedTimeA: { type: String },
+    imagesD: [{ type: String }],
+    imagesA: [{ type: String }],
     observations: [{
         location: { type: String, required: true },
         partNumber: { type: Schema.Types.ObjectId, ref: "Parts" },
