@@ -117,6 +117,9 @@ router.put("/rewards/:CompanyId/:RewardId",
 // RUTA PARA CREAR UNA NUEVA IONVESTIGACION DE KAIZEN //
 router.post(
   "/CreateInvestigation/:CompanyId/:suggestionId",
+  verifyToken,
+  isAutorized,
+  isKaizenAdviser,
   uploadInvestigationSignatures,
   createInvestigation
 );
