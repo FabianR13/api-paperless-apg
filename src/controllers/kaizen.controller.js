@@ -141,14 +141,14 @@ const getSuggestions = async (req, res) => {
     .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
     .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
     .populate({
-      path: "investigationId", 
-      select: "-suggestionId", 
+      path: "investigationId",
+      select: "-suggestionId",
       populate: {
-        path: "q14_advisors", 
-        select: "username employee", 
+        path: "q14_advisors",
+        select: "username employee",
         populate: {
           path: "employee",
-          select: "name lastName" 
+          select: "name lastName"
         }
       }
     });
@@ -603,6 +603,7 @@ const createInvestigation = async (req, res) => {
     const savedInvestigation = await newInvestigation.save();
 
     existingSuggestion.investigationId = savedInvestigation._id;
+    existingSuggestion.status = body.investigationStatus;
     await existingSuggestion.save();
 
     return res.status(200).json({
