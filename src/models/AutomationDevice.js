@@ -40,6 +40,16 @@ const typeOfVisualAidsSchema = new mongoose.Schema({
     },
 }, { _id: false });
 
+const typeOfCylindersSchema = new mongoose.Schema({
+    name: {
+        type: String,
+    },
+    hasCylinder: {
+        type: Boolean,
+        default: false,
+    },
+}, { _id: false });
+
 const AutomationDeviceSchema = new mongoose.Schema({
     deviceId: {
         type: String,
@@ -65,6 +75,7 @@ const AutomationDeviceSchema = new mongoose.Schema({
     clampingType: [clampingTypeSchema],
     nestType: [nestTypeSchema],
     typeOfVisualAids: [typeOfVisualAidsSchema],
+    typeOfCylinders: [typeOfCylindersSchema],
     company:
     {
         ref: "Company",

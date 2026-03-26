@@ -142,20 +142,20 @@ const getEmployees = async (req, res) => {
   try {
     let employees;
 
+    const baseQuery = {
+      company: { $in: CompanyId },
+      active: { $in: employeeStatus },
+      name: { $ne: "Admin" } 
+    };
+
     if (simple === 'true') {
-      employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      })
+      employees = await Employees.find(baseQuery)
         .sort(sortOptions)
         .select('name lastName numberEmployee active picture department position')
         .populate({ path: 'department', select: 'name' })
         .populate({ path: 'position', select: 'name' });
     } else {
-      employees = await Employees.find({
-        company: { $in: CompanyId },
-        active: { $in: employeeStatus },
-      })
+      employees = await Employees.find(baseQuery)
         .sort(sortOptions)
         .populate({ path: 'department', select: 'name' })
         .populate({ path: 'position', select: 'name' });
