@@ -186,11 +186,17 @@ const getEvaluations = async (req, res) => {
             })
             .populate({
                 path: 'qualifiedBy',
-                select: 'username employee',
-                populate: {
-                    path: "employee",
-                    select: 'numberEmployee name lastName'
-                }
+                select: 'username employee signature',
+                populate: [
+                    {
+                        path: "employee",
+                        select: 'numberEmployee name lastName'
+                    },
+                    {
+                        path: "signature",
+                        select: "signature"
+                    }
+                ]
             })
             .populate({
                 path: 'trainer',

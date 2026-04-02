@@ -56,68 +56,77 @@ const getUsers = async (req, res) => {
 
 //Crear un nuevo usuario///////////////////////////////////////////////////////////////////////////////////////////////////////////
 const signUp = async (req, res) => {
-  const { username, email, password, signature, roles, rolesAxiom, employee, companyAccess, company } = req.body;
+  const { CompanyId } = req.params;
 
-  //guardar firma
-  const newSignature = new Signature({
-    username,
-    signature
-  });
+  const foundCompany = await Company.findById(CompanyId);
+  if (!foundCompany) return res.status(404).json({ status: "error", message: "Company not found" });
 
-  const savedSignature = await newSignature.save();
+  try {
+    const { username, email, password, signature, roles, rolesAxiom, employee, companyAccess, language } = req.body;
 
-  const newUser = new User({
-    username,
-    email,
-    password: await User.encryptPassword(password)
-  });
-
-  if (savedSignature) {
-    const foundSignature = await Signature.find({ username: { $in: username } });
-    newUser.signature = foundSignature.map((signature) => signature._id);
-  }
-
-  //Buscar roles en db y asignar a roles apg
-  if (roles) {
-    const foundRoles = await Role.find({ name: { $in: roles } });
-    newUser.roles = foundRoles.map((role) => role._id);
-  }
-  //Buscar roles en db y asignar a roles axiom
-  if (rolesAxiom) {
-    const foundRoles = await Role.find({ name: { $in: rolesAxiom } });
-    newUser.rolesAxiom = foundRoles.map((role) => role._id);
-  }
-  //buscar empleado y asisnar id de empleado a user
-  if (employee) {
-    const foundEmployees = await Employees.find({
-      numberEmployee: { $in: employee },
+    //guardar firma
+    const newSignature = new Signature({
+      username,
+      signature
     });
-    newUser.employee = foundEmployees.map((employee) => employee._id);
-  }
-  //compañia a la que puede tener acceso el usuario
-  if (companyAccess) {
-    const foundCompany = await Company.find({
-      name: { $in: companyAccess },
+
+    const savedSignature = await newSignature.save();
+
+    const newUser = new User({
+      username,
+      email,
+      password: await User.encryptPassword(password),
+      language,
+      company: CompanyId
     });
-    newUser.companyAccess = foundCompany.map((company) => company._id);
-  }
-  //compañia a la que pertenece el usuario
-  if (company) {
-    const foundCompany = await Company.find({
-      _id: { $in: company },
+
+    if (savedSignature) {
+      const foundSignature = await Signature.find({ username: { $in: username } });
+      newUser.signature = foundSignature.map((signature) => signature._id);
+    }
+
+    //Buscar roles en db y asignar a roles apg
+    if (roles) {
+      const foundRoles = await Role.find({ name: { $in: roles } });
+      newUser.roles = foundRoles.map((role) => role._id);
+    }
+    //Buscar roles en db y asignar a roles axiom
+    if (rolesAxiom) {
+      const foundRoles = await Role.find({ name: { $in: rolesAxiom } });
+      newUser.rolesAxiom = foundRoles.map((role) => role._id);
+    }
+    //buscar empleado y asisnar id de empleado a user
+    if (employee) {
+      const foundEmployees = await Employees.find({
+        numberEmployee: { $in: employee },
+      });
+      newUser.employee = foundEmployees.map((employee) => employee._id);
+    }
+    //compañia a la que puede tener acceso el usuario
+    if (companyAccess) {
+      const foundCompany = await Company.find({
+        name: { $in: companyAccess },
+      });
+      newUser.companyAccess = foundCompany.map((company) => company._id);
+    }
+
+    const savedUser = await newUser.save();
+
+    const token = jwt.sign({ id: savedUser._id }, process.env.SECRET, {
+      expiresIn: 86400, // 24 Horas
+      // expiresIn: 20,
     });
-    newUser.company = foundCompany.map((company) => company._id);
+
+    res.json({ status: "200", message: "User created" });
+    // res.status(200).json({ token });
+  } catch (error) {
+    console.error("Error saving template:", error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while saving template',
+      error: error.message
+    });
   }
-
-  const savedUser = await newUser.save();
-
-  const token = jwt.sign({ id: savedUser._id }, process.env.SECRET, {
-    expiresIn: 86400, // 24 Horas
-    // expiresIn: 20,
-  });
-
-  res.json({ status: "200", message: "User created" });
-  // res.status(200).json({ token });
 };
 //Crear nuevo rol//////////////////////////////////////////////////////////////////////////////////////////////////////////
 const newRole = async (req, res) => {
@@ -194,7 +203,7 @@ const signIn = async (req, res) => {
       apg = userFound.companyAccess[i]._id
     }
   }
-  let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id + "|" + userFound.employee[0].numberEmployee;
+  let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id + "|" + userFound.employee[0].numberEmployee + "|" + userFound.language;
   let userAccessApg = [
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
     "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
@@ -511,64 +520,76 @@ const getRoles = async (req, res) => {
   const roles = await Role.find();
   res.json({ status: "200", message: "Roles Loaded", body: roles });
 };
+
 // Updating user///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const updateUser = async (req, res) => {
   const { userId } = req.params;
-  const userFound = await User.findOne({
-    _id: userId,
-  });
-  const userUpd = [];
-  const foundRoles = await Role.find({ name: { $in: req.body.roles } });
-  userUpd.roles = foundRoles.map((role) => role._id);
-  const foundRolesAxiom = await Role.find({ name: { $in: req.body.rolesAxiom } });
-  userUpd.rolesAxiom = foundRolesAxiom.map((role) => role._id);
-  const foundCompanyAccess = await Company.find({ name: { $in: req.body.companyAccess } });
-  userUpd.companyAccess = foundCompanyAccess.map((company) => company._id);
-  userUpd.username = req.body.username;
-  userUpd.email = req.body.email;
-  if (userFound.password !== req.body.password) {
-    userUpd.password = await User.encryptPassword(req.body.password)
-  } else {
-    userUpd.password = req.body.password;
-  }
+  const user = await User.findById(userId);
 
-  const signature = req.body.signature;
+  if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
-  const updatedSignature = await Signature.updateOne(
-    { username: req.body.username },
-    {
-      $set: {
-        signature,
-      },
+  try {
+    const userUpd = [];
+    const foundRoles = await Role.find({ name: { $in: req.body.roles } });
+    userUpd.roles = foundRoles.map((role) => role._id);
+    const foundRolesAxiom = await Role.find({ name: { $in: req.body.rolesAxiom } });
+    userUpd.rolesAxiom = foundRolesAxiom.map((role) => role._id);
+    const foundCompanyAccess = await Company.find({ name: { $in: req.body.companyAccess } });
+    userUpd.companyAccess = foundCompanyAccess.map((company) => company._id);
+    userUpd.username = req.body.username;
+    userUpd.email = req.body.email;
+    userUpd.language = req.body.language;
+    if (user.password !== req.body.password) {
+      userUpd.password = await User.encryptPassword(req.body.password)
+    } else {
+      userUpd.password = req.body.password;
     }
-  );
 
+    const signature = req.body.signature;
 
-  const { username, email, password, roles, rolesAxiom, companyAccess } = userUpd;
+    const updatedSignature = await Signature.updateOne(
+      { username: req.body.username },
+      {
+        $set: {
+          signature,
+        },
+      }
+    );
 
-  const updatedUser = await User.updateOne(
-    { _id: userId },
-    {
-      $set: {
-        username,
-        email,
-        password,
-        roles,
-        rolesAxiom,
-        companyAccess,
-      },
+    const { username, email, password, roles, rolesAxiom, companyAccess, language } = userUpd;
+
+    const updatedUser = await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          username,
+          email,
+          password,
+          roles,
+          rolesAxiom,
+          companyAccess,
+          language
+        },
+      }
+    );
+
+    if (!updatedUser) {
+      res
+        .status(403)
+        .json({ status: "403", message: "User not Updated" });
     }
-  );
 
-  if (!updatedUser) {
     res
-      .status(403)
-      .json({ status: "403", message: "User not Updated", body: "" });
+      .status(200)
+      .json({ status: "200", message: "User Updated" });
+  } catch (error) {
+    console.error("Error saving template:", error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while saving template',
+      error: error.message
+    });
   }
-
-  res
-    .status(200)
-    .json({ status: "200", message: "User Updated ", body: updatedUser });
 };
 // Updating user password/////////////////////////////////////////////////////////////////////////////////////////////////////
 const updatePassword = async (req, res) => {

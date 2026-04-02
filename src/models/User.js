@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
       }
     ],
-
+    language: { type: String }
   },
   {
     timestamps: true,
