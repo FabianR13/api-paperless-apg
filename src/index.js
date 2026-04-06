@@ -7,7 +7,7 @@ const WORKERS = process.env.WEB_CONCURRENCY || 2;
 
 if (cluster.isPrimary) {
     console.log(`[Master] Hilo principal PID ${process.pid} en ejecución`);
-    console.log(`[Master] Iniciando ${WORKERS} workers para aprovechar el Performance-M...`);
+    console.log(`[Master] Iniciando ${WORKERS} ...`);
     require('dotenv').config();
     require("./database");
 

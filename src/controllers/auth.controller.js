@@ -32,6 +32,7 @@ const getUsers = async (req, res) => {
       .select('username email employee roles rolesAxiom signature')
       .populate({
         path: 'employee',
+        match: { active: true }, // <-- 1. Agregamos el match aquí
         select: 'name lastName numberEmployee department position active',
         populate: [
           { path: "department", select: 'name' },
@@ -42,14 +43,22 @@ const getUsers = async (req, res) => {
       .populate({ path: "rolesAxiom", select: 'name' })
       .populate({ path: 'signature', select: 'signature' });
   } else {
-
     users = await User.find({ company: { $in: CompanyId } })
-      .populate({ path: 'employee', populate: [{ path: "department", select: 'name' }, { path: "position", select: 'name' }] })
+      .populate({
+        path: 'employee',
+        match: { active: true }, // <-- 1. Y también lo agregamos aquí
+        populate: [
+          { path: "department", select: 'name' },
+          { path: "position", select: 'name' }
+        ]
+      })
       .populate({ path: "roles", select: 'name' })
       .populate({ path: "rolesAxiom", select: 'name' })
       .populate({ path: "companyAccess" })
       .populate({ path: 'signature', select: 'signature' });
   }
+
+  users = users.filter(user => user.employee && user.employee.length > 0);
 
   res.json({ status: "200", message: "Users Loaded", body: users });
 };
@@ -669,38 +678,34 @@ const getAccess = async (req, res) => {
   res.json({ status: "200", message: "Access" });
 };
 
-//get access to directory/////////////////////////////////////////////////////////////////////////////////////////////////
+//Guardar tokens para Notificaciones/////////////////////////////////////////////////////////////////////////////////////////////////
 const saveTokenPush = async (req, res) => {
   try {
-    const { tokenPush, isSupplier, isErrorProofingInteres, isCoordinator } = req.body;
+    const { username, tokenPush, isSupplier, isErrorProofingInteres, isCoordinator } = req.body;
 
-    if (!tokenPush) {
-      return res.status(400).json({ message: "FCM token is required" });
-    }
-    // --- CORRECCIÓN AQUÍ ---
-    // 1. Define los datos a actualizar.
-    //    Es buena práctica construir este objeto para evitar enviar 'undefined'
-    //    si algún campo no viene en el body.
-    const updateData = {};
-    if (isSupplier !== undefined) {
-      updateData.isSupplier = isSupplier;
-    }
-    if (isErrorProofingInteres !== undefined) {
-      updateData.isErrorProofingInteres = isErrorProofingInteres;
-    }
-    if (isCoordinator !== undefined) {
-      updateData.isCoordinator = isCoordinator;
+    if (!username || !tokenPush) {
+      return res.status(400).json({ message: "User y FCM token son obligatorios" });
     }
 
-    // 2. Ejecuta findOneAndUpdate con los argumentos correctos.
+    const user = await User.findOne({ username: username });
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado en la base de datos." });
+    }
+
+    const updateData = { token: tokenPush };
+
+    if (isSupplier !== undefined) updateData.isSupplier = isSupplier;
+    if (isErrorProofingInteres !== undefined) updateData.isErrorProofingInteres = isErrorProofingInteres;
+    if (isCoordinator !== undefined) updateData.isCoordinator = isCoordinator;
+
     const updatedToken = await PushToken.findOneAndUpdate(
-      { token: tokenPush },                // 1. El filtro para buscar el documento
-      { $set: updateData },                // 2. La actualización (usando $set)
-      { upsert: true, new: true }         // 3. Las opciones (crea si no existe)
+      { userId: user._id },       // Filtro: buscar al usuario
+      { $set: updateData },     // Actualización: reemplazar token y roles
+      { upsert: true, new: true }
     );
 
-    console.log('Token guardado/actualizado:', updatedToken);
-    return res.sendStatus(204); // No Content
+    return res.sendStatus(204);
 
   } catch (error) {
     console.error("Error saving FCM token:", error);
@@ -708,29 +713,120 @@ const saveTokenPush = async (req, res) => {
   }
 };
 
-const getTokensPush = async (req, res) => {
-  const tokens = await PushToken.find();
-  res.json({ status: "200", message: "Tokens Loaded", body: tokens });
+//Enviar notificacion/////////////////////////////////////////////////////////////////////////////////////////////////
+const enviarNotificacionPush = async (req, res) => {
+  try {
+    const { targetAudience, targetUserId, title, body } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ message: "Faltan title o body." });
+    }
+
+    // 1. Buscar solo tokens que tengan un userId asignado
+    let query = { userId: { $exists: true, $ne: null } };
+
+    if (targetUserId) {
+      query.userId = targetUserId;
+    } else if (targetAudience === 'supplier') {
+      query.isSupplier = true;
+    } else if (targetAudience === 'coordinator') {
+      query.isCoordinator = true;
+    } else if (targetAudience === 'errorProofing') {
+      query.isErrorProofingInteres = true;
+    }
+
+    const usersToNotify = await PushToken.find(query);
+    const tokens = usersToNotify.map(u => u.token).filter(Boolean);
+
+    if (tokens.length === 0) {
+      return res.status(200).json({ message: "No hay usuarios válidos para notificar." });
+    }
+
+    // 2. Enviar notificaciones
+    const message = {
+      notification: { title, body },
+      tokens: tokens,
+    };
+
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    // 3. LIMPIEZA AUTOMÁTICA DE TOKENS INVÁLIDOS
+    if (response.failureCount > 0) {
+      const failedTokens = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          const errorCode = resp.error.code;
+          // Si Firebase dice que el token ya no existe o es inválido, lo separamos
+          if (errorCode === 'messaging/invalid-registration-token' ||
+            errorCode === 'messaging/registration-token-not-registered') {
+            failedTokens.push(tokens[idx]);
+          }
+        }
+      });
+
+      // Borramos de MongoDB los tokens que Firebase reportó como muertos
+      if (failedTokens.length > 0) {
+        await PushToken.deleteMany({ token: { $in: failedTokens } });
+        console.log(`🗑️ Se limpiaron ${failedTokens.length} tokens inválidos de la base de datos.`);
+      }
+    }
+
+    return res.status(200).json({
+      message: "Notificaciones procesadas.",
+      success: response.successCount
+    });
+
+  } catch (error) {
+    console.error("Error al enviar notificaciones masivas:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
 };
 
-// Leer desde la variable de entorno
-const admin = require("firebase-admin");
-const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
-// Inicializar solo una vez (por si se importa en otros módulos)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
 
-// Función para enviar a un solo token
-// const sendPushToToken = async (token) => {
+
+
+
+// const getTokensPush = async (req, res) => {
+//   const tokens = await PushToken.find();
+//   res.json({ status: "200", message: "Tokens Loaded", body: tokens });
+// };
+
+// // Leer desde la variable de entorno
+// const admin = require("firebase-admin");
+// const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
+
+// // Inicializar solo una vez (por si se importa en otros módulos)
+// if (!admin.apps.length) {
+//   admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//   });
+// }
+
+// // Función para enviar a un solo token
+// // const sendPushToToken = async (token) => {
+// //   const message = {
+// //     token,
+// //     notification: {
+// //       title: "Nuevo pedido creado",
+// //       body: "Se ha generado un nuevo pedido en la plataforma.",
+// //     },
+// //   };
+
+// //   try {
+// //     const response = await admin.messaging().send(message);
+// //     console.log("✅ Notificación enviada a:", token);
+// //   } catch (error) {
+// //     console.error("❌ Error al enviar a:", token, error.message);
+// //   }
+// // };
+
+// const sendPushToToken = async (token, title, body) => {
 //   const message = {
 //     token,
 //     notification: {
-//       title: "Nuevo pedido creado",
-//       body: "Se ha generado un nuevo pedido en la plataforma.",
+//       title: title,
+//       body: body,
 //     },
 //   };
 
@@ -742,166 +838,149 @@ if (!admin.apps.length) {
 //   }
 // };
 
-const sendPushToToken = async (token, title, body) => {
-  const message = {
-    token,
-    notification: {
-      title: title,
-      body: body,
-    },
-  };
+// // --- NUEVO ENDPOINT GENÉRICO ---
+// // Ruta sugerida: /auth/enviarNotificacionPush
+// const enviarNotificacionPush = async (req, res) => {
+//   // Ahora esperamos "tokens" (array de strings), "title" y "body"
+//   const { tokens, title, body } = req.body;
 
-  try {
-    const response = await admin.messaging().send(message);
-    console.log("✅ Notificación enviada a:", token);
-  } catch (error) {
-    console.error("❌ Error al enviar a:", token, error.message);
-  }
-};
+//   if (!Array.isArray(tokens) || tokens.length === 0) {
+//     // No devolvemos error 400 si no hay tokens, simplemente no hacemos nada (es válido que no haya destinatarios)
+//     return res.status(200).json({ message: "No hay tokens destinatarios." });
+//   }
 
-// --- NUEVO ENDPOINT GENÉRICO ---
-// Ruta sugerida: /auth/enviarNotificacionPush
-const enviarNotificacionPush = async (req, res) => {
-  // Ahora esperamos "tokens" (array de strings), "title" y "body"
-  const { tokens, title, body } = req.body;
+//   if (!title || !body) {
+//     return res.status(400).json({ message: "Faltan title o body." });
+//   }
 
-  if (!Array.isArray(tokens) || tokens.length === 0) {
-    // No devolvemos error 400 si no hay tokens, simplemente no hacemos nada (es válido que no haya destinatarios)
-    return res.status(200).json({ message: "No hay tokens destinatarios." });
-  }
+//   console.log(`📨 Enviando notificación '${title}' a ${tokens.length} dispositivos.`);
 
-  if (!title || !body) {
-    return res.status(400).json({ message: "Faltan title o body." });
-  }
+//   // Enviamos mensaje a la lista de tokens recibida
+//   await Promise.all(tokens.map(tokenString =>
+//     sendPushToToken(tokenString, title, body)
+//   ));
 
-  console.log(`📨 Enviando notificación '${title}' a ${tokens.length} dispositivos.`);
+//   return res.status(200).json({ message: "Notificaciones enviadas." });
+// };
+// //Devolucion iniciada notificacion
+// const notificarInicioDevolucion = async (req, res) => {
+//   const { pushTokens } = req.body;
+//   if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
 
-  // Enviamos mensaje a la lista de tokens recibida
-  await Promise.all(tokens.map(tokenString =>
-    sendPushToToken(tokenString, title, body)
-  ));
+//   const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
 
-  return res.status(200).json({ message: "Notificaciones enviadas." });
-};
-//Devolucion iniciada notificacion
-const notificarInicioDevolucion = async (req, res) => {
-  const { pushTokens } = req.body;
-  if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
+//   // Enviamos mensaje de DEVOLUCIÓN INICIADA
+//   await Promise.all(supplierTokens.map(p =>
+//     sendPushToToken(p.token, "Devolución Iniciada 🟡", "Se ha iniciado una devolución. Pendiente de confirmación.")
+//   ));
 
-  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
+//   return res.sendStatus(204);
+// };
 
-  // Enviamos mensaje de DEVOLUCIÓN INICIADA
-  await Promise.all(supplierTokens.map(p =>
-    sendPushToToken(p.token, "Devolución Iniciada 🟡", "Se ha iniciado una devolución. Pendiente de confirmación.")
-  ));
+// //Notificaciion de confirmacion de devolucion
+// const notificarConfirmacionDevolucion = async (req, res) => {
+//   const { pushTokens } = req.body;
+//   if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
 
-  return res.sendStatus(204);
-};
+//   const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
 
-//Notificaciion de confirmacion de devolucion
-const notificarConfirmacionDevolucion = async (req, res) => {
-  const { pushTokens } = req.body;
-  if (!Array.isArray(pushTokens)) return res.status(400).json({ message: "pushTokens debe ser un array" });
+//   // Enviamos mensaje de DEVOLUCIÓN CONFIRMADA
+//   await Promise.all(supplierTokens.map(p =>
+//     sendPushToToken(p.token, "Devolución Confirmada 🟠", "Se ha confirmado una devolución. Requiere validación.")
+//   ));
 
-  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
+//   return res.sendStatus(204);
+// };
 
-  // Enviamos mensaje de DEVOLUCIÓN CONFIRMADA
-  await Promise.all(supplierTokens.map(p =>
-    sendPushToToken(p.token, "Devolución Confirmada 🟠", "Se ha confirmado una devolución. Requiere validación.")
-  ));
+// // Función para enviar a un solo token
+// const sendPushToTokenCancel = async (token) => {
+//   const message = {
+//     token,
+//     notification: {
+//       title: "Han cancelado un pedido",
+//       body: "Se ha cancelado un pedido en la plataforma.",
+//     },
+//   };
 
-  return res.sendStatus(204);
-};
+//   try {
+//     const response = await admin.messaging().send(message);
+//     console.log("✅ Notificación enviada a:", token);
+//   } catch (error) {
+//     console.error("❌ Error al enviar a:", token, error.message);
+//   }
+// };
 
-// Función para enviar a un solo token
-const sendPushToTokenCancel = async (token) => {
-  const message = {
-    token,
-    notification: {
-      title: "Han cancelado un pedido",
-      body: "Se ha cancelado un pedido en la plataforma.",
-    },
-  };
+// // Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
+// const notificarCancelacion = async (req, res) => {
+//   const { pushTokens } = req.body;
 
-  try {
-    const response = await admin.messaging().send(message);
-    console.log("✅ Notificación enviada a:", token);
-  } catch (error) {
-    console.error("❌ Error al enviar a:", token, error.message);
-  }
-};
+//   if (!Array.isArray(pushTokens)) {
+//     return res.status(400).json({ message: "pushTokens debe ser un array" });
+//   }
 
-// Endpoint que filtra y envía solo a los proveedores (isSupplier === true)
-const notificarCancelacion = async (req, res) => {
-  const { pushTokens } = req.body;
+//   // 🔍 Filtrar proveedores
+//   const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
 
-  if (!Array.isArray(pushTokens)) {
-    return res.status(400).json({ message: "pushTokens debe ser un array" });
-  }
+//   // 🔁 Enviar notificaciones
+//   await Promise.all(supplierTokens.map(p => sendPushToTokenCancel(p.token)));
 
-  // 🔍 Filtrar proveedores
-  const supplierTokens = pushTokens.filter(p => p.isSupplier && p.token);
+//   return res.sendStatus(204);
+// };
 
-  // 🔁 Enviar notificaciones
-  await Promise.all(supplierTokens.map(p => sendPushToTokenCancel(p.token)));
+// // Generic function to send a notification (remains the same)
+// const sendPushNotification = async (token, title, body) => {
+//   const message = {
+//     token,
+//     notification: {
+//       title, // Will use the title you pass
+//       body,  // Will use the body you pass
+//     },
+//   };
 
-  return res.sendStatus(204);
-};
+//   try {
+//     const response = await admin.messaging().send(message);
+//     console.log("✅ Notification sent to:", token);
+//   } catch (error) {
+//     console.error("❌ Error sending to:", token, error.message);
+//   }
+// };
+// // Controller updated with English notifications
+// const notifyInteresErrorProofing = async (req, res) => {
+//   const { TypeNotification, ErrorProofing } = req.params;
+//   const { pushTokens } = req.body;
 
-// Generic function to send a notification (remains the same)
-const sendPushNotification = async (token, title, body) => {
-  const message = {
-    token,
-    notification: {
-      title, // Will use the title you pass
-      body,  // Will use the body you pass
-    },
-  };
+//   if (!Array.isArray(pushTokens)) {
+//     return res.status(400).json({ message: "pushTokens must be an array" });
+//   }
 
-  try {
-    const response = await admin.messaging().send(message);
-    console.log("✅ Notification sent to:", token);
-  } catch (error) {
-    console.error("❌ Error sending to:", token, error.message);
-  }
-};
-// Controller updated with English notifications
-const notifyInteresErrorProofing = async (req, res) => {
-  const { TypeNotification, ErrorProofing } = req.params;
-  const { pushTokens } = req.body;
+//   let title;
+//   let body;
 
-  if (!Array.isArray(pushTokens)) {
-    return res.status(400).json({ message: "pushTokens must be an array" });
-  }
+//   if (TypeNotification === 'ErrorProofing') {
+//     title = "New Error Proofing File Created";
+//     body = "A new file has been created. Please review it on the platform.";
+//   }
+//   else if (TypeNotification === 'Checklist') {
+//     title = "New Checklist Added";
+//     body = `A new checklist has been added to the file: ${ErrorProofing}. Please review it.`;
+//   }
+//   else {
+//     return res.status(400).json({ message: "Invalid notification type. Use 'ErrorProofing' or 'Checklist'." });
+//   }
 
-  let title;
-  let body;
+//   const errorProofingInteresTokens = pushTokens.filter(p => p.isErrorProofingInteres && p.token);
 
-  if (TypeNotification === 'ErrorProofing') {
-    title = "New Error Proofing File Created";
-    body = "A new file has been created. Please review it on the platform.";
-  }
-  else if (TypeNotification === 'Checklist') {
-    title = "New Checklist Added";
-    body = `A new checklist has been added to the file: ${ErrorProofing}. Please review it.`;
-  }
-  else {
-    return res.status(400).json({ message: "Invalid notification type. Use 'ErrorProofing' or 'Checklist'." });
-  }
+//   if (errorProofingInteresTokens.length === 0) {
+//     console.log("No interested users to notify.");
+//     return res.sendStatus(204);
+//   }
 
-  const errorProofingInteresTokens = pushTokens.filter(p => p.isErrorProofingInteres && p.token);
+//   await Promise.all(
+//     errorProofingInteresTokens.map(p => sendPushNotification(p.token, title, body))
+//   );
 
-  if (errorProofingInteresTokens.length === 0) {
-    console.log("No interested users to notify.");
-    return res.sendStatus(204);
-  }
-
-  await Promise.all(
-    errorProofingInteresTokens.map(p => sendPushNotification(p.token, title, body))
-  );
-
-  return res.sendStatus(204);
-};
+//   return res.sendStatus(204);
+// };
 
 
 
@@ -919,11 +998,11 @@ module.exports = {
   getCompany,
   getAccess,
   saveTokenPush,
-  getTokensPush,
-  sendPushToToken,
   enviarNotificacionPush,
-  notificarCancelacion,
-  notifyInteresErrorProofing,
-  notificarInicioDevolucion,
-  notificarConfirmacionDevolucion,
+  // getTokensPush,
+  // sendPushToToken,
+  // notificarCancelacion,
+  // notifyInteresErrorProofing,
+  // notificarInicioDevolucion,
+  // notificarConfirmacionDevolucion,
 };

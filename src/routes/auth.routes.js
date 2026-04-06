@@ -106,19 +106,29 @@ router.get("/Dashboard",
 router.post("/tokenPush",
   saveTokenPush);
 
+router.post(
+  "/SendNotificacion",
+  enviarNotificacionPush
+);
+
+
+
+
+
+
 //Obtener pushtokes
-router.get("/getTokenPush",
-  getTokensPush);
+// router.get("/getTokenPush",
+//   getTokensPush);
 
-//guardar pushtoken
-router.post("/enviarNotificacionPush", enviarNotificacionPush);
+// //guardar pushtoken
+// router.post("/enviarNotificacionPush", enviarNotificacionPush);
 
-router.post("/notificarCancelacion", notificarCancelacion);
+// router.post("/notificarCancelacion", notificarCancelacion);
 
-router.post("/notifyErrorInteres/:TypeNotification/:ErrorProofing", notifyInteresErrorProofing);
+// router.post("/notifyErrorInteres/:TypeNotification/:ErrorProofing", notifyInteresErrorProofing);
 
-router.post("/notificarInicioDevolucion", notificarInicioDevolucion); 
+// router.post("/notificarInicioDevolucion", notificarInicioDevolucion);
 
-router.post("/notificarConfirmacionDevolucion", notificarConfirmacionDevolucion);
+// router.post("/notificarConfirmacionDevolucion", notificarConfirmacionDevolucion);
 
 module.exports = router;
