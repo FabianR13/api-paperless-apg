@@ -153,360 +153,173 @@ const newRole = async (req, res) => {
 };
 //Login de usuario existente//////////////////////////////////////////////////////////////////////////////////////////////
 const signIn = async (req, res) => {
-  const userFound = await User.findOne({
-    username: req.body.username,
-  })
+  const userFound = await User.findOne({ username: req.body.username })
     .populate({ path: "roles", select: "name" })
     .populate({ path: "companyAccess" })
     .populate({ path: "company" })
     .populate({ path: "employee" });
 
-  //comparar si existe el usuario
-  if (!userFound)
-    return res
-      .status(404)
-      .json({ token: null, message: "User not found", status: "404" });
+  // 1. Validaciones iniciales
+  if (!userFound) {
+    return res.status(404).json({ token: null, message: "User not found", status: "404" });
+  }
 
-  const matchPassword = await User.comparePassword(
-    req.body.password,
-    userFound.password
+  const matchPassword = await User.comparePassword(req.body.password, userFound.password);
+
+  if (userFound.employee[0].active === false) {
+    return res.status(404).json({ token: null, message: "User disabled", status: "404" });
+  }
+
+  if (!matchPassword) {
+    return res.status(404).json({ token: null, message: "Invalid password", status: "404" });
+  }
+
+  // 2. Generación del Token
+  const token = jwt.sign(
+    { id: userFound._id },
+    process.env.SECRET,
+    userFound.username !== 'SupplierAPG' ? { expiresIn: 86400 } : {}
   );
-  //Verificar que el usuario no este deshabilitado
-  if (userFound.employee[0].active === false)
-    return res
-      .status(404)
-      .json({ token: null, message: "User disabled", status: "404" });
-  //Verificar que la contraseña sea correcta
-  if (!matchPassword)
-    return res
-      .status(404)
-      .json({ token: null, message: "Invalid password", status: "404" });
 
-  // const token = jwt.sign({ id: userFound._id }, process.env.SECRET, {
-  //   expiresIn: 86400,
-  //   // expiresIn: 20,
+  // 3. Extracción de IDs de compañía usando .find()
+  const apgAccess = userFound.companyAccess.find(c => c.name === "APG Mexico");
+  const axgAccess = userFound.companyAccess.find(c => c.name === "Axiom");
+  const apg = apgAccess ? apgAccess._id : "";
+  const axg = axgAccess ? axgAccess._id : "";
 
-  // });
-  const payload = { id: userFound._id };
-  const secret = process.env.SECRET;
-  const options = {};
+  // 4. Construcción de userData usando Template Literals
+  const emp = userFound.employee[0];
+  const userData = `${emp.name}|${emp.lastName}|${userFound.username}|${emp.picture}|${apg}|${axg}|${userFound.company[0]._id}|${emp.numberEmployee}|${userFound.language}`;
 
-  if (userFound.username !== 'SupplierAPG') {
-    options.expiresIn = 86400; // 86400 segundos = 24 horas
-  }
+  // 5. Inicialización de arrays de accesos
+  let userAccessApg = Array(70).fill("false");
+  let userAccessAXG = Array(50).fill("false");
 
-  const token = jwt.sign(payload, secret, options);
+  // 6. Configuración de Mapeo de Roles APG
+  const apgRoleMap = {
+    admin: [0],
+    moderador: [1],
+    GeneralR: [2],
+    SetupR: [3],
+    QualityR: [4],
+    ProductionR: [5],
+    LogisticR: [6],
+    OtherR: [7],
+    ManagementR: [8],
+    ReportsR: [9],
+    // KAIZEN ROLES
+    KaizenR: [10],
+    KaizenRW: [11],
+    KaizenApproval: [12],
+    KaizenAdviser: [13],
+    // DEVIATION ROLES
+    DeviationR: [14],
+    QualityASIns: [15],
+    QualityASEng: [16],
+    QualityASGer: [17],
+    SeniorManagement: [18],
+    ProductionSign: [19],
+    ProcessSign: [20],
+    AutomationSign: [21],
+    CloseDeviation: [22],
+    // TRAINING ROLES
+    TrainingR: [23],
+    TrainingT: [24],
+    TrainingL: [25],
+    // SUPERMARKET ROLES
+    SMCreator: [26],
+    SMSupplier: [27],
+    SMReader: [28],
+    SMAdministrator: [29],
+    SMCoordinator: [30],
+    // MINUTAS ROLES
+    CreateMinuta: [31],
+    // ERROR PROOFING ROLES
+    ErrorPCreator: [32],
+    ErrorPValidatorA: [33],
+    ErrorPReader: [34],
+    DeviceAdministrator: [35],
+    // DAILY AUDITS ROLES
+    DailyAuditCreate: [36],
+    DailyAuditAdministrator: [37],
+  };
 
-  const roles = await Role.find({ _id: { $in: userFound.roles } });
-  const rolesAxiom = await Role.find({ _id: { $in: userFound.rolesAxiom } });
+  // 7. Configuración de Mapeo de Roles Axiom (Afecta tanto a AXG como a APG)
+  const axgRoleMap = {
+    admin: [0],
+    moderador: [1],
+    GeneralR: [2],
+    SetupR: [3],
+    QualityR: [4],
+    ProductionR: [5],
+    LogisticR: [6],
+    OtherR: [7],
+    ManagementR: [8],
+    ReportsR: [9],
+    // KAIZEN ROLES
+    KaizenR: [10],
+    KaizenRW: [11],
+    KaizenApproval: [12],
+    KaizenAdviser: [13],
+    // DEVIATION ROLES
+    DeviationR: [14],
+    QualityASIns: [15],
+    QualityASEng: [16],
+    QualityASGer: [17],
+    SeniorManagement: [18],
+    ProductionSign: [19],
+    ProcessSign: [20],
+    AutomationSign: [21],
+    CloseDeviation: [22],
+    // TRAINING ROLES
+    TrainingR: [23],
+    TrainingT: [24],
+    TrainingL: [25],
+    // SUPERMARKET ROLES
+    SMCreator: [26],
+    SMSupplier: [27],
+    SMReader: [28],
+    SMAdministrator: [29],
+    SMCoordinator: [30],
+    // MINUTAS ROLES
+    CreateMinuta: [31],
+    // ERROR PROOFING ROLES
+    ErrorPCreator: [32],
+    ErrorPValidatorA: [33],
+    ErrorPReader: [34],
+    DeviceAdministrator: [35],
+    // DAILY AUDITS ROLES
+    DailyAuditCreate: [36],
+    DailyAuditAdministrator: [37],
+  };
 
-  let apg = "";
-  let axg = "";
+  // 8. Aplicar accesos buscando asíncronamente los roles a la DB
+  const [roles, rolesAxiom] = await Promise.all([
+    Role.find({ _id: { $in: userFound.roles } }),
+    Role.find({ _id: { $in: userFound.rolesAxiom } })
+  ]);
 
-  //Validar a que compañia tiene acceso
-  for (let i = 0; i < userFound.companyAccess.length; i++) {
-    if (userFound.companyAccess[i].name === "Axiom") {
-      axg = userFound.companyAccess[i]._id
-    }
-    if (userFound.companyAccess[i].name === "APG Mexico") {
-      apg = userFound.companyAccess[i]._id
-    }
-  }
-  let userData = userFound.employee[0].name + "|" + userFound.employee[0].lastName + "|" + userFound.username + "|" + userFound.employee[0].picture + "|" + apg + "|" + axg + "|" + userFound.company[0]._id + "|" + userFound.employee[0].numberEmployee + "|" + userFound.language;
-  let userAccessApg = [
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
-  let userAccessAXG = [
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false",
-    "false", "false", "false", "false", "false", "false", "false", "false", "false", "false"];
-  //Crear variable con los roles que tiene en apg
-  for (let i = 0; i < roles.length; i++) {
-    if (roles[i].name === "admin") {
-      userAccessApg[0] = "true";
-    }
-    if (roles[i].name === "moderador" || roles[i].name === "admin") {
-      userAccessApg[1] = "true";
-    }
-    if (roles[i].name === "KaizenRW" || roles[i].name === "admin") {
-      userAccessApg[2] = "true";
-    }
-    if (roles[i].name === "KaizenApproval" || roles[i].name === "admin") {
-      userAccessApg[3] = "true";
-    }
-    if (roles[i].name === "KaizenR") {
-      userAccessApg[4] = "true";
-    }
-    if (roles[i].name === "QualityASIns") {
-      userAccessApg[5] = "true";
-    }
-    if (roles[i].name === "QualityASEng") {
-      userAccessApg[6] = "true";
-    }
-    if (roles[i].name === "QualityASGer") {
-      userAccessApg[7] = "true";
-    }
-    if (roles[i].name === "SeniorManagement") {
-      userAccessApg[8] = "true";
-    }
-    if (roles[i].name === "QualityR") {
-      userAccessApg[9] = "true";
-    }
-    if (roles[i].name === "QualityRW" || roles[i].name === "admin") {
-      userAccessApg[10] = "true";
-    }
-    if (
-      roles[i].name === "DeviationR" || roles[i].name === "admin"
-      || roles[i].name === "ProductionSign" || roles[i].name === "ProcessSign"
-      || roles[i].name === "AutomationSign" || roles[i].name === "CloseDeviation"
-      || roles[i].name === "QualityASIns" || roles[i].name === "QualityASEng"
-      || roles[i].name === "QualityASGer" || roles[i].name === "SeniorManagement"
-    ) {
-      userAccessApg[11] = "true";
-    }
-    if (roles[i].name === "ProductionSign") {
-      userAccessApg[12] = "true";
-    }
-    if (roles[i].name === "ProcessSign") {
-      userAccessApg[13] = "true";
-    }
-    if (roles[i].name === "AutomationSign") {
-      userAccessApg[14] = "true";
-    }
-    if (roles[i].name === "CloseDeviation") {
-      userAccessApg[15] = "true";
-    }
-    if (roles[i].name === "ValidationCheckR" || roles[i].name === "admin") {
-      userAccessApg[16] = "true";
-    }
-    if (roles[i].name === "ValidationCheckQ") {
-      userAccessApg[17] = "true";
-    }
-    if (roles[i].name === "ValidationCheckT") {
-      userAccessApg[18] = "true";
-    }
-    if (roles[i].name === "ValidationCheckP") {
-      userAccessApg[19] = "true";
-    }
-    if (roles[i].name === "TrainingR" || roles[i].name === "admin" || roles[i].name === "TrainingT" || roles[i].name === "TrainingL") {
-      userAccessApg[20] = "true";
-    }
-    if (roles[i].name === "TrainingT" || roles[i].name === "admin") {
-      userAccessApg[21] = "true";
-    }
-    if (roles[i].name === "TrainingL" || roles[i].name === "admin") {
-      userAccessApg[22] = "true";
-    }
-    if (roles[i].name === "PersonalReqR" || roles[i].name === "PersonalReqC" || roles[i].name === "PersonalReqE" || roles[i].name === "PersonalReqS" || roles[i].name === "PersonalReqSRH" || roles[i].name === "PersonalReqReclu" || roles[i].name === "admin") {
-      userAccessApg[23] = "true";
-    }
-    if (roles[i].name === "PersonalReqC" || roles[i].name === "admin") {
-      userAccessApg[24] = "true";
-    }
-    if (roles[i].name === "PersonalReqE" || roles[i].name === "admin") {
-      userAccessApg[25] = "true";
-    }
-    if (roles[i].name === "PersonalReqS" || roles[i].name === "admin") {
-      userAccessApg[26] = "true";
-    }
-    if (roles[i].name === "PersonalReqSRH" || roles[i].name === "admin") {
-      userAccessApg[27] = "true";
-    }
-    if (roles[i].name === "PersonalReqReclu" || roles[i].name === "admin") {
-      userAccessApg[28] = "true";
-    }
-    if (roles[i].name === "CreateMinuta" || roles[i].name === "admin") {
-      userAccessApg[29] = "true";
-    }
-    if (roles[i].name === "CreateMinuta" || roles[i].name === "admin") {
-      userAccessApg[30] = "true";
-    }
-    if (roles[i].name === "SMCreator") {
-      userAccessApg[31] = "true";
-    }
-    if (roles[i].name === "SMSupplier") {
-      userAccessApg[32] = "true";
-    }
-    if (roles[i].name === "GeneralR") {
-      userAccessApg[33] = "true";
-    }
-    if (roles[i].name === "SetupR") {
-      userAccessApg[34] = "true";
-    }
-    if (roles[i].name === "ProductionR") {
-      userAccessApg[35] = "true";
-    }
-    if (roles[i].name === "LogisticR") {
-      userAccessApg[36] = "true";
-    }
-    if (roles[i].name === "OtherR") {
-      userAccessApg[37] = "true";
-    }
-    if (roles[i].name === "SMReader") {
-      userAccessApg[38] = "true";
-    }
-    if (roles[i].name === "SMAdministrator") {
-      userAccessApg[39] = "true";
-    }
-    if (roles[i].name === "ManagementR") {
-      userAccessApg[40] = "true";
-    }
-    if (roles[i].name === "TEvaluationR" || roles[i].name === "TEvaluationDM" || roles[i].name === "TEvaluationS" ||
-      roles[i].name === "TEvaluationT" || roles[i].name === "TEvaluationRHR" || roles[i].name === "TEvaluationRHS" ||
-      roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin"
-    ) {
-      userAccessApg[41] = "true";
-    }
-    if (roles[i].name === "TEvaluationDM" || roles[i].name === "admin") {
-      userAccessApg[42] = "true";
-    }
-    if (roles[i].name === "TEvaluationS" || roles[i].name === "admin") {
-      userAccessApg[43] = "true";
-    }
-    if (roles[i].name === "TEvaluationT" || roles[i].name === "admin") {
-      userAccessApg[44] = "true";
-    }
-    if (roles[i].name === "TEvaluationRHR" || roles[i].name === "admin") {
-      userAccessApg[45] = "true";
-    }
-    if (roles[i].name === "TEvaluationRHS" || roles[i].name === "admin") {
-      userAccessApg[46] = "true";
-    }
-    if (roles[i].name === "TEvaluationCMCAP" || roles[i].name === "admin") {
-      userAccessApg[47] = "true";
-    }
-    if (roles[i].name === "ErrorPCreator" || roles[i].name === "DeviceAdministrator") {
-      userAccessApg[48] = "true";
-    }
-    if (roles[i].name === "ErrorPValidatorA") {
-      userAccessApg[49] = "true";
-    }
-    if (roles[i].name === "ErrorPReader" || roles[i].name === "ErrorPCreator" || roles[i].name === "ErrorPValidatorA" || roles[i].name === "DeviceAdministrator") {
-      userAccessApg[50] = "true";
-    }
-    if (roles[i].name === "SMCoordinator") {
-      userAccessApg[51] = "true";
-    }
-    if (roles[i].name === "DeviceAdministrator") {
-      userAccessApg[52] = "true";
-    }
-    if (roles[i].name === "KaizenAdviser") {
-      userAccessApg[53] = "true";
-    }
-    if (roles[i].name === "DailyAuditCreate") {
-      userAccessApg[54] = "true";
-    }
-    if (roles[i].name === "DailyAuditAdministrator") {
-      userAccessApg[55] = "true";
-    }
-  }
-  //Crear variable con los roles que tiene en axiom
-  for (let i = 0; i < rolesAxiom.length; i++) {
-    if (rolesAxiom[i].name === "admin") {
-      userAccessAXG[0] = "true";
-    }
-    if (rolesAxiom[i].name === "moderador" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[1] = "true";
-    }
-    if (rolesAxiom[i].name === "KaizenRW" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[2] = "true";
-    }
-    if (rolesAxiom[i].name === "KaizenApproval") {
-      userAccessAXG[3] = "true";
-    }
-    if (rolesAxiom[i].name === "KaizenR" || rolesAxiom[i].name === "admin" || rolesAxiom[i].name === "KaizenApproval" || rolesAxiom[i].name === "KaizenRW") {
-      userAccessAXG[4] = "true";
-    }
-    if (rolesAxiom[i].name === "QualityASIns" || rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer" || rolesAxiom[i].name === "SeniorManagement") {
-      userAccessAXG[5] = "true";
-    }
-    if (rolesAxiom[i].name === "QualityASEng" || rolesAxiom[i].name === "QualityASGer") {
-      userAccessAXG[6] = "true";
-    }
-    if (rolesAxiom[i].name === "QualityASGer") {
-      userAccessAXG[7] = "true";
-    }
-    if (rolesAxiom[i].name === "SeniorManagement") {
-      userAccessAXG[8] = "true";
-    }
-    if (rolesAxiom[i].name === "QualityR") {
-      userAccessAXG[9] = "true";
-    }
-    if (rolesAxiom[i].name === "QualityRW" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[10] = "true";
-    }
-    if (rolesAxiom[i].name === "DeviationR" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[11] = "true";
-    }
-    if (rolesAxiom[i].name === "ProductionSign") {
-      userAccessAXG[12] = "true";
-    }
-    if (rolesAxiom[i].name === "ProcessSign") {
-      userAccessAXG[13] = "true";
-    }
-    if (rolesAxiom[i].name === "AutomationSign") {
-      userAccessAXG[14] = "true";
-    }
-    if (rolesAxiom[i].name === "CloseDeviation") {
-      userAccessAXG[15] = "true";
-    }
-    if (rolesAxiom[i].name === "ValidationCheckR" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[16] = "true";
-    }
-    if (rolesAxiom[i].name === "ValidationCheckQ") {
-      userAccessAXG[17] = "true";
-    }
-    if (rolesAxiom[i].name === "ValidationCheckT") {
-      userAccessAXG[18] = "true";
-    }
-    if (rolesAxiom[i].name === "ValidationCheckP") {
-      userAccessAXG[19] = "true";
-    }
-    if (rolesAxiom[i].name === "TrainingR" || rolesAxiom[i].name === "admin" || rolesAxiom[i].name === "TrainingT" || rolesAxiom[i].name === "TrainingL") {
-      userAccessAXG[20] = "true";
-    }
-    if (rolesAxiom[i].name === "TrainingT" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[21] = "true";
-    }
-    if (rolesAxiom[i].name === "TrainingL" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[22] = "true";
-    }
-    if (rolesAxiom[i].name === "PersonalReqR" || rolesAxiom[i].name === "PersonalReqC" || rolesAxiom[i].name === "PersonalReqE" || rolesAxiom[i].name === "PersonalReqS" || rolesAxiom[i].name === "PersonalReqSRH" || rolesAxiom[i].name === "PersonalReqReclu" || rolesAxiom[i].name === "admin") {
-      userAccessAXG[23] = "true";
-    }
-    if (rolesAxiom[i].name === "PersonalReqS" || rolesAxiom[i].name === "admin") {
-      userAccessApg[26] = "true";
-    }
-    if (rolesAxiom[i].name === "PersonalReqSRH" || rolesAxiom[i].name === "admin") {
-      userAccessApg[27] = "true";
-    }
-    if (rolesAxiom[i].name === "PersonalReqE" || rolesAxiom[i].name === "admin") {
-      userAccessApg[25] = "true";
-    }
-    if (rolesAxiom[i].name === "PersonalReqC" || rolesAxiom[i].name === "admin") {
-      userAccessApg[24] = "true";
-    }
-    if (rolesAxiom[i].name === "PersonalReqReclu" || rolesAxiom[i].name === "admin") {
-      userAccessApg[28] = "true";
-    }
-  }
+  roles.forEach(role => {
+    const indices = apgRoleMap[role.name] || [];
+    indices.forEach(idx => userAccessApg[idx] = "true");
+  });
 
+  rolesAxiom.forEach(role => {
+    const indices = axgRoleMap[role.name] || [];
+    indices.forEach(idx => userAccessAXG[idx] = "true");
+  });
+
+  // 9. Respuesta
   res.json({
     token,
     status: "200",
     message: "login complete",
-    userData: userData,
-    userAccessApg: userAccessApg,
-    userAccessAXG: userAccessAXG,
+    userData,
+    userAccessApg,
+    userAccessAXG,
   });
 };
+
 //Tener tarjetas de dashboard///////////////////////////////////////////////////////////////////////////////////////////////////
 const getDashboardCards = async (req, res) => {
   const cardsFound = await Dashboard.find().sort({ pos: 1 });
