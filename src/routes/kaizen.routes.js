@@ -18,7 +18,8 @@ const {
   createNewRedeem,
   getRedemptions,
   completeRedeem,
-  createInvestigation
+  createInvestigation,
+  validateSuggestion
 } = require("../controllers/kaizen.controller.js");
 const uploadKaizenImgs = require("../middlewares/uploadKaizenImg.js");
 const {
@@ -124,6 +125,14 @@ router.post(
   createInvestigation
 );
 
+// RUTA PARA VALIDAR O RECHAZAR UNA SUGERENCIA //
+router.put(
+  "/ValidateSuggestion/:CompanyId/:suggestionId",
+  verifyToken,
+  isAutorized,
+  isKaizenAdviser,
+  validateSuggestion
+);
 
 
 

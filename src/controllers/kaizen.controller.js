@@ -622,7 +622,81 @@ const createInvestigation = async (req, res) => {
   }
 };
 
+// MODIFICAR STATUS DE SUGERENCIA ////////////////////////////////////////////////////////////////////////////////////////////////////////
+const validateSuggestion = async (req, res) => {
+  const user = await User.findById(req.userId);
+  const { suggestionId } = req.params;
 
+  const {
+    status,
+    points,
+    activity,
+    reference,
+    employee,
+    value,
+    rejectReason
+  } = req.body;
+
+  const foundEmployee = await Employees.findById(employee);
+
+  if (!foundEmployee) {
+    return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
+  }
+
+  try {
+    const updatedSuggestion = await Suggestion.updateOne(
+      { _id: suggestionId },
+      {
+        $set: {
+          status,
+          value,
+          rejectReason,
+          modifiedBy: user._id
+        },
+      }
+    );
+
+    await KaizenPoints.findOneAndUpdate(
+      { employee: employee },
+      {
+        $inc: { totalPoints: points },
+        $push: {
+          history: {
+            activity: activity,
+            reference: reference,
+            points: points,
+            date: new Date(),
+            registeredBy: user._id
+          }
+        },
+        $setOnInsert: { company: CompanyId }
+      },
+      {
+        upsert: true,
+        new: true
+      }
+    );
+
+    if (!updatedSuggestion) {
+      res
+        .status(403)
+        .json({ status: "403", message: "Sugestion not Updated", body: "" });
+    }
+
+    res.status(200).json({
+      status: "200",
+      message: "Suggestion Updated ",
+      body: updatedSuggestion,
+    });
+  } catch (error) {
+    console.error("Error updating suggestion:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Error al guardar la sugerencia",
+      error: error.message
+    });
+  }
+};
 
 
 
@@ -1250,5 +1324,6 @@ module.exports = {
   createNewRedeem,
   getRedemptions,
   completeRedeem,
-  createInvestigation
+  createInvestigation,
+  validateSuggestion
 };

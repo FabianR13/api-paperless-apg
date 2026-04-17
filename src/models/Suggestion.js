@@ -17,9 +17,10 @@ const SuggestionSchema = new Schema({
   // Relaciones
   company: [{ type: Schema.Types.ObjectId, ref: "Company" }],
   createdBy: [{ type: Schema.Types.ObjectId, ref: "Employees" }], // Nombre
-  modifiedBy: [{ type: Schema.Types.ObjectId, ref: "Employees" }], // Nombre
+  modifiedBy: [{ type: Schema.Types.ObjectId, ref: "User" }], // Nombre
   area: { type: String },    // Ubicación
-
+  value: { type: Number },
+  rejectReason: { type: String },
   // Fechas y Firma
   createdDate: { type: Date, default: Date.now },
   signatureImg: { type: String }, // Key de S3
