@@ -139,7 +139,14 @@ const getSuggestions = async (req, res) => {
     company: { $in: CompanyId },
   }).sort({ consecutive: -1 })
     .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
-    .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+    .populate({
+      path: 'modifiedBy', select: "username employee",
+      populate: {
+        path: "employee",
+        select: "name lastName numberEmployee",
+        populate: { path: "department position", select: "name" }
+      }
+    })
     .populate({
       path: "investigationId",
       select: "-suggestionId",
@@ -669,7 +676,6 @@ const validateSuggestion = async (req, res) => {
             registeredBy: user._id
           }
         },
-        $setOnInsert: { company: CompanyId }
       },
       {
         upsert: true,
