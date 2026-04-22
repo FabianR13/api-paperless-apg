@@ -242,6 +242,9 @@ const signIn = async (req, res) => {
     // DAILY AUDITS ROLES
     DailyAuditCreate: [36],
     DailyAuditAdministrator: [37],
+    // PPE ROLES
+    PPERequester: [38],
+    PPEIssuer: [39],
   };
 
   // 7. Configuración de Mapeo de Roles Axiom (Afecta tanto a AXG como a APG)
@@ -291,6 +294,9 @@ const signIn = async (req, res) => {
     // DAILY AUDITS ROLES
     DailyAuditCreate: [36],
     DailyAuditAdministrator: [37],
+    // PPE ROLES
+    PPERequester: [38],
+    PPEIssuer: [39],
   };
 
   // 8. Aplicar accesos buscando asíncronamente los roles a la DB
@@ -491,10 +497,10 @@ const getAccess = async (req, res) => {
   res.json({ status: "200", message: "Access" });
 };
 
-//Guardar tokens para Notificaciones/////////////////////////////////////////////////////////////////////////////////////////////////
+// Guardar tokens para Notificaciones
 const saveTokenPush = async (req, res) => {
   try {
-    const { username, tokenPush, isSupplier, isErrorProofingInteres, isCoordinator } = req.body;
+    const { username, tokenPush, isSupplier, isErrorProofingInteres, isCoordinator, isIssuer } = req.body;
 
     if (!username || !tokenPush) {
       return res.status(400).json({ message: "User y FCM token son obligatorios" });
@@ -511,10 +517,18 @@ const saveTokenPush = async (req, res) => {
     if (isSupplier !== undefined) updateData.isSupplier = isSupplier;
     if (isErrorProofingInteres !== undefined) updateData.isErrorProofingInteres = isErrorProofingInteres;
     if (isCoordinator !== undefined) updateData.isCoordinator = isCoordinator;
+    if (isIssuer !== undefined) updateData.isIssuer = isIssuer;
 
+    // 1. SOLUCIÓN: Eliminar este token si le pertenece a otro usuario (ej. si compartieron dispositivo)
+    await PushToken.deleteMany({
+      token: tokenPush,
+      userId: { $ne: user._id } // Eliminar donde el token sea igual, pero el usuario sea distinto
+    });
+
+    // 2. Ahora sí, actualizamos o insertamos de forma segura para el usuario actual
     const updatedToken = await PushToken.findOneAndUpdate(
       { userId: user._id },       // Filtro: buscar al usuario
-      { $set: updateData },     // Actualización: reemplazar token y roles
+      { $set: updateData },       // Actualización: reemplazar token y roles
       { upsert: true, new: true }
     );
 
@@ -525,6 +539,16 @@ const saveTokenPush = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+const admin = require("firebase-admin");
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
+
+// Inicializar solo una vez (por si se importa en otros módulos)
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 //Enviar notificacion/////////////////////////////////////////////////////////////////////////////////////////////////
 const enviarNotificacionPush = async (req, res) => {
@@ -546,6 +570,8 @@ const enviarNotificacionPush = async (req, res) => {
       query.isCoordinator = true;
     } else if (targetAudience === 'errorProofing') {
       query.isErrorProofingInteres = true;
+    } else if (targetAudience === 'ppe') {
+      query.isIssuer = true;
     }
 
     const usersToNotify = await PushToken.find(query);

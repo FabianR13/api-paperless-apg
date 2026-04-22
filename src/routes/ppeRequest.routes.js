@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { verifyToken, isAutorized } = require("../middlewares/auth.Jwt");
-const { getPPERequest, createPPERequest } = require("../controllers/ppeRequest.controller");
+const { getPPERequest, createPPERequest, updatePPERequest } = require("../controllers/ppeRequest.controller");
 const uploadPPEImage = require("../middlewares/uploadImagesPPER");
 const router = Router();
 
@@ -19,6 +19,15 @@ router.post(
     isAutorized,
     uploadPPEImage,
     createPPERequest
+);
+
+//RUTA PARA ENTREGAR EPP //
+router.put(
+    "/UpdatePPERequest/:CompanyId/:ppeRequestId",
+    verifyToken,
+    isAutorized,
+    uploadPPEImage,
+    updatePPERequest
 );
 
 module.exports = router;
