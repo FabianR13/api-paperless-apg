@@ -1,0 +1,11 @@
+@API = http://localhost:4000
+@path = /api/auth/Signin/63348b72857b2173a870278c
+
+### Login usando variables de entorno
+POST {{API}}{{path}} HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "{{$dotenv TEST_USER}}",
+  "password": "{{$dotenv TEST_PWD}}"
+}
