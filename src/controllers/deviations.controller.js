@@ -1,14 +1,13 @@
 const Customer = require("../models/Customer.js");
 const Parts = require("../models/Parts.js");
-const DeviationRequest = require("../models/DeviationRequestTemp.js");
 const User = require("../models/User.js");
-const DeviationRiskAssessment = require("../models/DeviationRiskAssessmentTemp.js");
 const Company = require("../models/Company.js");
 const AWS = require('aws-sdk');
 const { sendEmailMiddlewareResponse } = require("../middlewares/mailer.js");
 const Deviation = require("../models/Deviation.js");
 const Employees = require("../models/Employees.js");
 const Role = require("../models/Role.js");
+const DeviationRequest = require("../models/DeviationRequest.js");
 
 AWS.config.update({
     region: process.env.S3_BUCKET_REGION,
@@ -187,7 +186,7 @@ const createDeviation = async (req, res) => {
     }
 };
 
-// Getting all deviations request/////////////////////////////////////////////////////////////////////////////////////////////////////
+// Getting all deviations /////////////////////////////////////////////////////////////////////////////////////////////////////
 const getDeviations = async (req, res) => {
     const { CompanyId } = req.params;
 
@@ -557,11 +556,168 @@ const closeDeviation = async (req, res) => {
     }
 };
 
+// SAVE DEVIATION REQUEST //////////////////////////////////////////////////////////////////////////////////////
+const createDeviationRequest = async (req, res) => {
+    const { CompanyId } = req.params;
+    const user = await User.findById(req.userId);
+
+    if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+    const foundCompany = await Company.findById(CompanyId);
+    if (!foundCompany) return res.status(404).json({ status: "error", message: "Company not found" });
+
+    const userId = req.userId;
+    const {
+        deviationType, deviationDate, implementationDate, implementationTime, customerId,
+        partId, supplier, machine, processOwner, deviationDescription, interimControlMeasure
+    } = req.body;
+
+    const termRequest = JSON.parse(req.body.termRequest);
+
+    let deviationImages = [];
+    if (req.files && req.files["deviationImages"]) {
+        deviationImages = req.files["deviationImages"].map((file) => ({ img: file.key }));
+    }
+
+    try {
+        const foundCustomer = await Customer.findById(customerId);
+        if (!foundCustomer) return res.status(404).json({ status: "error", message: "Customer not found" });
+
+        const foundPartNumber = await Parts.findById(partId);
+        if (!foundPartNumber) return res.status(404).json({ status: "error", message: "Part Number not found" });
+
+        const foundEmployee = await User.findById(processOwner);
+        if (!foundEmployee) return res.status(404).json({ status: "error", message: "Employee not found" });
+
+        const anioActual = new Date().getFullYear();
+        const ultimaDesviacion = await DeviationRequest.findOne({
+            createdAt: {
+                $gte: new Date(`${anioActual}-01-01T00:00:00.000Z`),
+                $lt: new Date(`${anioActual + 1}-01-01T00:00:00.000Z`)
+            }
+        }).sort({ consecutive: -1 });
+
+        const nextConsecutive = ultimaDesviacion ? ultimaDesviacion.consecutive + 1 : 1;
+        const generatedNumber = `APG-${anioActual}-${String(nextConsecutive).padStart(3, "0")}R`;
+
+        const newDeviationRequest = new DeviationRequest({
+            deviationNumber: generatedNumber,
+            consecutive: nextConsecutive,
+            version: 1,
+            deviationStatus: "New",
+            company: CompanyId,
+            requestBy: userId,
+            deviationType,
+            deviationDate,
+            implementationDate,
+            implementationTime,
+            customer: customerId,
+            partNumber: partId,
+            supplier,
+            machine,
+            processOwner,
+            deviationDescription,
+            interimControlMeasure,
+            deviationImages,
+            termRequest,
+            active: true
+        });
+
+        const savedDeviationRequest = await newDeviationRequest.save();
+
+        if (!savedDeviationRequest) {
+            return res.status(403).json({ status: "403", message: "Deviation not Saved" });
+        }
+
+        res.json({
+            status: "200",
+            message: "New Deviation created successfully",
+            savedDeviationRequest
+        });
+
+    } catch (error) {
+        console.error("Error creating deviation:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Error al guardar desviacion",
+            error: error.message
+        });
+    }
+};
+
+// Getting all deviations request/////////////////////////////////////////////////////////////////////////////////////////////////////
+const getDeviationsRequests = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    // Validación básica de ID
+    if (!CompanyId || CompanyId.length !== 24) {
+        return res.status(400).json({ status: "error", message: "Invalid Company ID" });
+    }
+
+    try {
+        const company = await Company.find({ _id: { $in: CompanyId } });
+        if (!company) {
+            return res.status(404).json({ status: "error", message: "Company not found" });
+        }
+
+        const deviations = await DeviationRequest.find({
+            company: { $in: CompanyId },
+        })
+            .sort({ createdAt: -1 })
+            .populate('customer')
+            .populate('partNumber')
+            .populate({
+                path: 'requestBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+            .populate({
+                path: 'processOwner',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+            .populate({
+                path: 'reviewedBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+
+        res.json({ status: "200", message: "Deviations Loaded", body: deviations });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Error loading deviations" });
+    }
+};
+
 module.exports = {
     createDeviation,
     getDeviations,
     updateDeviation,
     rejectDeviation,
     signDeviation,
-    closeDeviation
+    closeDeviation,
+    createDeviationRequest,
+    getDeviationsRequests
 };

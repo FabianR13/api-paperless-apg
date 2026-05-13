@@ -1,125 +1,65 @@
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema;
 
 const deviationRequestSchema = new mongoose.Schema(
     {
-        deviationDate: {
-            type: Date,
-        },
-        deviationNumber: {
-            type: String,
-        },
-        deviationType: {
-            type: String,
-        },
-        customer: [
-            {
-                ref: "Customer",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        supplier: {
-            type: String,
-        },
-        requestBy: [
-            {
-                ref: "User",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        implementationDate: {
-            type: Date,
-        },
-        implementationTime: {
-            type: String,
-        },
-        parts: [
-            {
-                ref: "Parts",
-                type: mongoose.Schema.Types.ObjectId,
-            },
-        ],
-        applyTo: {
-            type: String,
-        },
-        machineNo: {
-            type: String,
-        },
-        sectionTwo: {
-            type: String,
-        },
-        termDevRequest: {
-            type: String,
-        },
-        quantity: {
-            type: String,
-        },
-        timePeriodStart: {
-            type: Date,
-        },
-        timePeriodEnd: {
-            type: Date,
-        },
-        other: {
-            type: String,
-        },
-        deviationGranted: {
-            type: String,
-        },
-        otherGranted: {
-            type: String,
-        },
-        qualitySign: {
-            type: String,
-        },
-        dateQualitySign: {
-            type: Date,
-        },
-        seniorSign: {
-            type: String,
-        },
-        dateSeniorSign: {
-            type: Date,
-        },
-        customerSign: {
-            type: String,
-        },
-        dateCustomerSign: {
-            type: Date,
-        },
-        comments: {
-            type: String,
-        },
-        consecutive: {
-            type: Number,
-        },
-        severity: {
-            type: String,
-        },
-        qualitySignStatus: {
-            type: String,
-        },
-        seniorSignStatus: {
-            type: String,
-        },
-        customerSignStatus: {
-            type: String,
-        },
+        deviationNumber: { type: String, required: true, unique: true },
+        consecutive: { type: Number },
+        version: { type: Number, default: 1 },
         deviationStatus: {
             type: String,
+            enum: ['New', 'Approved', 'Rejected'],
+            default: 'New'
         },
-        deviationRisk: [{
-            ref: "DeviationRiskAssessment",
-            type: mongoose.Schema.Types.ObjectId,
-        }],
-        company: [
-            {
-                ref: "Company",
-                type: mongoose.Schema.Types.ObjectId,
+        company: { type: Schema.Types.ObjectId, ref: "Company" },
+        requestBy: { type: Schema.Types.ObjectId, ref: "User" },
+        deviationType: { type: String },
+        deviationDate: { type: Date },
+        implementationDate: { type: Date },
+        implementationTime: { type: String },
+        customer: { type: Schema.Types.ObjectId, ref: "Customer" },
+        partNumber: { type: Schema.Types.ObjectId, ref: "Parts" },
+        supplier: { type: String },
+        machine: { type: String },
+        processOwner: { type: Schema.Types.ObjectId, ref: "User" },
+        deviationDescription: { type: String },
+        interimControlMeasure: { type: String },
+        termRequest: {
+            type: {
+                type: String,
+                enum: ['Permanent', 'Quantity', 'Time Period', 'Other'],
+                required: true
+            },
+            quantity: {
+                type: Number,
+                required: false
+            },
+            startDate: {
+                type: Date,
+                required: false
+            },
+            endDate: {
+                type: Date,
+                required: false
+            },
+            shiftStart: {
+                type: String,
+                required: false
+            },
+            shiftEnd: {
+                type: String,
+                required: false
+            },
+            otherDetails: {
+                type: String,
+                required: false
             }
-        ],
-        version: {
-            type: Number,
         },
+        deviationImages: [{ img: String }],
+        reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        reviewDate: { type: Date },
+        rejectedComment: { type: String },
+        active: { type: Boolean, },
     },
     {
         timestamps: true,
