@@ -5,12 +5,42 @@ const {
   isAutorized,
   isDeviationR,
   isDeviationValidator,
-  isDeviationManager
+  isDeviationManager,
+  isDeviationCreator
 } = require("../middlewares/auth.Jwt.js");
 const { sendEmailMiddlewareNext } = require("../middlewares/mailer.js");
-const { createDeviation, getDeviations, updateDeviation, rejectDeviation, signDeviation, closeDeviation, } = require("../controllers/deviations.controller.js");
+const { createDeviation, getDeviations, updateDeviation, rejectDeviation, signDeviation, closeDeviation, createDeviationRequest, getDeviationsRequests, } = require("../controllers/deviations.controller.js");
 const uploadDeviationImgs = require("../middlewares/uploadDeviationImgs.js");
 const uploadClosingFile = require("../middlewares/uploadClosingFile.js");
+
+// RUTA PARA CREAR UNA REQUISICION DE DESVIACION ///
+router.post("/NewDeviationRequest/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationCreator,
+  uploadDeviationImgs,
+  sendEmailMiddlewareNext,
+  createDeviationRequest,
+);
+
+// RUTA PARA OBTENER REQUISICIONES DE EDESVIACIONES ///
+router.get(
+  "/DeviationsRequests/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationR,
+  getDeviationsRequests
+);
+
+
+
+
+
+
+
+
+
+
 
 // Route to get All the deviations///
 router.get(

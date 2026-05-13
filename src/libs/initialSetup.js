@@ -13,9 +13,7 @@ const { dataParts } = require("./PartsRawData.js");
 const Kaizen = require("../models/Kaizen.js");
 const Company = require("../models/Company.js");
 const { dataPartsInfo } = require("./PartsInfoRawData.js");
-const PartsInfo = require("../models/PartsInfo.js");
 const { dataMachine } = require("./MachineRawData.js");
-const Machine = require("../models/Machine.js");
 const  dataDevicesAutomation  = require("./DevicesRawData.js");
 const AutomationDevice = require("../models/AutomationDevice.js")
 
@@ -342,78 +340,6 @@ const createParts = async () => {
     console.log(error);
   }
 };
-//create parts info///////////////////////////////////////////////////////////////////////////////////////////////
-const createPartsInfo = async () => {
-  let partsinfo = dataPartsInfo;
-  let status = true;
-  const foundCompany = await Company.find({
-    name: { $in: "APG Mexico" },
-  });
-  const company = foundCompany.map((company) => company._id);
-  try {
-    const count = await PartsInfo.estimatedDocumentCount();
-    if (count > 0) return;
-    for (let i = 0; i < partsinfo.length; i++) {
-      let newPartinfo = new PartsInfo({
-        machine: partsinfo[i].machine,
-        numberCavities: partsinfo[i].numberCavities,
-        shotWeight: partsinfo[i].shotWeight,
-        totalShotWeight: partsinfo[i].totalShotWeight,
-        avgPartWeight: partsinfo[i].avgPartWeight,
-        cycleTime: partsinfo[i].cycleTime,
-        partsPerHour: partsinfo[i].partsPerHour,
-        company: company,
-        cushion: partsinfo[i].cushion,
-        recovery: partsinfo[i].recovery,
-        fillTime: partsinfo[i].fillTime,
-        peakPress: partsinfo[i].peakPress,
-        status: status,
-      });
-      const foundParts = await Parts.find({
-        partnumber: { $in: partsinfo[i].partnumber },
-      });
-      newPartinfo.partnumber = foundParts.map(
-        (parts) => parts._id
-      );
-      let savedPartInfo = await newPartinfo.save();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-//create machines//////////////////////////////////////////////////////////////////////////////////////////////////
-const createMachine = async () => {
-  console.log(dataMachine)
-  let machines = dataMachine;
-  const foundCompany = await Company.find({
-    name: { $in: "APG Mexico" },
-  });
-  const company = foundCompany.map((company) => company._id);
-  try {
-    const count = await Machine.estimatedDocumentCount();
-    if (count > 0) return;
-
-    for (let i = 0; i < machines.length; i++) {
-      let newMachine = new Machine({
-        machineNumber: machines[i].machine,
-        machineZise: machines[i].machineZise,
-        nozzleOrifice: machines[i].nozzleOrifice,
-        nozzleRadius: machines[i].nozzleRadius,
-        nozzleType: machines[i].nozzleType,
-        company: company,
-      });
-      const foundPartsInfo = await PartsInfo.find({
-        machine: { $in: machines[i].partInfo },
-      });
-      newMachine.partInfo = foundPartsInfo.map(
-        (partInfo) => partInfo._id
-      );
-      let savedMachine = await newMachine.save();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
 
 /////////////////////////Modificar empleados
 const updateEmployeesData = async () => {
@@ -488,8 +414,6 @@ module.exports = {
   createForms,
   createEmployees,
   createParts,
-  createPartsInfo,
-  createMachine,
   updateEmployeesData,
   createDevicesAutomation
 }

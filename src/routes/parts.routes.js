@@ -12,10 +12,6 @@ const {
     isQualityRW,
     isAutorized
 } = require("../middlewares/auth.Jwt.js");
-const {
-    signPartsInfo,
-    updatePartInfo
-} = require("../controllers/partsInfo.controller.js");
 
 ///Route to create new part///
 router.post(
@@ -51,17 +47,6 @@ router.get("/TrainingParts/:CompanyId",
     verifyToken,
     isAutorized,
     getTrainingParts
-);
-
-///Route to create part info///
-router.post(
-    "/newpartesInfo",
-    signPartsInfo
-);
-///Route to update part info///
-router.put(
-    "/actualizarPartInfo/:partInfoId",
-    updatePartInfo
 );
 
 
