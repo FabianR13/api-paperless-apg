@@ -15,13 +15,13 @@ if (cluster.isPrimary) {
     const cron = require('node-cron');
     const { autoSendDeviationAlerts } = require("./controllers/emailNotification.controller.js");
 
-    cron.schedule('06 18 * * *', () => {
-        console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones (Desde el Master)");
-        autoSendDeviationAlerts();
-    }, {
-        scheduled: true,
-        timezone: "America/Mexico_City"
-    });
+    // cron.schedule('06 18 * * *', () => {
+    //     console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones (Desde el Master)");
+    //     autoSendDeviationAlerts();
+    // }, {
+    //     scheduled: true,
+    //     timezone: "America/Mexico_City"
+    // });
 
     // Clonamos la API
     for (let i = 0; i < WORKERS; i++) {

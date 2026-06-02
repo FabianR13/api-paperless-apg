@@ -24,6 +24,8 @@ const deviationRequestSchema = new mongoose.Schema(
         processOwner: { type: Schema.Types.ObjectId, ref: "User" },
         deviationDescription: { type: String },
         interimControlMeasure: { type: String },
+        reason: { type: String },
+        consequence: { type: String },
         termRequest: {
             type: {
                 type: String,
@@ -55,9 +57,14 @@ const deviationRequestSchema = new mongoose.Schema(
                 required: false
             }
         },
+        resolution: { type: String },
         deviationImages: [{ img: String }],
         reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
         reviewDate: { type: Date },
+        approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        approvedDate: { type: Date },
+        rejectedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        rejectedDate: { type: Date },
         rejectedComment: { type: String },
         active: { type: Boolean, },
     },

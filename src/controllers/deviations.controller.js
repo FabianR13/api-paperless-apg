@@ -8,6 +8,7 @@ const Deviation = require("../models/Deviation.js");
 const Employees = require("../models/Employees.js");
 const Role = require("../models/Role.js");
 const DeviationRequest = require("../models/DeviationRequest.js");
+const DeviationsNew = require("../models/DeviationsNew.js");
 
 AWS.config.update({
     region: process.env.S3_BUCKET_REGION,
@@ -39,6 +40,32 @@ const extractRows = (body, prefix) => {
             dueDate: dueDates[index] || null
         };
     }).filter(row => row.risk && row.risk.trim() !== '');
+};
+
+const extractNewRows = (body, prefix) => {
+    const normalize = (val) => (!val ? [] : Array.isArray(val) ? val : [val]);
+
+    const risks = normalize(body[`${prefix}Risk`]);
+    const measurements = normalize(body[`${prefix}Measurement`]);
+    const responsibles = normalize(body[`${prefix}Responsible`]);
+    const dueDates = normalize(body[`${prefix}DueDate`]);
+    const closeDates = normalize(body[`${prefix}CloseDate`]); // 1. Normalizamos las fechas de cierre
+
+    if (risks.length === 0) return [];
+
+    return risks.map((risk, index) => {
+        const respId = responsibles[index];
+        const dueDate = dueDates[index];
+        const closeDate = closeDates[index];
+
+        return {
+            risk: risk,
+            measurement: measurements[index] || '',
+            responsible: (respId && respId.trim().length > 0) ? respId : null,
+            dueDate: (dueDate && dueDate.trim().length > 0) ? dueDate : null,
+            closeDate: (closeDate && closeDate.trim().length > 0) ? closeDate : null
+        };
+    }).filter(row => row.risk && row.risk.trim() !== ''); // Mantenemos tu filtro de seguridad
 };
 
 //create deviation request//////////////////////////////////////////////////////////////////////////////////////
@@ -620,7 +647,8 @@ const createDeviationRequest = async (req, res) => {
             interimControlMeasure,
             deviationImages,
             termRequest,
-            active: true
+            active: true,
+            resolution: "New"
         });
 
         const savedDeviationRequest = await newDeviationRequest.save();
@@ -674,7 +702,8 @@ const getDeviationsRequests = async (req, res) => {
                     {
                         path: 'employee',
                         model: 'Employees',
-                        select: 'name lastName numberEmployee'
+                        select: 'name lastName numberEmployee department',
+                        populate: { path: 'department', model: 'Department' }
                     }
                 ]
             })
@@ -702,12 +731,438 @@ const getDeviationsRequests = async (req, res) => {
                     }
                 ]
             })
+            .populate({
+                path: 'rejectedBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+            .populate({
+                path: 'approvedBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
 
         res.json({ status: "200", message: "Deviations Loaded", body: deviations });
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ status: "error", message: "Error loading deviations" });
+    }
+};
+
+//FUNCION PARA ACTUALIZAR DEVIATION REQUEST /////////////////////////////////////////////////////////////////////////////
+const validationDeviationRequest = async (req, res) => {
+    try {
+        const { DeviationId } = req.params;
+        const user = await User.findById(req.userId);
+
+        if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+        const userId = req.userId;
+        let {
+            interimControlMeasure, resolution, rejectedComment, deletedImages, reason, consequence
+        } = req.body
+
+        const now = new Date();
+
+        const parsedDeletesImages = deletedImages ? JSON.parse(deletedImages) : [];
+
+        let newDeviationImages = [];
+        if (req.files && req.files["deviationImages"]) {
+            newDeviationImages = req.files["deviationImages"].map((file) => ({ img: file.key }));
+        }
+
+        if (parsedDeletesImages && parsedDeletesImages.length > 0) {
+            await DeviationRequest.updateOne(
+                { _id: DeviationId },
+                {
+                    $pull: {
+                        deviationImages: {
+                            _id: { $in: parsedDeletesImages }
+                        }
+                    }
+                }
+            );
+        }
+
+        const updateQuery = {
+            $set: {
+                interimControlMeasure,
+                resolution,
+                rejectedComment,
+                deviationStatus: resolution,
+                reason,
+                consequence,
+                active: resolution === "Rejected" ? true : false,
+            }
+        };
+
+        if (resolution === "Verified") {
+            updateQuery.$set.reviewedBy = userId;
+            updateQuery.$set.reviewDate = now;
+        }
+        else if (resolution === "Approved") {
+            updateQuery.$set.approvedBy = userId
+            updateQuery.$set.approvedDate = now;
+        }
+        else if (resolution === "Rejected") {
+            updateQuery.$set.rejectedBy = userId;
+            updateQuery.$set.rejectedDate = now;
+        }
+
+        if (newDeviationImages.length > 0) {
+            updateQuery.$push = {
+                deviationImages: { $each: newDeviationImages }
+            };
+        }
+
+        const updateDeviationRequest = await DeviationRequest.findByIdAndUpdate(
+            DeviationId,
+            updateQuery,
+            { new: true }
+        );
+
+        if (!updateDeviationRequest) {
+            return res.status(403).json({ status: "403", message: "Daily Audit not Updated" });
+        }
+
+        if (parsedDeletesImages.length > 0) {
+            const folderPath = "Uploads/DeviationImgs/";
+
+            const deleteParams = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Delete: {
+                    Objects: parsedDeletesImages.map(key => ({ Key: folderPath + key }))
+                }
+            };
+
+            s3.deleteObjects(deleteParams, (err, data) => {
+                if (err) console.error("Error borrando objetos huérfanos en S3:", err);
+                else console.log("Objetos borrados de S3 exitosamente:", data);
+            });
+        }
+
+        if (resolution === "Approved") {
+            const anioActual = new Date().getFullYear();
+
+            const ultimaDesviacion = await DeviationsNew.findOne({
+                createdAt: {
+                    $gte: new Date(`${anioActual}-01-01T00:00:00.000Z`),
+                    $lt: new Date(`${anioActual + 1}-01-01T00:00:00.000Z`)
+                }
+            }).sort({ consecutive: -1 });
+
+            const nextConsecutive = ultimaDesviacion ? ultimaDesviacion.consecutive + 1 : 1;
+            const generatedNumber = `APG-${anioActual}-${String(nextConsecutive).padStart(3, "0")}`;
+
+            const newDeviation = new DeviationsNew({
+                deviationNumber: generatedNumber,
+                consecutive: nextConsecutive,
+                version: 1,
+                deviationStatus: 'Approved',
+                company: updateDeviationRequest.company,
+                requestBy: updateDeviationRequest.requestBy,
+                deviationType: updateDeviationRequest.deviationType,
+                deviationDate: updateDeviationRequest.deviationDate,
+                implementationDate: updateDeviationRequest.implementationDate,
+                implementationTime: updateDeviationRequest.implementationTime,
+                customer: updateDeviationRequest.customer,
+                partNumber: updateDeviationRequest.partNumber,
+                supplier: updateDeviationRequest.supplier,
+                machine: updateDeviationRequest.machine,
+                processOwner: updateDeviationRequest.processOwner,
+                deviationDescription: updateDeviationRequest.deviationDescription,
+                interimControlMeasure: updateDeviationRequest.interimControlMeasure,
+                reason: updateDeviationRequest.reason,
+                consequence: updateDeviationRequest.consequence,
+                termRequest: updateDeviationRequest.termRequest,
+                deviationImages: updateDeviationRequest.deviationImages,
+                reviewedBy: updateDeviationRequest.reviewedBy,
+                reviewDate: updateDeviationRequest.reviewDate,
+                approvedBy: updateDeviationRequest.approvedBy,
+                approvedDate: updateDeviationRequest.approvedDate,
+                active: true
+            });
+
+            await newDeviation.save();
+        }
+
+        return res.status(200).json({
+            status: "200",
+            message: resolution === "Approved"
+                ? "Deviation Request Approved & Official Deviation Generated"
+                : "Deviation Request Updated",
+            body: updateDeviationRequest
+        });
+    } catch (error) {
+        console.error("Error updating data of Deviation Request", error);
+        return res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
+// Getting all new deviations /////////////////////////////////////////////////////////////////////////////////////////////////////
+const getNewDeviations = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    // Validación básica de ID
+    if (!CompanyId || CompanyId.length !== 24) {
+        return res.status(400).json({ status: "error", message: "Invalid Company ID" });
+    }
+
+    try {
+        const company = await Company.find({ _id: { $in: CompanyId } });
+        if (!company) {
+            return res.status(404).json({ status: "error", message: "Company not found" });
+        }
+
+        const deviations = await DeviationsNew.find({
+            company: { $in: CompanyId },
+        })
+            .sort({ createdAt: -1 })
+            .populate('customer')
+            .populate('partNumber')
+            .populate({
+                path: 'requestBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee department',
+                        populate: { path: 'department', model: 'Department' }
+                    }
+                ]
+            })
+            .populate({
+                path: 'processOwner',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+            .populate({
+                path: 'reviewedBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+            .populate({
+                path: 'approvedBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+            .populate({
+                path: 'closedBy',
+                select: 'name lastName signature employee',
+                populate: [
+                    { path: 'signature', model: 'Signature' },
+                    {
+                        path: 'employee',
+                        model: 'Employees',
+                        select: 'name lastName numberEmployee'
+                    }
+                ]
+            })
+
+        res.json({ status: "200", message: "Deviations Loaded", body: deviations });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Error loading deviations" });
+    }
+};
+
+const updateDeviationNewRisk = async (req, res) => {
+    try {
+        const { DeviationId } = req.params;
+        const user = await User.findById(req.userId);
+
+        if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+        const userId = req.userId;
+
+        const data = req.body;
+
+        const allowedFields = [
+            'reason', 'consequence', 'rootCause', 'correctiveActions', 'correctiveMeasurement',
+            'preventiveActions', 'preventiveMeasurement', 'responsibleCorrective',
+            'responsiblePreventive', 'correctiveDueDate', 'preventiveDueDate',
+            'correctiveCloseDate', 'preventiveCloseDate'
+        ];
+
+        const updatePayload = {};
+
+        allowedFields.forEach(field => {
+            if (data[field] !== undefined) {
+                updatePayload[field] = data[field] === "" ? null : data[field];
+            }
+        });
+
+        updatePayload.modifiedBy = userId;
+        updatePayload.modifiedDate = new Date();
+
+        const updatedDeviation = await DeviationsNew.findByIdAndUpdate(
+            DeviationId,
+            { $set: updatePayload },
+            { new: true, runValidators: true }
+        );
+
+        res.json({
+            status: "200",
+            message: "Deviation Updated Successfully",
+            body: updatedDeviation
+        });
+
+    } catch (error) {
+        console.error("Error updating deviation:", error);
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
+const updateClosureEvidence = async (req, res) => {
+    const { DeviationId } = req.params;
+
+    try {
+        const deviation = await DeviationsNew.findById(DeviationId);
+        if (!deviation) {
+            return res.status(404).json({ status: "404", message: "Deviation not found" });
+        }
+
+        // 1. Extraemos y parseamos los archivos eliminados enviados desde el Front
+        const deletedPdfs = req.body.deletedPdfs ? JSON.parse(req.body.deletedPdfs) : [];
+        const deletedImgs = req.body.deletedImgs ? JSON.parse(req.body.deletedImgs) : [];
+
+        // Sacamos solo los nombres de los archivos (usando las nuevas llaves)
+        const deletedPdfNames = deletedPdfs.map(item => item.pdf);
+        const deletedImgNames = deletedImgs.map(item => item.img);
+
+        // Unimos todos los nombres en un solo arreglo para borrarlos de S3
+        const allDeletedNames = [...deletedPdfNames, ...deletedImgNames];
+
+        // 2. ELIMINACIÓN FÍSICA EN S3
+        if (allDeletedNames.length > 0) {
+            const objectsToDelete = allDeletedNames.map(fileName => ({
+                Key: `Uploads/DeviationClosingFiles/${fileName}`
+            }));
+
+            const deleteParams = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Delete: { Objects: objectsToDelete, Quiet: false }
+            };
+
+            try {
+                const s3Response = await s3.deleteObjects(deleteParams).promise();
+                console.log("Archivos borrados de S3:", s3Response.Deleted);
+            } catch (s3Error) {
+                console.error("Error al borrar archivos de S3:", s3Error);
+            }
+        }
+
+        // 3. ELIMINACIÓN EN BASE DE DATOS (Apunta a las NUEVAS variables)
+        if (deletedPdfNames.length > 0) {
+            deviation.closurePdfs = deviation.closurePdfs.filter(pdfObj => !deletedPdfNames.includes(pdfObj.pdf));
+        }
+        if (deletedImgNames.length > 0) {
+            deviation.closureImages = deviation.closureImages.filter(imgObj => !deletedImgNames.includes(imgObj.img));
+        }
+
+        // 4. Agregamos los NUEVOS archivos a las NUEVAS variables
+        if (req.files && req.files['newClosurePdfs']) {
+            // Guardamos usando la propiedad "pdf"
+            const newPdfsToSave = req.files['newClosurePdfs'].map(file => ({ pdf: file.key.split('/').pop() }));
+            deviation.closurePdfs.push(...newPdfsToSave);
+        }
+
+        if (req.files && req.files['newClosureImgs']) {
+            // Guardamos usando la propiedad "img"
+            const newImgsToSave = req.files['newClosureImgs'].map(file => ({ img: file.key.split('/').pop() }));
+            deviation.closureImages.push(...newImgsToSave);
+        }
+
+        // 5. Guardamos todo
+        await deviation.save();
+
+        res.status(200).json({
+            status: "200",
+            message: "Evidence Updated Successfully",
+            body: deviation
+        });
+
+    } catch (error) {
+        console.error("Error updating closure evidence:", error);
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
+const updateStatus = async (req, res) => {
+    const { DeviationId } = req.params;
+    const { status } = req.body; // 'ReadyToClose', 'Closed', o 'Open'
+    const userId = req.userId; // ID de quien ejecuta el cambio
+    const now = new Date();
+
+    try {
+        const updatePayload = {
+            deviationStatus: status,
+            modifiedBy: userId,
+            modifiedDate: now
+        };
+
+        // Si el estado cambia a cerrado, guardamos quién la cerró para jalar su firma
+        if (status === "Closed") {
+            updatePayload.closedBy = userId;
+            updatePayload.closedDate = now;
+        } else if (status === "Open") {
+            // Si la regresamos a Open, limpiamos un cierre previo por si acaso
+            updatePayload.closedBy = null;
+            updatePayload.closedDate = "";
+        }
+
+        const updatedDeviation = await DeviationsNew.findByIdAndUpdate(
+            DeviationId,
+            { $set: updatePayload },
+            { new: true }
+        ).populate('closedBy');
+
+        res.status(200).json({
+            status: "200",
+            message: `Deviation status successfully updated to ${status}`,
+            body: updatedDeviation
+        });
+    } catch (error) {
+        res.status(500).json({ status: "error", message: error.message });
     }
 };
 
@@ -719,5 +1174,11 @@ module.exports = {
     signDeviation,
     closeDeviation,
     createDeviationRequest,
-    getDeviationsRequests
+    getDeviationsRequests,
+    validationDeviationRequest,
+    getNewDeviations,
+    updateDeviationNewRisk,
+    updateClosureEvidence,
+    updateStatus
 };
+//CC2605154890

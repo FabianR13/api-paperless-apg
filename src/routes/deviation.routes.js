@@ -9,9 +9,10 @@ const {
   isDeviationCreator
 } = require("../middlewares/auth.Jwt.js");
 const { sendEmailMiddlewareNext } = require("../middlewares/mailer.js");
-const { createDeviation, getDeviations, updateDeviation, rejectDeviation, signDeviation, closeDeviation, createDeviationRequest, getDeviationsRequests, } = require("../controllers/deviations.controller.js");
+const { createDeviation, getDeviations, updateDeviation, rejectDeviation, signDeviation, closeDeviation, createDeviationRequest, getDeviationsRequests, validationDeviationRequest, getNewDeviations, updateDeviationNewRisk, updateClosureEvidence, updateStatus, } = require("../controllers/deviations.controller.js");
 const uploadDeviationImgs = require("../middlewares/uploadDeviationImgs.js");
 const uploadClosingFile = require("../middlewares/uploadClosingFile.js");
+const uploadClosureEvidence = require("../middlewares/uploadClosureEvidence.js");
 
 // RUTA PARA CREAR UNA REQUISICION DE DESVIACION ///
 router.post("/NewDeviationRequest/:CompanyId",
@@ -32,8 +33,51 @@ router.get(
   getDeviationsRequests
 );
 
+// RUTA PARA VALIDAR UNA REQUISICION DE DESVIACION ///
+router.put("/UpdateDeviationRequest/:DeviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationValidator,
+  uploadDeviationImgs,
+  // sendEmailMiddlewareNext,
+  validationDeviationRequest,
+);
 
+// RUTA PARA OBTENER NUEVAS DESVIACIONES ///
+router.get(
+  "/NewDeviations/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationR,
+  getNewDeviations
+);
 
+// RUTA PARA ACTUALIZAR RISK DE UNA DESVIACION ///
+router.put("/UpdateDeviationNewRisk/:DeviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationValidator,
+  // uploadDeviationImgs,
+  // sendEmailMiddlewareNext,
+  updateDeviationNewRisk,
+);
+
+// RUTA PARA ACTUALIZAR RISK DE UNA DESVIACION ///
+router.put("/UpdateClosureEvidence/:DeviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationValidator,
+  uploadClosureEvidence,
+  updateClosureEvidence
+);
+
+// RUTA PARA CERRAR UNA DESVIACION ///
+router.put("/UpdateStatus/:DeviationId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isDeviationValidator,
+  updateStatus
+);
 
 
 
