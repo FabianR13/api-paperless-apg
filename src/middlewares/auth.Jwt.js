@@ -792,11 +792,11 @@ const isDeviationValidator = async (req, res, next) => {
         next();
         return;
       }
-      if (roles[i].name === "QualityASIns") {
+      if (roles[i].name === "QualityASGer") {
         next();
         return;
       }
-      if (roles[i].name === "QualityASGer") {
+      if (roles[i].name === "DeviationOwner") {
         next();
         return;
       }
@@ -808,7 +808,15 @@ const isDeviationValidator = async (req, res, next) => {
         next();
         return;
       }
-      if (rolesAxiom[i].name === "DeviationR") {
+      if (rolesAxiom[i].name === "QualityASEng") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "QualityASGer") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "DeviationOwner") {
         next();
         return;
       }
