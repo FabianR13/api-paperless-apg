@@ -13,7 +13,29 @@ if (cluster.isPrimary) {
 
     // --- CRON JOBS MOVIDOS AL MASTER ---
     const cron = require('node-cron');
-    const { autoSendDeviationAlerts } = require("./controllers/emailNotification.controller.js");
+    const {
+        autoSendDeviationAlerts,
+        sendApgGreenAlert,
+        sendPausaActivaAlert
+    } = require("./controllers/emailNotification.controller.js");
+
+    // 1. Pausa Activa: Lunes a Viernes a las 10:00 AM, 1:00 PM (13 hrs) y 4:00 PM (16 hrs)
+    cron.schedule('00 10,13,16 * * 1-5', () => {
+        console.log("⏰ Ejecutando cron: Pausa Activa");
+        sendPausaActivaAlert();
+    }, {
+        scheduled: true,
+        timezone: "America/Mexico_City"
+    });
+
+    // 2. APG Green: Lunes a Viernes a las 5:00 PM (17 hrs)
+    cron.schedule('00 17 * * 1-5', () => {
+        console.log("⏰ Ejecutando cron: APG Green");
+        sendApgGreenAlert();
+    }, {
+        scheduled: true,
+        timezone: "America/Mexico_City"
+    });
 
     // cron.schedule('06 18 * * *', () => {
     //     console.log("⏰ Ejecutando tarea programada: Alerta de Desviaciones (Desde el Master)");

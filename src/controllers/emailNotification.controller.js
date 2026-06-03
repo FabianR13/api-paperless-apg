@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 // Ajusta la ruta a tu .env si es necesario
 dotenv.config({ path: "D:\\Paperless GIT\\api-paperless-apg\\src\\.env" });
 
+const { templateApgGreen, templatePausaActiva } = require('../utils/emailTemplates.js');
+
 // Configuración del Transporter (Reutilizando la tuya)
 let transporter = nodemailer.createTransport({
     host: "smtp.office365.com",
@@ -123,10 +125,42 @@ const autoSendDeviationAlerts = async () => {
                 console.log('Alert email sent successfully');
             }
         });
-        
+
     } catch (error) {
         console.error("Error en la función autoSendDeviationAlerts:", error);
     }
 };
 
-module.exports = { autoSendDeviationAlerts };
+const sendApgGreenAlert = async () => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: 'todos@apgmexico.com', // Lista de distribución
+            ...templateApgGreen() // <-- Esto inyecta el subject, text y html
+        };
+        await transporter.sendMail(mailOptions);
+        console.log("✅ Correo APG Green enviado correctamente");
+    } catch (error) {
+        console.error("❌ Error al enviar APG Green:", error);
+    }
+};
+
+const sendPausaActivaAlert = async () => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: 'todos@apgmexico.com',
+            ...templatePausaActiva()
+        };
+        await transporter.sendMail(mailOptions);
+        console.log("✅ Correo Pausa Activa enviado correctamente");
+    } catch (error) {
+        console.error("❌ Error al enviar Pausa Activa:", error);
+    }
+};
+
+module.exports = {
+    autoSendDeviationAlerts,
+    sendApgGreenAlert,
+    sendPausaActivaAlert,
+};
