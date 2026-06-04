@@ -135,7 +135,7 @@ const sendApgGreenAlert = async () => {
     try {
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: 'todos@apgmexico.com', // Lista de distribución
+            to: 'APGEmployees@apgmexico.mx', // Lista de distribución
             ...templateApgGreen() // <-- Esto inyecta el subject, text y html
         };
         await transporter.sendMail(mailOptions);
@@ -149,7 +149,7 @@ const sendPausaActivaAlert = async () => {
     try {
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: 'todos@apgmexico.com',
+            to: 'APGEmployees@apgmexico.mx',
             ...templatePausaActiva()
         };
         await transporter.sendMail(mailOptions);
