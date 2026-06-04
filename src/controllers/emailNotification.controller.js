@@ -134,7 +134,7 @@ const autoSendDeviationAlerts = async () => {
 const sendApgGreenAlert = async () => {
     try {
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: 'paperless@apgmexico.mx',
             to: 'APGEmployees@apgmexico.mx', // Lista de distribución
             ...templateApgGreen() // <-- Esto inyecta el subject, text y html
         };
@@ -148,7 +148,7 @@ const sendApgGreenAlert = async () => {
 const sendPausaActivaAlert = async () => {
     try {
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: 'paperless@apgmexico.mx',
             to: 'APGEmployees@apgmexico.mx',
             ...templatePausaActiva()
         };
