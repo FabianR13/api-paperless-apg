@@ -39,7 +39,13 @@ router.put("/UpdateDeviationRequest/:DeviationId/:CompanyId",
   isAutorized,
   isDeviationValidator,
   uploadDeviationImgs,
-  // sendEmailMiddlewareNext,
+  (req, res, next) => {
+    if (req.body.resolution === "Approved") {
+      sendEmailMiddlewareNext(req, res, next);
+    } else {
+      next();
+    }
+  },
   validationDeviationRequest,
 );
 
