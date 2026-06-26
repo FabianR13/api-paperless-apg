@@ -72,6 +72,8 @@ const createItems = async (req, res) => {
                 existingMaterial.description = material.description || existingMaterial.description;
                 existingMaterial.class = material.class || existingMaterial.class;
                 existingMaterial.uom = material.uom || existingMaterial.uom;
+                existingMaterial.unitCost = material.unitCost || existingMaterial.unitCost;
+                existingMaterial.currency = material.currency || existingMaterial.currency;
                 if (material.itemGroup) { // Solo actualizar si se proporciona
                     existingMaterial.itemGroup.valor = material.itemGroup;
                     // existingMaterial.itemGroup.descripcion = "Actualizado"; // O alguna lógica para la descripción
@@ -83,7 +85,8 @@ const createItems = async (req, res) => {
                 // Si el material no existe, lo creamos
                 const newMaterialData = {
                     ...material, // Copia todas las propiedades del material de entrada
-                    qty: material.qty || 0, // Asegurar que qty tenga un valor numérico
+                    qty: material.qty || 0,// Asegurar que qty tenga un valor numérico
+                    unitCost: material.unitCost || 0, // Asegurar que unitCost tenga un valor numérico
                     itemGroup: {
                         valor: material.itemGroup || "Desconocido", // Valor predeterminado si no viene
                         descripcion: "Desconocido" // Descripción predeterminada
@@ -1019,7 +1022,7 @@ const updateDevolucionStatus = async (req, res) => {
 const updateDevolucionContent = async (req, res) => {
     const { idDevolucion } = req.params;
     // Recibimos: usuario (quien edita) y items (la nueva lista corregida)
-    const { usuario, items } = req.body; 
+    const { usuario, items } = req.body;
 
     try {
         const devolucion = await Devolucion.findOne({ idDevolucion });
@@ -1054,13 +1057,13 @@ const updateDevolucionContent = async (req, res) => {
         // Opcional: Si quieres que al editar se pase automáticamente a 'started' o se quede en 'rejected'
         // Lo dejaremos igual para que el usuario tenga que dar clic en "Re-Confirmar" explícitamente, 
         // o podemos cambiarlo aquí. Por ahora solo actualizamos contenido.
-        
+
         await devolucion.save();
 
-        res.status(200).json({ 
-            status: "200", 
-            message: "Devolución corregida exitosamente", 
-            body: devolucion 
+        res.status(200).json({
+            status: "200",
+            message: "Devolución corregida exitosamente",
+            body: devolucion
         });
 
     } catch (error) {

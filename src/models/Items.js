@@ -2,15 +2,17 @@ const mongoose = require('mongoose')
 
 const itemsSchema = new mongoose.Schema(
     {
-        name: {type: String},
-        vendorItemNo: {type: String},
-        description: {type: String},
-        class: {type: String},
-        uom: {type: String},
-        qty: {type: Number},
+        name: { type: String },
+        vendorItemNo: { type: String },
+        description: { type: String },
+        class: { type: String },
+        uom: { type: String },
+        qty: { type: Number },
+        unitCost: { type: Number },
+        currency: { type: String },
         itemGroup: {
-            valor: {type: String},       // Aquí guardamos el valor de valor2
-            descripcion: {type: String}  // Aquí guardamos la descripción de valor2
+            valor: { type: String },       // Aquí guardamos el valor de valor2
+            descripcion: { type: String }  // Aquí guardamos la descripción de valor2
         },
         selectedBy: [Number],
         version: {

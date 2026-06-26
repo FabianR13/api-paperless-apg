@@ -903,7 +903,7 @@ const createNewAccounts = async (req, res) => {
         responsibeLetter,
         modifiedBy,
         modified,
-        version
+        version,cato
     } = req.body;
 
     const newAccounts = new Accounts({
@@ -917,7 +917,8 @@ const createNewAccounts = async (req, res) => {
         responsibeLetter,
         modifiedBy,
         modified,
-        version
+        version,
+        cato
     });
 
     newAccounts.responsibleAlt = "";
@@ -1005,7 +1006,7 @@ const updateAccounts = async (req, res) => {
         printerUser,
         ext,
         status,
-        modified
+        modified,cato
     } = req.body;
 
     if (req.body.modifiedBy) {
@@ -1027,7 +1028,8 @@ const updateAccounts = async (req, res) => {
                 ext,
                 status,
                 modifiedBy,
-                modified
+                modified,
+                cato
             },
         }
     );

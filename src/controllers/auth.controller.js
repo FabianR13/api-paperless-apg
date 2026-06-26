@@ -245,6 +245,11 @@ const signIn = async (req, res) => {
     // PPE ROLES
     PPERequester: [38],
     PPEIssuer: [39],
+    // VALIDATION CHECKLIST ROLES
+    ValidationCheckR: [40],
+    ValidationCheckT: [41],
+    ValidationCheckQ: [42],
+    ValidationCheckP: [43],
   };
 
   // 7. Configuración de Mapeo de Roles Axiom (Afecta tanto a AXG como a APG)
