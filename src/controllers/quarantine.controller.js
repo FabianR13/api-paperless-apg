@@ -22,7 +22,9 @@ const createQUARequest = async (req, res) => {
     const newDate = `${year}-${month}-${day}`; // Fecha actual para el ID
 
     const hourMX = dateMX.getHours();
-
+ const minutesMX = dateMX.getMinutes();
+    const time = `${String(hourMX).padStart(2, '0')}:${String(minutesMX).padStart(2, '0')}`;
+   
     let turno;
 
     if (hourMX >= 7 && hourMX < 15) { // D: 7:00 a 12:59 hrs
@@ -77,10 +79,11 @@ const createQUARequest = async (req, res) => {
     try {
         const {
             itemID,
-            status, serialesPorItem, notes, destination
+            status, serialesPorItem, reason, batch
         } = req.body;
         const foundItem = await Items.findById(itemID);
-        if (!foundItem) return res.status(404).json({ status: "error", message: "Item not found" });
+        if (!foundItem) 
+            return res.status(404).json({ status: "error", message: "Item not found" });
 
         /*const foundEmployee = await Employees.findById(employeeId);
 
@@ -103,14 +106,14 @@ const createQUARequest = async (req, res) => {
         // 3. Guardar en la base de datos (Mongoose)
         const newRequest = new Quarantine({
             moveID: idMove,
-            // consecutive: consecutivo,
+            //consecutive: consecutivo,
             user: user._id,
             quarantineDate: new Date(),
             itemID,
             status,
             seriales: serialesPorItem,
-            notes,
-            destination,
+            reason,
+            batch,
             company: CompanyId
         });
 
@@ -154,8 +157,9 @@ const getAllRegisters = async (req, res) => {
         })
         .populate({
             path: "itemID",
-            select: "name description"
-        });
+            select: "name description uom currency unitCost"
+        })
+        ;
     res.json({ status: "200", message: "Registros Loaded", body: registers });
 };
 
@@ -166,14 +170,15 @@ const updateRegisters = async (req, res) => {
 
     try {
         const { moveID } = req.params;
-        const {status, notes, destination } = req.body;
+        const {status, reason, batch, seriales } = req.body;
 
         const updatequaRegisters = await Quarantine.updateOne(
-                    { _id: moveID },
-                    {$set: {
+                { _id: moveID },
+                {$set: {
                 status,
-                notes,
-                destination,
+                reason,
+                batch,
+                seriales,
                 modifiedby: req.userId
             }}
                 );
