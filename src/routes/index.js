@@ -19,6 +19,7 @@ const reportsRoutes = require("./report.routes.js");
 const dailyAuditsRoutes = require("./dailyAudits.routes.js");
 const ppeRequestRoutes = require("./ppeRequest.routes.js");
 const setupValidationRoutes = require("./SetupValidation.routes.js");
+const quarantineroutes = require("./quarantine.routes.js")
 
 router.use("/forms", formsRoutes);
 router.use("/auth", authRoutes);
@@ -38,5 +39,6 @@ router.use("/reports", reportsRoutes);
 router.use("/dailyAudits", dailyAuditsRoutes);
 router.use("/ppe", ppeRequestRoutes);
 router.use("/setupvalidation", setupValidationRoutes);
+router.use("/quarantine", quarantineroutes);
 
 module.exports = router;

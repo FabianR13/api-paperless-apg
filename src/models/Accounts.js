@@ -50,6 +50,9 @@ const accountsSchema = new mongoose.Schema(
         responsibeLetter: {
             type: String
         },
+        cato: {
+            type: Boolean,
+        },
         version: {
             type: Number,
         },
