@@ -870,6 +870,7 @@ const validationDeviationRequest = async (req, res) => {
             const generatedNumber = `APG-${anioActual}-${String(nextConsecutive).padStart(3, "0")}`;
 
             const newDeviation = new DeviationsNew({
+                deviationReqId: DeviationId,
                 deviationNumber: generatedNumber,
                 consecutive: nextConsecutive,
                 version: 1,
