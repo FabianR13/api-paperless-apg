@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const QuarantineSchema = new mongoose.Schema({
-    moveID: {type: String, required: true , unique: true},
+    moveID: {type: String, required: true },
     user: {
         ref: "User",
         type: mongoose.Schema.Types.ObjectId,
@@ -15,9 +15,9 @@ const QuarantineSchema = new mongoose.Schema({
         serial:{type: String}, 
         cantidad: {type: Number}
     }],
-    destination: {type: String, default: ""},
+    batch: {type: String},
     status: {type: String}, 
-    notes: {type: String},
+    reason: {type: String},
     //consecutive: {type: Number},
     modifiedby: {
         ref: "User",
