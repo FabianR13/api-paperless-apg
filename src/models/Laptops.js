@@ -75,6 +75,9 @@ const laptopsSchema = new mongoose.Schema(
         responsibeLetter: {
             type: String
         },
+        cato: {
+            type: Boolean,
+        },
         version: {
             type: Number,
         },

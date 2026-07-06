@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const deviationsNewSchema = new mongoose.Schema(
     {
         deviationNumber: { type: String, required: true, unique: true },
+        deviationReqId: { type: Schema.Types.ObjectId, ref: "DeviationRequest" },
         consecutive: { type: Number },
         version: { type: Number, default: 1 },
         deviationStatus: {
