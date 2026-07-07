@@ -67,7 +67,7 @@ const createQUARequest = async (req, res) => {
     // --- VALIDACIÓN DE DUPLICADOS (SOLO TURNO N) ---
     if (turno === 'N') {
         // Verificamos si este ID base ya existe (conflicto madrugada vs noche)
-        const existe = await Quarantine.findOne({ idMove: idMove });
+        const existe = await Quarantine.findOne({ moveID: idMove });
 
         if (existe) {
             // Si existe, simplemente agregamos "-1" para diferenciarlo.
@@ -78,30 +78,12 @@ const createQUARequest = async (req, res) => {
 
     try {
         const {
-            itemID,
-            status, serialesPorItem, reason, batch
+            itemID, serialesPorItem, reason, batch
         } = req.body;
         const foundItem = await Items.findById(itemID);
         if (!foundItem) 
             return res.status(404).json({ status: "error", message: "Item not found" });
 
-        /*const foundEmployee = await Employees.findById(employeeId);
-
-        if (!foundEmployee) {
-            return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
-        }
-            */
-
-        // const anioActual = new Date().getFullYear();
-        // const lastRequest = await PpeRequest.findOne({
-        //     createdAt: {
-        //         $gte: new Date(`${anioActual}-01-01T00:00:00.000Z`),
-        //         $lt: new Date(`${anioActual + 1}-01-01T00:00:00.000Z`)
-        //     }
-        // }).sort({ consecutive: -1 });
-
-        // const nextConsecutive = lastRequest ? lastRequest.consecutive + 1 : 1;
-        // const generatedNumber = `APG-PPE-${anioActual}-${String(nextConsecutive).padStart(4, "0")}`;
 
         // 3. Guardar en la base de datos (Mongoose)
         const newRequest = new Quarantine({
@@ -110,7 +92,7 @@ const createQUARequest = async (req, res) => {
             user: user._id,
             quarantineDate: new Date(),
             itemID,
-            status,
+            status: "Cuarentena",
             seriales: serialesPorItem,
             reason,
             batch,
@@ -171,7 +153,7 @@ const updateRegisters = async (req, res) => {
     try {
         const { moveID } = req.params;
         const {status, reason, batch, seriales } = req.body;
-
+console.log(moveID)
         const updatequaRegisters = await Quarantine.updateOne(
                 { _id: moveID },
                 {$set: {
@@ -201,8 +183,37 @@ const updateRegisters = async (req, res) => {
 
 }
 
+const releaseFromQuarantine = async (req, res) => {
+    try {
+        const { CompanyId } = req.params;
+        const { releaseType, records } = req.body; // records: [{ quarantineID, seriales }]
+
+        if (!records || records.length === 0) {
+            return res.status(400).json({ status: "error", message: "No se enviaron registros" });
+        }
+console.log(records)
+        for (const record of records) {
+            // Buscamos el documento completo de Mongoose para poder usar .save()
+            const originalRecord = await Quarantine.findById(record.quarantineID);
+            
+            if (!originalRecord) continue; // Si no existe el registro, saltamos al siguiente
+
+                // Liberación total
+                originalRecord.status = "No Cuarentena";
+                originalRecord.modifiedby = req.userId;
+            await originalRecord.save();
+        }
+
+        return res.status(200).json({ status: "200", message: "Salida de cuarentena procesada con éxito" });
+    } catch (error) {
+        console.error("Error en releaseFromQuarantine:", error);
+        return res.status(500).json({ status: "500", message: "Internal Server Error" });
+    }
+};
+
 module.exports = {
     createQUARequest,
     getAllRegisters,
-    updateRegisters
+    updateRegisters,
+    releaseFromQuarantine
 }

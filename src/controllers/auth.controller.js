@@ -250,6 +250,10 @@ const signIn = async (req, res) => {
     ValidationCheckT: [41],
     ValidationCheckQ: [42],
     ValidationCheckP: [43],
+    // QUARANTINE ROLES
+    QuarantineR: [44],
+    QuarantineC: [45],
+
   };
 
   // 7. Configuración de Mapeo de Roles Axiom (Afecta tanto a AXG como a APG)
@@ -302,6 +306,14 @@ const signIn = async (req, res) => {
     // PPE ROLES
     PPERequester: [38],
     PPEIssuer: [39],
+    // VALIDATION CHECKLIST ROLES
+    ValidationCheckR: [40],
+    ValidationCheckT: [41],
+    ValidationCheckQ: [42],
+    ValidationCheckP: [43],
+    // QUARANTINE ROLES
+    QuarantineR: [44],
+    QuarantineC: [45],
   };
 
   // 8. Aplicar accesos buscando asíncronamente los roles a la DB

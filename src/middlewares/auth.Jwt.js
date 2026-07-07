@@ -1690,6 +1690,90 @@ const isDeviationCreator = async (req, res, next) => {
     .json({ message: "You are not authorized to validate or reject a deviation", status: "403" });
 };
 
+//VALIDAR PERMISO PARA VER CUARENTENA
+const isQuarantineR = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QuarantineR") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QuarantineC") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "QuarantineR") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "QuarantineC") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "You are not authorized to validate or reject a deviation", status: "403" });
+};
+
+//VALIDAR PERMISO PARA CREAR CUARENTENA
+const isQuarantineC = async (req, res, next) => {
+  const user = await User.findById(req.userId);
+  const roles = await Role.find({ _id: { $in: user.roles } });
+  const rolesAxiom = await Role.find({ _id: { $in: user.rolesAxiom } });
+  const Access = [];
+  const { CompanyId } = req.params;
+  Access.company = await Company.find({ _id: { $in: CompanyId } });
+
+  if (Access.company[0].name === "APG Mexico") {
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        next();
+        return;
+      }
+      if (roles[i].name === "QuarantineC") {
+        next();
+        return;
+      }
+    }
+  }
+  if (Access.company[0].name === "Axiom") {
+    for (let i = 0; i < rolesAxiom.length; i++) {
+      if (rolesAxiom[i].name === "admin") {
+        next();
+        return;
+      }
+      if (rolesAxiom[i].name === "QuarantineC") {
+        next();
+        return;
+      }
+    }
+  }
+  return res
+    .status(403)
+    .json({ message: "You are not authorized to validate or reject a deviation", status: "403" });
+};
+
 module.exports = {
   verifyToken,
   isModerator,
@@ -1732,5 +1816,7 @@ module.exports = {
   isKaizenAdviser,
   isDailyAuditAdministrator,
   isDailyAuditCreator,
-  isDeviationCreator
+  isDeviationCreator,
+  isQuarantineR,
+  isQuarantineC
 };
