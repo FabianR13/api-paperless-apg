@@ -139,7 +139,7 @@ const getAllRegisters = async (req, res) => {
         })
         .populate({
             path: "itemID",
-            select: "name description uom currency unitCost"
+            select: "name description uom currency unitCost itemGroup"
         })
         ;
     res.json({ status: "200", message: "Registros Loaded", body: registers });

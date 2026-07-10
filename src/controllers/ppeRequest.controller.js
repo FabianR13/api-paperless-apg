@@ -118,8 +118,8 @@ const createPPERequest = async (req, res) => {
 
     try {
         const {
-            employeeId, reason, glovesSize,
-            needsGlases, needsEarplugs, needsSideShields, delivered
+            employeeId, reason, glovesSize, shoesSize,
+            needsGlases, needsEarplugs, needsSideShields, needsMask, delivered, cancelled
         } = req.body;
 
         const foundEmployee = await Employees.findById(employeeId);
@@ -155,10 +155,13 @@ const createPPERequest = async (req, res) => {
             reason,
             requestStatus: "New",
             glovesSize,
+            shoesSize,
             needsGlases,
             needsEarplugs,
             needsSideShields,
+            needsMask,
             delivered,
+            cancelled,
             images,
             company: CompanyId
         });
@@ -180,12 +183,12 @@ const updatePPERequest = async (req, res) => {
     if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
     try {
-        const { delivered } = req.body;
+        const { delivered, cancelled } = req.body;
 
         const updateQuery = {
             $set: {
-                delivered,
-                requestStatus: "Delivered",
+                delivered, cancelled,
+                requestStatus: cancelled ? "Cancelled" : "Delivered", 
                 issuerId: user._id
             }
         };
