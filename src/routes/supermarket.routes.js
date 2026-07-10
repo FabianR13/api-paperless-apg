@@ -30,7 +30,7 @@ router.get(
     "/Items/:CompanyId",
     verifyToken,
     isAutorized,
-    isSMReader,
+   // isSMReader,
     getAllItems
 );
 
