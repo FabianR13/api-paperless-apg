@@ -188,7 +188,7 @@ const updatePPERequest = async (req, res) => {
         const updateQuery = {
             $set: {
                 delivered, cancelled,
-                requestStatus: cancelled ? "Cancelled" : "Delivered", 
+                requestStatus: cancelled === true ? "Cancelled" : "Delivered", 
                 issuerId: user._id
             }
         };
