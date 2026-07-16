@@ -249,74 +249,68 @@ const updateTrialEvaluation = async (req, res) => {
 };
 
 const updateEmployeeSignature = async (req, res) => {
-  const { TrialEvaluationID } = req.params;
-  //Getting Previous Images
-  const foundPrevEvaluation = await TrialEvaluations.findById(TrialEvaluationID);
+    const { TrialEvaluationID } = req.params;
+    //Getting Previous Images
+    const foundPrevEvaluation = await TrialEvaluations.findById(TrialEvaluationID);
 
-  // Deleting Images from Folder
-  const prevEmployeeSign = foundPrevEvaluation.employeeSignature;
-  if (prevEmployeeSign) {
-    // Validating if there are Images in the Field
-    // Delete File from Folder
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME + "/Uploads/EvaluationSignatures",
-      Key: prevEmployeeSign
-    };
-    try {
-      s3.deleteObject(params, function (err, data) {
-        if (err) console.log(err);
-      });
-    } catch (error) {
-      res.status(403).json({
-        status: "403",
-        message: error,
-        body: "",
-      });
+    // Deleting Images from Folder
+    const prevEmployeeSign = foundPrevEvaluation.employeeSignature;
+    if (prevEmployeeSign) {
+        // Validating if there are Images in the Field
+        // Delete File from Folder
+        const params = {
+            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/EvaluationSignatures",
+            Key: prevEmployeeSign
+        };
+
+        const command = new DeleteObjectCommand(params);
+        s3.send(command)
+            .then(() => console.log("Deleted from S3:", prevEmployeeSign))
+            .catch(err => console.error("Error deleting from S3:", err));
     }
-  }
 
-  // Setting the Fields Empty in the DB
-  const updateClearSignEmployee = await TrialEvaluations.updateOne(
-    { _id: TrialEvaluationID },
-    { $set: { employeeSignature: "" } }
-  );
+    // Setting the Fields Empty in the DB
+    const updateClearSignEmployee = await TrialEvaluations.updateOne(
+        { _id: TrialEvaluationID },
+        { $set: { employeeSignature: "" } }
+    );
 
-  if (!updateClearSignEmployee) {
-    res.status(403).json({
-      status: "403",
-      message: "La firma no se guardo corectamente",
-      body: "",
+    if (!updateClearSignEmployee) {
+        res.status(403).json({
+            status: "403",
+            message: "La firma no se guardo corectamente",
+            body: "",
+        });
+    }
+
+    //Retreiving the data for each profile Image and adding to the schema
+    let employeeSignature = "";
+
+    if (req.file) {
+        employeeSignature = req.file.key;
+    }
+
+    // Updating the new Img Names in the fields from the DB
+    const updateSignEmployee = await TrialEvaluations.updateOne(
+        { _id: TrialEvaluationID },
+        { $set: { employeeSignature } }
+    );
+
+    if (!updateSignEmployee) {
+        res.status(403).json({
+            status: "403",
+            message: "Firma no actualizada",
+            body: "",
+        });
+    }
+
+    const foundEvaluationNew = await TrialEvaluations.findById(TrialEvaluationID);
+
+    res.status(200).json({
+        status: "200",
+        message: "Signature Updated",
+        body: foundEvaluationNew,
     });
-  }
-
-  //Retreiving the data for each profile Image and adding to the schema
-  let employeeSignature = "";
-
-  if (req.file) {
-    employeeSignature = req.file.key;
-  }
-
-  // Updating the new Img Names in the fields from the DB
-  const updateSignEmployee = await TrialEvaluations.updateOne(
-    { _id: TrialEvaluationID },
-    { $set: { employeeSignature } }
-  );
-
-  if (!updateSignEmployee) {
-    res.status(403).json({
-      status: "403",
-      message: "Firma no actualizada",
-      body: "",
-    });
-  }
-
-  const foundEvaluationNew = await TrialEvaluations.findById(TrialEvaluationID);
-
-  res.status(200).json({
-    status: "200",
-    message: "Signature Updated",
-    body: foundEvaluationNew,
-  });
 };
 
 module.exports = {

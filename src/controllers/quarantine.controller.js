@@ -22,9 +22,9 @@ const createQUARequest = async (req, res) => {
     const newDate = `${year}-${month}-${day}`; // Fecha actual para el ID
 
     const hourMX = dateMX.getHours();
- const minutesMX = dateMX.getMinutes();
+    const minutesMX = dateMX.getMinutes();
     const time = `${String(hourMX).padStart(2, '0')}:${String(minutesMX).padStart(2, '0')}`;
-   
+
     let turno;
 
     if (hourMX >= 7 && hourMX < 15) { // D: 7:00 a 12:59 hrs
@@ -81,7 +81,7 @@ const createQUARequest = async (req, res) => {
             itemID, serialesPorItem, reason, batch
         } = req.body;
         const foundItem = await Items.findById(itemID);
-        if (!foundItem) 
+        if (!foundItem)
             return res.status(404).json({ status: "error", message: "Item not found" });
 
 
@@ -152,19 +152,21 @@ const updateRegisters = async (req, res) => {
 
     try {
         const { moveID } = req.params;
-        const {status, reason, batch, seriales } = req.body;
-console.log(moveID)
+        const { status, reason, batch, seriales } = req.body;
+        console.log(moveID)
         const updatequaRegisters = await Quarantine.updateOne(
-                { _id: moveID },
-                {$set: {
-                status,
-                reason,
-                batch,
-                seriales,
-                modifiedby: req.userId
-            }}
-                );
-          if (!updatequaRegisters) {
+            { _id: moveID },
+            {
+                $set: {
+                    status,
+                    reason,
+                    batch,
+                    seriales,
+                    modifiedby: req.userId
+                }
+            }
+        );
+        if (!updatequaRegisters) {
             res
                 .status(403)
                 .json({ status: "403", message: "Register not Updated", body: "" });
@@ -191,19 +193,22 @@ const releaseFromQuarantine = async (req, res) => {
         if (!records || records.length === 0) {
             return res.status(400).json({ status: "error", message: "No se enviaron registros" });
         }
-console.log(records)
-        for (const record of records) {
-            // Buscamos el documento completo de Mongoose para poder usar .save()
-            const originalRecord = await Quarantine.findById(record.quarantineID);
-            
-            if (!originalRecord) continue; // Si no existe el registro, saltamos al siguiente
 
-                // Liberación total
-                originalRecord.status = "No Cuarentena";
-                originalRecord.modifiedby = req.userId;
-            await originalRecord.save();
+        const quarantineIDs = records
+            .map(record => record.quarantineID)
+            .filter(Boolean);
+
+        if (quarantineIDs.length > 0) {
+            await Quarantine.updateMany(
+                { _id: { $in: quarantineIDs } },
+                {
+                    $set: {
+                        status: "No Cuarentena",
+                        modifiedby: req.userId
+                    }
+                }
+            );
         }
-
         return res.status(200).json({ status: "200", message: "Salida de cuarentena procesada con éxito" });
     } catch (error) {
         console.error("Error en releaseFromQuarantine:", error);
