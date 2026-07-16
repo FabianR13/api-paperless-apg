@@ -1,21 +1,19 @@
 // Controlador para el Kaizen
 const Company = require("../models/Company.js");
-const AWS = require('aws-sdk');
 const Dashboard = require("../models/Dashboard.js");
 const Forms = require("../models/Forms.js");
 const Faq = require("../models/Faq.js");
 const User = require("../models/User.js");
 
-AWS.config.update({
-  region: process.env.S3_BUCKET_REGION,
-  apiVersion: 'latest',
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
-  }
-})
-
-const s3 = new AWS.S3();
+//Actualizacion de sdk de aws v3
+const { S3Client } = require("@aws-sdk/client-s3");
+const s3 = new S3Client({
+    region: process.env.S3_BUCKET_REGION,
+    credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
+    }
+});
 
 //Create new kaizen/////////////////////////////////////////////////////////////////////////////////////////////////////////
 const createFaq = async (req, res) => {
