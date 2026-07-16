@@ -36,6 +36,7 @@ const createSuggestion = async (req, res) => {
       createdBy,
       area,
       createdDate,
+      otherIdeators,
     } = req.body;
 
     // Procesar la firma
@@ -53,6 +54,7 @@ const createSuggestion = async (req, res) => {
       area,
       partNumber,
       createdDate,
+      otherIdeators,
       signatureImg: signatureImgKey
     });
 
@@ -729,6 +731,7 @@ const createKaizen = async (req, res) => {
     const {
       kaizenName,
       createdBy,
+      suggestionId,
       teamKaizen,
       createdDate,
       implementDate,
@@ -772,6 +775,7 @@ const createKaizen = async (req, res) => {
 
     const kaizen = new Kaizen({
       kaizenName,
+      suggestionId: suggestionId || undefined,
       teamKaizen,
       createdDate,
       implementDate,
