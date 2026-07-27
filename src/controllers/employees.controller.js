@@ -3,19 +3,17 @@ const Deparment = require("../models/Deparment.js");
 const Company = require("../models/Company.js");
 const Department = require("../models/Deparment.js");
 const Position = require("../models/Position.js");
-const AWS = require('aws-sdk');
 
-//Variables para acceder a s3 bucket///
-AWS.config.update({
+//Actualizacion de sdk de aws v3
+const { S3Client, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+
+const s3 = new S3Client({
   region: process.env.S3_BUCKET_REGION,
-  apiVersion: 'latest',
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY,
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
   }
-})
-
-const s3 = new AWS.S3();
+});
 
 // CREAR NUEVO EMPLEADO //////////////////////////////////////////////////////////////////////////////////////////////////
 const createEmployee = async (req, res) => {
@@ -119,7 +117,7 @@ const getDepartments = async (req, res) => {
 const getEmployees = async (req, res) => {
   const { filter, order } = req.body;
   const { employeeStatus, CompanyId } = req.params;
-  const { simple } = req.query; 
+  const { simple } = req.query;
 
   if (CompanyId.length !== 24) {
     return res.status(400).json({ status: "400", message: "Invalid Company ID" });
@@ -145,7 +143,7 @@ const getEmployees = async (req, res) => {
     const baseQuery = {
       company: { $in: CompanyId },
       active: { $in: employeeStatus },
-      name: { $ne: "Admin" } 
+      name: { $ne: "Admin" }
     };
 
     if (simple === 'true') {
@@ -304,17 +302,11 @@ const modifyProfileImg = async (req, res) => {
       Bucket: process.env.S3_BUCKET_NAME + "/Uploads/Employees",
       Key: prevEmployeeImg
     };
-    try {
-      s3.deleteObject(params, function (err, data) {
-        if (err) console.log(err);
-      });
-    } catch (error) {
-      res.status(403).json({
-        status: "403",
-        message: error,
-        body: "",
-      });
-    }
+
+    const command = new DeleteObjectCommand(params);
+    s3.send(command)
+      .then(() => console.log("Deleted from S3:", prevEmployeeImg))
+      .catch(err => console.error("Error deleting from S3:", err));
   }
 
   // Setting the Fields Empty in the DB

@@ -7,9 +7,9 @@ const RegistroMovimientos = require("../models/RegistroMovimiento.js")
 
 //Crear nuevos Items//////////////////////////////////////////////////////////////////////////////////////////////////// 
 const createItems = async (req, res) => {
-    const { materials, user } = req.body; // 'materials' es el array que proporcionaste
+    const { materials } = req.body;
     const { CompanyId } = req.params;
-    let companyObjectId = null; // Usaremos null o el ObjectId directamente
+    let companyObjectId = null;
 
     if (CompanyId) {
         try {
@@ -25,84 +25,72 @@ const createItems = async (req, res) => {
         }
     }
 
-    // Verificar que materials es un array válido
     if (!Array.isArray(materials)) {
         return res.status(400).json({ message: "Datos inválidos, se esperaba un array de materiales" });
     }
 
-    // Registrar el movimiento en la base de datos
-    const nuevoMovimiento = new RegistroMovimientos({
-        tipoAccion: "Modificar Items",
-        detalles: `Actualizo la informacion de los Items con excel de PRISM.`
-    });
-
-    // Buscar ID del usuario en la base de datos
-    if (user) { // 'user' probablemente sea el username
-        try {
-            const foundUser = await User.findOne({ username: user }); // findOne si esperas un solo usuario
-            if (foundUser) {
-                nuevoMovimiento.usuario = foundUser._id;
-            } else {
-                console.warn(`Usuario "${user}" no encontrado para el registro de movimiento.`);
-                // Decide si esto es un error o si el movimiento puede guardarse sin usuario.
-            }
-        } catch (error) {
-            console.error("Error al buscar usuario:", error);
-            // Considera cómo manejar este error.
-        }
-    }
-
     try {
-        // Iterar directamente sobre el array de materiales, ya que cada elemento es un material
+        const materialNames = materials
+            .filter(m => m && typeof m.name === 'string')
+            .map(m => m.name);
+        const existingMaterials = await Items.find({
+            name: { $in: materialNames },
+            company: companyObjectId
+        });
+
+        const existingMap = new Map(existingMaterials.map(m => [m.name, m]));
+        const bulkOps = [];
+
         for (const material of materials) {
-            // Validar que el objeto material tenga las propiedades necesarias (ej. name, qty)
             if (!material || typeof material.name !== 'string' || typeof material.qty !== 'number') {
                 console.warn('Item de material inválido o incompleto, omitiendo:', material);
-                continue; // Saltar al siguiente material
+                continue;
             }
-
-            const existingMaterial = await Items.findOne({ name: material.name, company: companyObjectId }); // Opcional: buscar también por compañía si es relevante
-
+            const existingMaterial = existingMap.get(material.name);
             if (existingMaterial) {
-                // Si el material existe, actualizamos la cantidad
-                existingMaterial.qty = (existingMaterial.qty || 0) + material.qty; // Manejo de qty undefined o null
-                // También puedes querer actualizar otros campos si vienen en 'material'
-                existingMaterial.image = material.image || existingMaterial.image;
-                existingMaterial.vendorItemNo = material.vendorItemNo || existingMaterial.vendorItemNo;
-                existingMaterial.description = material.description || existingMaterial.description;
-                existingMaterial.class = material.class || existingMaterial.class;
-                existingMaterial.uom = material.uom || existingMaterial.uom;
-                existingMaterial.unitCost = material.unitCost || existingMaterial.unitCost;
-                existingMaterial.currency = material.currency || existingMaterial.currency;
-                if (material.itemGroup) { // Solo actualizar si se proporciona
-                    existingMaterial.itemGroup.valor = material.itemGroup;
-                    // existingMaterial.itemGroup.descripcion = "Actualizado"; // O alguna lógica para la descripción
-                }
-                // No actualices selectedBy aquí a menos que sea intencional desde esta carga masiva
-
-                await existingMaterial.save();
-            } else {
-                // Si el material no existe, lo creamos
-                const newMaterialData = {
-                    ...material, // Copia todas las propiedades del material de entrada
-                    qty: material.qty || 0,// Asegurar que qty tenga un valor numérico
-                    unitCost: material.unitCost || 0, // Asegurar que unitCost tenga un valor numérico
-                    itemGroup: {
-                        valor: material.itemGroup || "Desconocido", // Valor predeterminado si no viene
-                        descripcion: "Desconocido" // Descripción predeterminada
-                    },
-                    selectedBy: [], // Inicializar como vacío por defecto si no viene
+                const updateFields = {
+                    qty: (existingMaterial.qty || 0) + material.qty,
+                    image: material.image || existingMaterial.image,
+                    vendorItemNo: material.vendorItemNo || existingMaterial.vendorItemNo,
+                    description: material.description || existingMaterial.description,
+                    class: material.class || existingMaterial.class,
+                    uom: material.uom || existingMaterial.uom,
+                    unitCost: material.unitCost || existingMaterial.unitCost,
+                    currency: material.currency || existingMaterial.currency
                 };
-                if (companyObjectId) {
-                    newMaterialData.company = companyObjectId;
+                if (material.itemGroup) {
+                    updateFields['itemGroup.valor'] = material.itemGroup;
                 }
-
-                const newMaterialInstance = new Items(newMaterialData);
-                await newMaterialInstance.save();
+                bulkOps.push({
+                    updateOne: {
+                        filter: { _id: existingMaterial._id },
+                        update: { $set: updateFields }
+                    }
+                });
+            } else {
+                const newMaterialData = {
+                    ...material,
+                    qty: material.qty || 0,
+                    unitCost: material.unitCost || 0,
+                    itemGroup: {
+                        valor: material.itemGroup || "Desconocido",
+                        descripcion: "Desconocido"
+                    },
+                    selectedBy: [],
+                    company: companyObjectId || undefined
+                };
+                bulkOps.push({
+                    insertOne: {
+                        document: newMaterialData
+                    }
+                });
             }
         }
-
-        await nuevoMovimiento.save();
+        
+        if (bulkOps.length > 0) {
+            await Items.bulkWrite(bulkOps);
+        }
+        
         res.status(200).json({ status: "200", message: 'Materiales procesados correctamente' });
     } catch (error) {
         console.error('Error al procesar materiales:', error);
@@ -215,6 +203,7 @@ const getAllItems = async (req, res) => {
 // };
 
 const createPedido = async (req, res) => {
+    const { CompanyId } = req.params
     // --- 1. CONFIGURACIÓN DE FECHA Y HORA EN ZONA HORARIA ---
     const options = {
         timeZone: "America/Mexico_City",
@@ -312,6 +301,7 @@ const createPedido = async (req, res) => {
             pStatus: "pending",
             surtidor: null,
             creationTime: time,
+            company:CompanyId
         });
 
         // Buscar usuario en la base de datos
@@ -611,7 +601,7 @@ const getRecentPedidos = async (req, res) => {
         }
 
         // Calcula la fecha y hora de hace 24 horas desde el momento actual.
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
         // Busca los pedidos
         const pedidos = await Pedido.find({
             company: CompanyId, // Asumo que 'company' en Pedido es el ObjectId de la compañía.

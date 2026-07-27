@@ -128,38 +128,6 @@ const getParts = async (req, res) => {
   res.json({ status: "200", message: "Parts loaded", body: parts });
 }
 
-// OBTENER PARTES ACTIVAS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const getActiveParts = async (req, res) => {
-  const { CompanyId } = req.params;
-
-  if (CompanyId.length !== 24) {
-    return res.status(400).json({ status: "400", message: "Invalid Company ID" });
-  }
-
-  try {
-    const company = await Company.findById(CompanyId);
-    if (!company) {
-      return res.status(404).json({ status: "404", message: "Company not found" });
-    }
-    const parts = await Parts.find({
-      company: CompanyId,
-      status: true
-    })
-      .populate({ path: "customer" })
-      .sort({ "partnumber": 1 });
-
-    res.json({
-      status: "200",
-      message: "Active parts loaded",
-      body: parts
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: "500", message: "Internal server error" });
-  }
-};
-
 // OBTENER PARTES TRAINING /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const getTrainingParts = async (req, res) => {
   const { CompanyId } = req.params;
@@ -197,6 +165,5 @@ module.exports = {
   createPart,
   udpateParts,
   getParts,
-  getActiveParts,
   getTrainingParts
 };

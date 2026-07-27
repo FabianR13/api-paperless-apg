@@ -83,6 +83,12 @@ const kaizenSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
       }
     ],
+    suggestionId: [
+      {
+        ref: "Suggestion",
+        type: mongoose.Schema.Types.ObjectId,
+      }
+    ],
     version: {
       type: Number,
     },

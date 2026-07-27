@@ -1,7 +1,6 @@
 // Controlador para el Kaizen
 const Kaizen = require("../models/Kaizen.js");
 const Company = require("../models/Company.js");
-const AWS = require('aws-sdk');
 const Employees = require("../models/Employees.js");
 const Deparment = require("../models/Deparment.js");
 const Suggestion = require("../models/Suggestion.js");
@@ -10,16 +9,17 @@ const User = require("../models/User.js");
 const RewardsKaizen = require("../models/RewardsKaizen.js");
 const KaizenPointsRedeem = require("../models/KaizenPointsRedeem.js");
 const KaizenInvestigations = require("../models/KaizenInvestigations.js")
-AWS.config.update({
+
+//Actualizacion de sdk de aws v3
+const { S3Client, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const s3 = new S3Client({
   region: process.env.S3_BUCKET_REGION,
-  apiVersion: 'latest',
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY,
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
   }
-})
+});
 
-const s3 = new AWS.S3();
 const nodemailer = require("nodemailer");
 
 // CREAR NUEVA SUGERENCIA ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +36,7 @@ const createSuggestion = async (req, res) => {
       createdBy,
       area,
       createdDate,
+      otherIdeators,
     } = req.body;
 
     // Procesar la firma
@@ -53,6 +54,7 @@ const createSuggestion = async (req, res) => {
       area,
       partNumber,
       createdDate,
+      otherIdeators,
       signatureImg: signatureImgKey
     });
 
@@ -729,6 +731,7 @@ const createKaizen = async (req, res) => {
     const {
       kaizenName,
       createdBy,
+      suggestionId,
       teamKaizen,
       createdDate,
       implementDate,
@@ -772,6 +775,7 @@ const createKaizen = async (req, res) => {
 
     const kaizen = new Kaizen({
       kaizenName,
+      suggestionId: suggestionId || undefined,
       teamKaizen,
       createdDate,
       implementDate,
@@ -1067,17 +1071,11 @@ const modifyKaizenImg = async (req, res) => {
             Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
             Key: dbImageFilename
           };
-          try {
-            s3.deleteObject(params, function (err, data) {
-              if (err) console.log(err);
-            });
-          } catch (error) {
-            res.status(403).json({
-              status: "403",
-              message: error,
-              body: "",
-            });
-          }
+
+          const command = new DeleteObjectCommand(params);
+          s3.send(command)
+            .then(() => console.log("Deleted from S3:", dbImageFilename))
+            .catch(err => console.error("Error deleting from S3:", err));
         }
       }
     });
@@ -1096,17 +1094,11 @@ const modifyKaizenImg = async (req, res) => {
             Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
             Key: dbImageFilename
           };
-          try {
-            s3.deleteObject(params, function (err, data) {
-              if (err) console.log(err);
-            });
-          } catch (error) {
-            res.status(403).json({
-              status: "403",
-              message: error,
-              body: "",
-            });
-          }
+
+          const command = new DeleteObjectCommand(params);
+          s3.send(command)
+            .then(() => console.log("Deleted from S3:", dbImageFilename))
+            .catch(err => console.error("Error deleting from S3:", err));
         }
       }
     });
@@ -1238,17 +1230,11 @@ const deleteKaizen = async (req, res) => {
           Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
           Key: file.img
         };
-        try {
-          s3.deleteObject(params, function (err, data) {
-            if (err) console.log(err);
-          });
-        } catch (error) {
-          res.status(403).json({
-            status: "403",
-            message: error,
-            body: "",
-          });
-        }
+
+        const command = new DeleteObjectCommand(params);
+        s3.send(command)
+          .then(() => console.log("Deleted from S3:", file.img))
+          .catch(err => console.error("Error deleting from S3:", err));
       });
     }
   }
@@ -1263,17 +1249,11 @@ const deleteKaizen = async (req, res) => {
           Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
           Key: file.img
         };
-        try {
-          s3.deleteObject(params, function (err, data) {
-            if (err) console.log(err);
-          });
-        } catch (error) {
-          res.status(403).json({
-            status: "403",
-            message: error,
-            body: "",
-          });
-        }
+
+        const command = new DeleteObjectCommand(params);
+        s3.send(command)
+          .then(() => console.log("Deleted from S3:", file.img))
+          .catch(err => console.error("Error deleting from S3:", err));
       });
     }
   }

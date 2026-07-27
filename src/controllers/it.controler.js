@@ -4,7 +4,6 @@ const Company = require("../models/Company.js");
 const GenericAccount = require("../models/GenericAccount.js");
 const Deparment = require("../models/Deparment.js");
 const User = require("../models/User.js");
-const AWS = require('aws-sdk');
 const Lines = require("../models/Lines.js");
 const Cellphones = require("../models/Cellphones.js");
 const Accounts = require("../models/Accounts.js");
@@ -16,16 +15,15 @@ const ScheduledService = require("../models/ScheduledService.js");
 const { differenceInMonths } = require('date-fns');
 const mongoose = require('mongoose');
 
-AWS.config.update({
+//Actualizacion de sdk de aws v3
+const { S3Client, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const s3 = new S3Client({
     region: process.env.S3_BUCKET_REGION,
-    apiVersion: 'latest',
     credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY,
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
     }
-})
-
-const s3 = new AWS.S3();
+});
 
 //create deviation request//////////////////////////////////////////////////////////////////////////////////////
 const createNewLaptop = async (req, res) => {
@@ -263,18 +261,11 @@ const uploadLaptopLetter = async (req, res) => {
             Bucket: process.env.S3_BUCKET_NAME + "/Uploads/LaptopResposibeLetter",
             Key: prevLaptopLetter
         };
-        try {
-            s3.deleteObject(params, function (err, data) {
-                if (err) console.log(err);
-            });
-        } catch (error) {
-            console.log("error" + error)
-            res.status(403).json({
-                status: "403",
-                message: error,
-                body: "",
-            });
-        }
+
+        const command = new DeleteObjectCommand(params);
+        s3.send(command)
+            .then(() => console.log("Deleted from S3:", prevLaptopLetter))
+            .catch(err => console.error("Error deleting from S3:", err));
     }
 
 
@@ -350,13 +341,11 @@ const createNewGenericAccount = async (req, res) => {
         version
     });
 
-    if (members) {
-        for (let i = 0; i < members.length; i++) {
-            const foundEmployee = await Employees.find({
-                numberEmployee: { $in: members[i] },
-            });
-            newGenericAccount.members.push(foundEmployee.map((employee) => employee._id));
-        }
+    if (members && members.length > 0) {
+        const foundEmployees = await Employees.find({
+            numberEmployee: { $in: members },
+        });
+        newGenericAccount.members = foundEmployees.map((employee) => employee._id);
     }
 
     if (department) {
@@ -422,12 +411,10 @@ const updateGenericAccount = async (req, res) => {
     } = req.body;
 
     if (req.body.members) {
-        for (let i = 0; i < req.body.members.length; i++) {
-            const foundEmployee = await Employees.find({
-                numberEmployee: { $in: req.body.members[i] },
-            });
-            members.push(foundEmployee.map((employee) => employee._id));
-        }
+        const foundEmployees = await Employees.find({
+            numberEmployee: { $in: req.body.members },
+        });
+        members = foundEmployees.map((employee) => employee._id);
     }
 
     if (req.body.department) {
@@ -841,18 +828,11 @@ const uploadCellphoneLetter = async (req, res) => {
             Bucket: process.env.S3_BUCKET_NAME + "/Uploads/CellphonesResposibeLetter",
             Key: prevCellphoneLetter
         };
-        try {
-            s3.deleteObject(params, function (err, data) {
-                if (err) console.log(err);
-            });
-        } catch (error) {
-            console.log("error" + error)
-            res.status(403).json({
-                status: "403",
-                message: error,
-                body: "",
-            });
-        }
+
+        const command = new DeleteObjectCommand(params);
+        s3.send(command)
+            .then(() => console.log("Deleted from S3:", prevCellphoneLetter))
+            .catch(err => console.error("Error deleting from S3:", err));
     }
 
     //Retreiving the data for each profile Image and adding to the schema
@@ -907,7 +887,7 @@ const createNewAccounts = async (req, res) => {
         responsibeLetter,
         modifiedBy,
         modified,
-        version,cato
+        version, cato
     } = req.body;
 
     const newAccounts = new Accounts({
@@ -1010,7 +990,7 @@ const updateAccounts = async (req, res) => {
         printerUser,
         ext,
         status,
-        modified,cato
+        modified, cato
     } = req.body;
 
     if (req.body.modifiedBy) {
@@ -1065,18 +1045,11 @@ const uploadAccountsLetter = async (req, res) => {
             Bucket: process.env.S3_BUCKET_NAME + "/Uploads/AccountsResposibeLetter",
             Key: prevAccountsLetter
         };
-        try {
-            s3.deleteObject(params, function (err, data) {
-                if (err) console.log(err);
-            });
-        } catch (error) {
-            console.log("error" + error)
-            res.status(403).json({
-                status: "403",
-                message: error,
-                body: "",
-            });
-        }
+
+        const command = new DeleteObjectCommand(params);
+        s3.send(command)
+            .then(() => console.log("Deleted from S3:", prevAccountsLetter))
+            .catch(err => console.error("Error deleting from S3:", err));
     }
 
     //Retreiving the data for each profile Image and adding to the schema

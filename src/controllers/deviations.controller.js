@@ -2,7 +2,6 @@ const Customer = require("../models/Customer.js");
 const Parts = require("../models/Parts.js");
 const User = require("../models/User.js");
 const Company = require("../models/Company.js");
-const AWS = require('aws-sdk');
 const { sendEmailMiddlewareResponse } = require("../middlewares/mailer.js");
 const Deviation = require("../models/Deviation.js");
 const Employees = require("../models/Employees.js");
@@ -10,16 +9,16 @@ const Role = require("../models/Role.js");
 const DeviationRequest = require("../models/DeviationRequest.js");
 const DeviationsNew = require("../models/DeviationsNew.js");
 
-AWS.config.update({
+//Actualizacion de sdk de aws v3
+const { S3Client, DeleteObjectCommand, DeleteObjectsCommand } = require("@aws-sdk/client-s3");
+
+const s3 = new S3Client({
     region: process.env.S3_BUCKET_REGION,
-    apiVersion: 'latest',
     credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY,
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
     }
-})
-
-const s3 = new AWS.S3();
+});
 
 const extractRows = (body, prefix) => {
     const normalize = (val) => (!val ? [] : Array.isArray(val) ? val : [val]);
@@ -397,10 +396,10 @@ const updateDeviation = async (req, res) => {
                         Key: `Uploads/DeviationImgs/${imgName}`
                     };
 
-                    s3.deleteObject(params, (err, data) => {
-                        if (err) console.error("Error deleting from S3:", err, err.stack);
-                        else console.log("Deleted from S3:", imgName);
-                    });
+                    const command = new DeleteObjectCommand(params);
+                    s3.send(command)
+                        .then(() => console.log("Deleted from S3:", imgName))
+                        .catch(err => console.error("Error deleting from S3:", err));
                 });
             }
         }
@@ -850,10 +849,11 @@ const validationDeviationRequest = async (req, res) => {
                 }
             };
 
-            s3.deleteObjects(deleteParams, (err, data) => {
-                if (err) console.error("Error borrando objetos huérfanos en S3:", err);
-                else console.log("Objetos borrados de S3 exitosamente:", data);
-            });
+            const command = new DeleteObjectsCommand(deleteParams);
+
+            s3.send(command)
+                .then(() => console.log("Imágenes eliminadas de S3:", parsedDeletesImages))
+                .catch(err => console.error("Error eliminando imágenes de S3:", err));
         }
 
         if (resolution === "Approved") {
@@ -1085,7 +1085,10 @@ const updateClosureEvidence = async (req, res) => {
             };
 
             try {
-                const s3Response = await s3.deleteObjects(deleteParams).promise();
+                const command = new DeleteObjectsCommand(deleteParams);
+
+                const s3Response = await s3.send(command);
+
                 console.log("Archivos borrados de S3:", s3Response.Deleted);
             } catch (s3Error) {
                 console.error("Error al borrar archivos de S3:", s3Error);

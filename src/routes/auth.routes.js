@@ -12,13 +12,7 @@ const {
   updateUserSign,
   getCompany,
   getAccess,
-  getTokensPush,
   saveTokenPush,
-  sendPushToToken,
-  notificarCancelacion,
-  notifyInteresErrorProofing,
-  notificarInicioDevolucion,
-  notificarConfirmacionDevolucion,
   enviarNotificacionPush
 } = require("../controllers/auth.controller.js");
 const {
@@ -37,10 +31,6 @@ router.get("/Users/:CompanyId",
   isAutorized,
   getUsers);
 
-
-
-
-
 ///Route to create new user///
 router.post(
   "/Signup/:CompanyId",
@@ -51,6 +41,7 @@ router.post(
   isAdmin,
   signUp
 );
+
 ///Route to create a new Role///
 router.post(
   "/NewRole/:CompanyId",
@@ -59,44 +50,39 @@ router.post(
   checkDuplicateRole,
   newRole
 );
+
 ///Route to update user///
 router.put("/UpdateUser/:userId/:CompanyId",
   verifyToken,
   isAutorized,
   isAdmin,
   updateUser);
+
 ///Route to change user password///
 router.put(
   "/ChangePassword/:userId",
   verifyToken,
   updatePassword
 );
-///Route to change user signature///
-//router.put(
-// "/ChangeSignature/:userId/:CompanyId",
-// verifyToken,
-// isAutorized,
-// isAdmin,
-////// updateUserSign
-//);
-
-
-
 
 ///Route to get all roles///
 router.get("/Roles",
   verifyToken,
   getRoles);
+
 ///Route to get companies///
 router.get("/Companies",
   verifyToken,
   getCompany);
+
 ///Route to login///
 router.post("/Signin/:CompanyId",
   signIn);
+
 ///Route to have directory access///
 router.post("/Access",
   getAccess);
+
 ///Route to get dashboard///
 router.get("/Dashboard",
   verifyToken,
@@ -110,25 +96,5 @@ router.post(
   "/SendNotificacion",
   enviarNotificacionPush
 );
-
-
-
-
-
-
-//Obtener pushtokes
-// router.get("/getTokenPush",
-//   getTokensPush);
-
-// //guardar pushtoken
-// router.post("/enviarNotificacionPush", enviarNotificacionPush);
-
-// router.post("/notificarCancelacion", notificarCancelacion);
-
-// router.post("/notifyErrorInteres/:TypeNotification/:ErrorProofing", notifyInteresErrorProofing);
-
-// router.post("/notificarInicioDevolucion", notificarInicioDevolucion);
-
-// router.post("/notificarConfirmacionDevolucion", notificarConfirmacionDevolucion);
 
 module.exports = router;

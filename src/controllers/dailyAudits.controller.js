@@ -2,20 +2,18 @@ const Company = require("../models/Company");
 const DailyAudits = require("../models/DailyAudits");
 const User = require("../models/User");
 const { sendAuditCompletionEmail } = require('../utils/emailNotifier');
-const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
-AWS.config.update({
+//Actualizacion de sdk de aws v3
+const { S3Client, DeleteObjectsCommand } = require("@aws-sdk/client-s3");
+const s3 = new S3Client({
     region: process.env.S3_BUCKET_REGION,
-    apiVersion: 'latest',
     credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY,
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
     }
 });
-
-const s3 = new AWS.S3();
 
 // CREAR DAILY AUDITS AIGNANDO EL DIA AL EMPLEADO ////////////////////////////////////////////////////////////////////////////////////////////
 const scheduleAudits = async (req, res) => {
@@ -240,10 +238,10 @@ const updateDailyAuditData = async (req, res) => {
                 }
             };
 
-            s3.deleteObjects(deleteParams, (err, data) => {
-                if (err) console.error("Error borrando objetos huérfanos en S3:", err);
-                else console.log("Objetos borrados de S3 exitosamente:", data);
-            });
+            const command = new DeleteObjectsCommand(deleteParams);
+            s3.send(command)
+                .then(data => console.log("Objetos borrados de S3 exitosamente:", data.Deleted))
+                .catch(err => console.error("Error borrando objetos de S3:", err));
         }
 
         if (isNewlyCompletedD) {
