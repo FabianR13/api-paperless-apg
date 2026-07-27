@@ -203,6 +203,7 @@ const getAllItems = async (req, res) => {
 // };
 
 const createPedido = async (req, res) => {
+    const { CompanyId } = req.params
     // --- 1. CONFIGURACIÓN DE FECHA Y HORA EN ZONA HORARIA ---
     const options = {
         timeZone: "America/Mexico_City",
@@ -300,6 +301,7 @@ const createPedido = async (req, res) => {
             pStatus: "pending",
             surtidor: null,
             creationTime: time,
+            company:CompanyId
         });
 
         // Buscar usuario en la base de datos
@@ -599,7 +601,7 @@ const getRecentPedidos = async (req, res) => {
         }
 
         // Calcula la fecha y hora de hace 24 horas desde el momento actual.
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
         // Busca los pedidos
         const pedidos = await Pedido.find({
             company: CompanyId, // Asumo que 'company' en Pedido es el ObjectId de la compañía.
