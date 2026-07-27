@@ -25,6 +25,9 @@ const SuggestionSchema = new Schema({
   createdDate: { type: Date, default: Date.now },
   signatureImg: { type: String }, // Key de S3
 
+  otherIdeators: { type: String },
+
+
   // Control interno
   status: { type: String, default: "New" },
   version: { type: Number, default: 1 },
