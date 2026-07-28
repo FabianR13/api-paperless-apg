@@ -130,7 +130,7 @@ const createPPERequest = async (req, res) => {
 
         let images = [];
         if (req.file) {
-            images.push(req.file.key);
+            images.push(req.file.key.split('/').pop());
         }
 
         // const anioActual = new Date().getFullYear();
@@ -188,7 +188,7 @@ const updatePPERequest = async (req, res) => {
         const updateQuery = {
             $set: {
                 delivered, cancelled,
-                requestStatus: cancelled === true ? "Cancelled" : "Delivered", 
+                requestStatus: cancelled === true ? "Cancelled" : "Delivered",
                 issuerId: user._id
             }
         };

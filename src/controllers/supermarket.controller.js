@@ -601,7 +601,7 @@ const getRecentPedidos = async (req, res) => {
         }
 
         // Calcula la fecha y hora de hace 24 horas desde el momento actual.
-        const twentyFourHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         // Busca los pedidos
         const pedidos = await Pedido.find({
             company: CompanyId, // Asumo que 'company' en Pedido es el ObjectId de la compañía.
