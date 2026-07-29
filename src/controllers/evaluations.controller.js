@@ -259,8 +259,8 @@ const updateEmployeeSignature = async (req, res) => {
         // Validating if there are Images in the Field
         // Delete File from Folder
         const params = {
-            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/EvaluationSignatures",
-            Key: prevEmployeeSign
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: "Uploads/EvaluationSignatures/" + prevEmployeeSign
         };
 
         const command = new DeleteObjectCommand(params);
@@ -287,7 +287,7 @@ const updateEmployeeSignature = async (req, res) => {
     let employeeSignature = "";
 
     if (req.file) {
-        employeeSignature = req.file.key;
+        employeeSignature = req.file.key.split('/').pop();
     }
 
     // Updating the new Img Names in the fields from the DB

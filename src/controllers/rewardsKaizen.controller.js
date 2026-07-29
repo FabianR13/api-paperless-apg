@@ -17,7 +17,7 @@ const createReward = async (req, res) => {
     // Imagen
     let imageKey = "";
     if (req.files && req.files["rewardImage"] && req.files["rewardImage"].length > 0) {
-      imageKey = req.files["rewardImage"][0].key;
+      imageKey = req.files["rewardImage"][0].key.split('/').pop();
     }
 
     // Calcular Consecutivo
@@ -70,7 +70,7 @@ const updateReward = async (req, res) => {
 
     // Actualizar imagen si viene una nueva
     if (req.files && req.files["rewardImage"] && req.files["rewardImage"].length > 0) {
-      rewardToUpdate.image = req.files["rewardImage"][0].key;
+      rewardToUpdate.image = req.files["rewardImage"][0].key.split('/').pop();
     }
 
     rewardToUpdate.name = name;

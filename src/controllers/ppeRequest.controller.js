@@ -195,7 +195,7 @@ const updatePPERequest = async (req, res) => {
 
         if (req.file) {
             updateQuery.$push = {
-                images: req.file.key
+                images: req.file.key.split('/').pop()
             };
         }
 

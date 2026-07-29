@@ -782,7 +782,7 @@ const validationDeviationRequest = async (req, res) => {
 
         let newDeviationImages = [];
         if (req.files && req.files["deviationImages"]) {
-            newDeviationImages = req.files["deviationImages"].map((file) => ({ img: file.key }));
+            newDeviationImages = req.files["deviationImages"].map((file) => ({ img: file.key.split('/').pop() }));
         }
 
         if (parsedDeletesImages && parsedDeletesImages.length > 0) {

@@ -42,7 +42,7 @@ const createSuggestion = async (req, res) => {
     // Procesar la firma
     let signatureImgKey = "";
     if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
-      signatureImgKey = req.files["signatureImage"][0].key;
+      signatureImgKey = req.files["signatureImage"][0].key.split('/').pop();
     }
 
     // Crear objeto Suggestion
@@ -470,7 +470,7 @@ const completeRedeem = async (req, res) => {
     // Procesar la firma
     let signatureImgKey = "";
     if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
-      signatureImgKey = req.files["signatureImage"][0].key;
+      signatureImgKey = req.files["signatureImage"][0].key.split('/').pop();
     }
 
     const foundRedemption = await KaizenPointsRedeem.findById(RedemptionId);
@@ -567,7 +567,7 @@ const createInvestigation = async (req, res) => {
       };
 
       if (hasFile) {
-        data[`${rolePrefix}SignatureUrl`] = uploadedFiles[0].key;
+        data[`${rolePrefix}SignatureUrl`] = uploadedFiles[0].key.split('/').pop();
         data[`${rolePrefix}Date`] = new Date();
       } else {
         data[`${rolePrefix}SignatureUrl`] = null;
@@ -754,7 +754,7 @@ const createKaizen = async (req, res) => {
     if (req.files["kaizenImagesB"]) {
       if (req.files["kaizenImagesB"].length > 0) {
         kaizenImagesB = req.files["kaizenImagesB"].map((file) => {
-          return { img: file.key };
+          return { img: file.key.split('/').pop() };
         });
       }
     }
@@ -764,7 +764,7 @@ const createKaizen = async (req, res) => {
     if (req.files["kaizenImagesA"]) {
       if (req.files["kaizenImagesA"].length > 0) {
         kaizenImagesA = req.files["kaizenImagesA"].map((file) => {
-          return { img: file.key };
+          return { img: file.key.split('/').pop() };
         });
       }
     }
@@ -1172,7 +1172,7 @@ const modifyKaizenImg = async (req, res) => {
   if (req.files["kaizenImagesB"]) {
     if (req.files["kaizenImagesB"].length > 0) {
       const newUploadedImagesB = req.files["kaizenImagesB"].map((file) => {
-        return { img: file.key };
+        return { img: file.key.split('/').pop() };
       });
       updatedKaizenImagesB = updatedKaizenImagesB.concat(newUploadedImagesB);
     }
@@ -1182,7 +1182,7 @@ const modifyKaizenImg = async (req, res) => {
   if (req.files["kaizenImagesA"]) {
     if (req.files["kaizenImagesA"].length > 0) {
       const newUploadedImagesA = req.files["kaizenImagesA"].map((file) => {
-        return { img: file.key };
+        return { img: file.key.split('/').pop() };
       });
       updatedKaizenImagesA = updatedKaizenImagesA.concat(newUploadedImagesA);
     }
@@ -1227,8 +1227,8 @@ const deleteKaizen = async (req, res) => {
       prevKaizenImagesB.map((file) => {
         // Delete File from Folder
         const params = {
-          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-          Key: file.img
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: "Uploads/KaizenImgs/" + file.img
         };
 
         const command = new DeleteObjectCommand(params);
@@ -1246,8 +1246,8 @@ const deleteKaizen = async (req, res) => {
       prevKaizenImagesA.map((file) => {
         // Delete File from Folder
         const params = {
-          Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-          Key: file.img
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: "Uploads/KaizenImgs/" + file.img
         };
 
         const command = new DeleteObjectCommand(params);

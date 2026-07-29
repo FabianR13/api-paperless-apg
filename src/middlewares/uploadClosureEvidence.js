@@ -19,7 +19,7 @@ const s3 = new S3Client({
 const upload = multer({
     storage: multerS3({
         s3,
-        bucket: process.env.S3_BUCKET_NAME + "/Uploads/DeviationClosingFiles", // Tu nueva carpeta
+        bucket: process.env.S3_BUCKET_NAME, // Tu nueva carpeta
         metadata: (req, file, cb) => {
             cb(null, { fieldName: file.fieldname });
         },
@@ -27,7 +27,7 @@ const upload = multer({
             // Extraemos la extensión original del archivo
             const extension = path.extname(file.originalname);
             // Generamos el shortid y le pegamos su extensión real
-            cb(null, shortid.generate() + extension);
+            cb(null, "Uploads/DeviationClosingFiles/" + shortid.generate() + extension);
         }
     })
 });
