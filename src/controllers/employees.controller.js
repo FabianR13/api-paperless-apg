@@ -34,7 +34,7 @@ const createEmployee = async (req, res) => {
 
     let picture = "";
     if (req.file) {
-      picture = req.file.key;
+      picture = req.file.key.split('/').pop();
     }
 
     const newEmployee = new Employees({
@@ -299,8 +299,8 @@ const modifyProfileImg = async (req, res) => {
     // Validating if there are Images in the Field
     // Delete File from Folder
     const params = {
-      Bucket: process.env.S3_BUCKET_NAME + "/Uploads/Employees",
-      Key: prevEmployeeImg
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: "Uploads/Employees/" + prevEmployeeImg
     };
 
     const command = new DeleteObjectCommand(params);
@@ -327,7 +327,7 @@ const modifyProfileImg = async (req, res) => {
   let picture = "";
 
   if (req.file) {
-    picture = req.file.key;
+    picture = req.file.key.split('/').pop();
   }
 
   // Updating the new Img Names in the fields from the DB

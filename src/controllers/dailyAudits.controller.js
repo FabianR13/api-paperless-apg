@@ -170,10 +170,10 @@ const updateDailyAuditData = async (req, res) => {
 
         if (req.files) {
             if (req.files['imagesD']) {
-                newImagesD = req.files['imagesD'].map(file => file.key);
+                newImagesD = req.files['imagesD'].map(file => file.key.split('/').pop());
             }
             if (req.files['imagesA']) {
-                newImagesA = req.files['imagesA'].map(file => file.key);
+                newImagesA = req.files['imagesA'].map(file => file.key.split('/').pop());
             }
         }
 

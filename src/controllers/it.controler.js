@@ -258,8 +258,8 @@ const uploadLaptopLetter = async (req, res) => {
     if (prevLaptopLetter !== "") {
         // Delete File from Folder
         const params = {
-            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/LaptopResposibeLetter",
-            Key: prevLaptopLetter
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: "Uploads/LaptopResposibeLetter/" + prevLaptopLetter
         };
 
         const command = new DeleteObjectCommand(params);
@@ -291,7 +291,7 @@ const uploadLaptopLetter = async (req, res) => {
     let responsibeLetter = "";
 
     if (req.file) {
-        responsibeLetter = req.file.key;
+        responsibeLetter = req.file.key.split('/').pop();
     }
 
     let modified = req.body.modified
@@ -825,8 +825,8 @@ const uploadCellphoneLetter = async (req, res) => {
     if (prevCellphoneLetter !== "") {
         // Delete File from Folder
         const params = {
-            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/CellphonesResposibeLetter",
-            Key: prevCellphoneLetter
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: "Uploads/CellphonesResposibeLetter/" + prevCellphoneLetter
         };
 
         const command = new DeleteObjectCommand(params);
@@ -839,7 +839,7 @@ const uploadCellphoneLetter = async (req, res) => {
     let responsibeLetter = "";
 
     if (req.file) {
-        responsibeLetter = req.file.key;
+        responsibeLetter = req.file.key.split('/').pop();
     }
 
     let modified = req.body.modified
@@ -1042,8 +1042,8 @@ const uploadAccountsLetter = async (req, res) => {
     if (prevAccountsLetter !== "") {
         // Delete File from Folder
         const params = {
-            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/AccountsResposibeLetter",
-            Key: prevAccountsLetter
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: "Uploads/AccountsResposibeLetter/" + prevAccountsLetter
         };
 
         const command = new DeleteObjectCommand(params);
@@ -1056,7 +1056,7 @@ const uploadAccountsLetter = async (req, res) => {
     let responsibeLetter = "";
 
     if (req.file) {
-        responsibeLetter = req.file.key;
+        responsibeLetter = req.file.key.split('/').pop();
     }
 
     let modified = req.body.modified

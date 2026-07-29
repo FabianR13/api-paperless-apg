@@ -1,7 +1,7 @@
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const shortid = require("shortid");
-const path = require('path'); 
+const path = require('path');
 const dotenv = require('dotenv');
 
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
@@ -19,12 +19,12 @@ const s3 = new S3Client({
 const upload = multer({
     storage: multerS3({
         s3,
-        bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenInvestigationSings",
+        bucket: process.env.S3_BUCKET_NAME,
         metadata: (req, file, cb) => {
             cb(null, { fieldName: file.fieldname });
         },
         key: (req, file, cb) => {
-            cb(null, shortid.generate() + ".png");
+            cb(null, "Uploads/KaizenInvestigationSings/" + shortid.generate() + ".png");
         }
     })
 });

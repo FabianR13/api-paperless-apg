@@ -20,7 +20,7 @@ const s3 = new S3Client({
 const upload = multer({
     storage: multerS3({
         s3,
-        bucket: process.env.S3_BUCKET_NAME + "/Uploads/FaqImgs",
+        bucket: process.env.S3_BUCKET_NAME,
         metadata: (req, file, cb) => {
             cb(null, { fieldName: file.fieldname });
         },
@@ -41,7 +41,7 @@ const upload = multer({
             const sanitizedId = String(idParaNombreArchivo).replace(/[^a-zA-Z0-9_-]/g, '_');
             const nuevoNombreArchivo = `${sanitizedId}_${shortid.generate()}.jpeg`; // Ej: "0_xxxx.jpeg", "1_xxxx.jpeg"
 
-            cb(null, nuevoNombreArchivo);
+            cb(null, "Uploads/FaqImgs/" + nuevoNombreArchivo);
         }
     }),
     // limits: { fileSize: 1024 * 1024 * 5 }

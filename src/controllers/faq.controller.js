@@ -38,7 +38,7 @@ const createFaq = async (req, res) => {
       const stepIdFieldName = `images[${index}][stepId]`;
       const stepId = req.body[stepIdFieldName]; // Obtener el stepId del body
       return {
-        img: file.key, // Clave de S3
+        img: file.key.split('/').pop(), // Clave de S3
         stepId: stepId   // ID del paso al que pertenece esta imagen
       };
     });
