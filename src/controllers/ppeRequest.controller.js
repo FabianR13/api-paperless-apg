@@ -185,10 +185,14 @@ const updatePPERequest = async (req, res) => {
     try {
         const { delivered, cancelled } = req.body;
 
+        const isCancelled = cancelled === true || cancelled === 'true';
+        const isDelivered = delivered === true || delivered === 'true';
+
         const updateQuery = {
             $set: {
-                delivered, cancelled,
-                requestStatus: cancelled === true ? "Cancelled" : "Delivered",
+                delivered: isDelivered,
+                cancelled: isCancelled,
+                requestStatus: isCancelled ? "Cancelled" : "Delivered",
                 issuerId: user._id
             }
         };
