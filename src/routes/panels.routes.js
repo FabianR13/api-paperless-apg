@@ -7,5 +7,9 @@ router.post('/abrir', abrirPanelRemoto);
 
 // Ruta: POST /api/paneles/abrir
 router.post('/Logs', sincronizarLogsPanel);
+const panelCtrl = require('../controllers/panels.controller');
+
+router.get('/', panelCtrl.getPaneles);
+router.post('/', panelCtrl.crearPanel);
 
 module.exports = router;

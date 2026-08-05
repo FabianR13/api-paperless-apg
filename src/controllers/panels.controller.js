@@ -4,8 +4,8 @@ const abrirPanelRemoto = async (req, res) => {
     const { ipPanel, numeroPuerta } = req.body;
 
     if (!ipPanel || !numeroPuerta) {
-      return res.status(400).json({ 
-        mensaje: "Faltan datos requeridos (ipPanel, numeroPuerta)" 
+      return res.status(400).json({
+        mensaje: "Faltan datos requeridos (ipPanel, numeroPuerta)"
       });
     }
 
@@ -28,27 +28,54 @@ const abrirPanelRemoto = async (req, res) => {
 };
 
 const sincronizarLogsPanel = async (req, res) => {
-    try {
-        const { ipPanel } = req.body;
+  try {
+    const { ipPanel } = req.body;
 
-        if (!ipPanel) {
-            return res.status(400).json({ mensaje: "Falta la ipPanel" });
-        }
-
-        const io = req.app.get('io');
-        
-        // Disparamos la orden al Agente en Windows
-        io.emit('comando_obtener_logs', { ipPanel });
-
-        res.status(200).json({
-            exito: true,
-            mensaje: `Orden enviada al Agente para extraer los últimos 10 logs del panel ${ipPanel}`
-        });
-
-    } catch (error) {
-        console.error("Error pidiendo logs:", error);
-        res.status(500).json({ mensaje: "Error interno" });
+    if (!ipPanel) {
+      return res.status(400).json({ mensaje: "Falta la ipPanel" });
     }
+
+    const io = req.app.get('io');
+
+    // Disparamos la orden al Agente en Windows
+    io.emit('comando_obtener_logs', { ipPanel });
+
+    res.status(200).json({
+      exito: true,
+      mensaje: `Orden enviada al Agente para extraer los últimos 10 logs del panel ${ipPanel}`
+    });
+
+  } catch (error) {
+    console.error("Error pidiendo logs:", error);
+    res.status(500).json({ mensaje: "Error interno" });
+  }
 };
 
-module.exports = { abrirPanelRemoto, sincronizarLogsPanel };
+const Panel = require('../models/Panel');
+const RegistroPanel = require('../models/RegistroPanel');
+
+// 1. Obtener todos los paneles con sus puertas (para renderizar en el Frontend)
+const getPaneles = async (req, res) => {
+  try {
+    const paneles = await Panel.find();
+    return res.status(200).json(paneles);
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al obtener paneles', error: error.message });
+  }
+};
+
+// 2. Crear un nuevo panel manualmente (opcional, por si no se usa el seed)
+const crearPanel = async (req, res) => {
+  try {
+    const nuevoPanel = new Panel(req.body);
+    const panelGuardado = await nuevoPanel.save();
+    return res.status(201).json(panelGuardado);
+  } catch (error) {
+    return res.status(400).json({ message: 'Error al crear panel', error: error.message });
+  }
+};
+
+module.exports = { abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel };
+
+
+
