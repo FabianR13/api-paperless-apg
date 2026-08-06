@@ -14,8 +14,13 @@ const Kaizen = require("../models/Kaizen.js");
 const Company = require("../models/Company.js");
 const { dataPartsInfo } = require("./PartsInfoRawData.js");
 const { dataMachine } = require("./MachineRawData.js");
-const  dataDevicesAutomation  = require("./DevicesRawData.js");
-const AutomationDevice = require("../models/AutomationDevice.js")
+const dataDevicesAutomation = require("./DevicesRawData.js");
+const AutomationDevice = require("../models/AutomationDevice.js");
+const Panel = require("../models/Panel.js");
+const AccessGroup = require("../models/AccessGroups.js");
+const AccessCredential = require("../models/Credential.js");
+
+
 
 //crear compañias/////////////////////////////////////////////////////////////////////////////////////////////
 const createCompanys = async () => {
@@ -403,6 +408,1066 @@ const createDevicesAutomation = async () => {
   }
 }
 
+// Crear Paneles y Puertas iniciales/////////////////////////////////////////////////////////////////////////
+const createPanel = async () => {
+  try {
+    const count = await Panel.estimatedDocumentCount();
+
+    // Si ya existen registros en la base de datos, no vuelve a crearlos
+    if (count > 0) return;
+
+    await Panel.insertMany([
+      {
+        nombre: 'Site',
+        serial: 'AJR8182960327',
+        ip: '192.168.200.191',
+        puerto: 4370,
+        puertas: [
+          { nombre: 'Recepcion', numeroRelevador: 1, activa: true },
+          { nombre: 'Salida a Planta PB', numeroRelevador: 2, activa: true },
+          { nombre: 'Oficina Gerencia General', numeroRelevador: 3, activa: true },
+          { nombre: 'Puerta Cristal', numeroRelevador: 4, activa: true }
+        ]
+      },
+      {
+        nombre: 'Segundo Piso',
+        serial: 'AJR8182960378',
+        ip: '192.168.200.192',
+        puerto: 4370,
+        puertas: [
+          { nombre: 'Salida a Planta PA', numeroRelevador: 1, activa: true },
+          { nombre: 'Comedor', numeroRelevador: 2, activa: true },
+          { nombre: 'Entrada Personal', numeroRelevador: 3, activa: true },
+          { nombre: 'Sin uso', numeroRelevador: 4, activa: false }
+        ]
+      },
+      {
+        nombre: 'Cortina Recepcion',
+        serial: 'AJR8194660302',
+        ip: '192.168.200.193',
+        puerto: 4370,
+        puertas: [
+          { nombre: 'Cortina Recepcion', numeroRelevador: 1, activa: true },
+          { nombre: 'Laboratorio Calidad', numeroRelevador: 2, activa: true },
+          { nombre: 'Sin uso2', numeroRelevador: 3, activa: false },
+          { nombre: 'Sin uso3', numeroRelevador: 4, activa: false }
+        ]
+      },
+      {
+        nombre: 'Puerta Principal',
+        serial: 'AJR8194660334',
+        ip: '192.168.200.194',
+        puerto: 4370,
+        puertas: [
+          { nombre: 'Puerta Cocina', numeroRelevador: 1, activa: true },
+          { nombre: 'Sala de Juegos', numeroRelevador: 2, activa: true },
+          { nombre: 'Puerta Principal', numeroRelevador: 3, activa: true },
+          { nombre: 'Sin uso4', numeroRelevador: 4, activa: false }
+        ]
+      },
+      {
+        nombre: 'Oficinas Planta Alta',
+        serial: 'ZPH5241300016',
+        ip: '192.168.200.195',
+        puerto: 4370,
+        puertas: [
+          { nombre: 'Customer Service', numeroRelevador: 1, activa: true },
+          { nombre: 'Gerencia ventas', numeroRelevador: 2, activa: true },
+          { nombre: 'Gerencia Finanzas', numeroRelevador: 3, activa: true },
+          { nombre: 'Sin uso5', numeroRelevador: 4, activa: false }
+        ]
+      },
+      {
+        nombre: 'Panel Site',
+        serial: 'AJR8194660335',
+        ip: '192.168.200.196',
+        puerto: 4370,
+        puertas: [
+          { nombre: 'Recursos Humanos', numeroRelevador: 1, activa: true },
+          { nombre: 'Cuarto Limpieza', numeroRelevador: 2, activa: true },
+          { nombre: 'Site', numeroRelevador: 3, activa: true },
+          { nombre: 'Enfermeria', numeroRelevador: 4, activa: true }
+        ]
+      },
+      {
+        nombre: 'Planta Cortinas',
+        serial: 'AJR8194660303',
+        ip: '192.168.200.197',
+        puerto: 4370,
+        puertas: [
+          { nombre: 'Subida a Chiller', numeroRelevador: 1, activa: true },
+          { nombre: 'Se desconoce', numeroRelevador: 2, activa: false },
+          { nombre: 'Cuarentena', numeroRelevador: 3, activa: true },
+          { nombre: 'Cuarto Electrico', numeroRelevador: 4, activa: true }
+        ]
+      }
+    ]);
+
+    console.log("Paneles y puertas iniciales cargados en MongoDB.");
+  } catch (error) {
+    console.error("Error al crear paneles iniciales:", error);
+  }
+};
+const seedAccessGroups = async () => {
+  try {
+    // 1. Verificamos si los grupos ya existen para no duplicarlos cada vez que inicie la API
+    const count = await AccessGroup.countDocuments();
+    if (count > 0) {
+      console.log('✅ [Paperless Setup] Los grupos de acceso ya están inicializados.');
+      return;
+    }
+
+    console.log('⏳ [Paperless Setup] Creando grupos de acceso por defecto...');
+
+    // 2. Definimos los grupos extraídos de tu configuración
+    const initialGroups = [
+      {
+        name: 'General',
+        timeZone: {
+          idZKTeco: 1,
+          description: '24-Hour Access'
+        },
+        doors: [
+          // Del Panel: Segundo Piso (192.168.200.192)
+          { panelIp: '192.168.200.192', numeroRelevador: 2, doorName: 'Comedor' },
+          { panelIp: '192.168.200.192', numeroRelevador: 3, doorName: 'Entrada Personal' }
+        ]
+      },
+      {
+        name: 'IT',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.196', numeroRelevador: 3, doorName: 'Site' },
+          { panelIp: '192.168.200.194', numeroRelevador: 2, doorName: 'Sala de Juegos' },
+          { panelIp: '192.168.200.194', numeroRelevador: 3, doorName: 'Puerta Principal' },
+          { panelIp: '192.168.200.193', numeroRelevador: 1, doorName: 'Cortina Recepcion' },
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' },
+          { panelIp: '192.168.200.191', numeroRelevador: 2, doorName: 'Salida a Planta PB' },
+          { panelIp: '192.168.200.191', numeroRelevador: 4, doorName: 'Puerta Cristal' },
+          { panelIp: '192.168.200.191', numeroRelevador: 1, doorName: 'Recepcion' }
+        ]
+      },
+      {
+        name: 'Gerencia Finanzas',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.195', numeroRelevador: 3, doorName: 'Gerencia Finanzas' },
+          { panelIp: '192.168.200.194', numeroRelevador: 2, doorName: 'Sala de Juegos' },
+          { panelIp: '192.168.200.194', numeroRelevador: 3, doorName: 'Puerta Principal' },
+          { panelIp: '192.168.200.193', numeroRelevador: 1, doorName: 'Cortina Recepcion' },
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' },
+          { panelIp: '192.168.200.191', numeroRelevador: 1, doorName: 'Recepcion' },
+          { panelIp: '192.168.200.191', numeroRelevador: 2, doorName: 'Salida a Planta PB' },
+          { panelIp: '192.168.200.191', numeroRelevador: 4, doorName: 'Puerta Cristal' }
+        ]
+      },
+      {
+        name: 'Gerencia General',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.194', numeroRelevador: 2, doorName: 'Sala de Juegos' },
+          { panelIp: '192.168.200.194', numeroRelevador: 3, doorName: 'Puerta Principal' },
+          { panelIp: '192.168.200.193', numeroRelevador: 1, doorName: 'Cortina Recepcion' },
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' },
+          { panelIp: '192.168.200.191', numeroRelevador: 3, doorName: 'Oficina Gerencia General' },
+          { panelIp: '192.168.200.191', numeroRelevador: 1, doorName: 'Recepcion' },
+          { panelIp: '192.168.200.191', numeroRelevador: 2, doorName: 'Salida a Planta PB' },
+          { panelIp: '192.168.200.191', numeroRelevador: 4, doorName: 'Puerta Cristal' }
+        ]
+      },
+      {
+        name: 'Seguridad',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.197', numeroRelevador: 1, doorName: 'Subida a Chiller' },
+          { panelIp: '192.168.200.196', numeroRelevador: 4, doorName: 'Enfermeria' },
+          { panelIp: '192.168.200.196', numeroRelevador: 1, doorName: 'Recursos Humanos' },
+          { panelIp: '192.168.200.195', numeroRelevador: 2, doorName: 'Gerencia ventas' },
+          { panelIp: '192.168.200.194', numeroRelevador: 1, doorName: 'Puerta Cocina' },
+          { panelIp: '192.168.200.194', numeroRelevador: 2, doorName: 'Sala de Juegos' },
+          { panelIp: '192.168.200.194', numeroRelevador: 3, doorName: 'Puerta Principal' },
+          { panelIp: '192.168.200.193', numeroRelevador: 1, doorName: 'Cortina Recepcion' },
+          { panelIp: '192.168.200.193', numeroRelevador: 2, doorName: 'Laboratorio Calidad' },
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' },
+          { panelIp: '192.168.200.191', numeroRelevador: 1, doorName: 'Recepcion' },
+          { panelIp: '192.168.200.191', numeroRelevador: 2, doorName: 'Salida a Planta PB' },
+          { panelIp: '192.168.200.191', numeroRelevador: 4, doorName: 'Puerta Cristal' }
+        ]
+      },
+      {
+        name: 'Mantenimiento',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.197', numeroRelevador: 1, doorName: 'Subida a Chiller' },
+          { panelIp: '192.168.200.197', numeroRelevador: 4, doorName: 'Cuarto Electrico' },
+          { panelIp: '192.168.200.196', numeroRelevador: 1, doorName: 'Recursos Humanos' },
+          { panelIp: '192.168.200.196', numeroRelevador: 2, doorName: 'Cuarto Limpieza' },
+          { panelIp: '192.168.200.195', numeroRelevador: 2, doorName: 'Gerencia ventas' },
+          { panelIp: '192.168.200.195', numeroRelevador: 3, doorName: 'Gerencia Finanzas' },
+          { panelIp: '192.168.200.195', numeroRelevador: 1, doorName: 'Customer Service' },
+          { panelIp: '192.168.200.194', numeroRelevador: 1, doorName: 'Puerta Cocina' },
+          { panelIp: '192.168.200.194', numeroRelevador: 2, doorName: 'Sala de Juegos' },
+          { panelIp: '192.168.200.194', numeroRelevador: 3, doorName: 'Puerta Principal' },
+          { panelIp: '192.168.200.193', numeroRelevador: 1, doorName: 'Cortina Recepcion' },
+          { panelIp: '192.168.200.193', numeroRelevador: 2, doorName: 'Laboratorio Calidad' },
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' }
+        ]
+      },
+      {
+        name: 'Laboratorio',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.193', numeroRelevador: 2, doorName: 'Laboratorio Calidad' }
+        ]
+      },
+      {
+        name: 'RH',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.196', numeroRelevador: 1, doorName: 'Recursos Humanos' }
+        ]
+      },
+      {
+        name: 'Limpieza',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.196', numeroRelevador: 2, doorName: 'Cuarto Limpieza' },
+          { panelIp: '192.168.200.196', numeroRelevador: 1, doorName: 'Recursos Humanos' },
+          { panelIp: '192.168.200.195', numeroRelevador: 2, doorName: 'Gerencia ventas' },
+          { panelIp: '192.168.200.195', numeroRelevador: 3, doorName: 'Gerencia Finanzas' },
+          { panelIp: '192.168.200.195', numeroRelevador: 1, doorName: 'Customer Service' },
+          { panelIp: '192.168.200.194', numeroRelevador: 1, doorName: 'Puerta Cocina' },
+          { panelIp: '192.168.200.194', numeroRelevador: 2, doorName: 'Sala de Juegos' },
+          { panelIp: '192.168.200.194', numeroRelevador: 3, doorName: 'Puerta Principal' },
+          { panelIp: '192.168.200.193', numeroRelevador: 1, doorName: 'Cortina Recepcion' },
+          { panelIp: '192.168.200.193', numeroRelevador: 2, doorName: 'Laboratorio Calidad' },
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' },
+          { panelIp: '192.168.200.191', numeroRelevador: 1, doorName: 'Recepcion' },
+          { panelIp: '192.168.200.191', numeroRelevador: 2, doorName: 'Salida a Planta PB' },
+          { panelIp: '192.168.200.191', numeroRelevador: 3, doorName: 'Oficina Gerencia General' },
+          { panelIp: '192.168.200.191', numeroRelevador: 4, doorName: 'Puerta Cristal' }
+        ]
+      },
+      {
+        name: 'Oficinas',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.193', numeroRelevador: 1, doorName: 'Cortina Recepcion' },
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' },
+          { panelIp: '192.168.200.191', numeroRelevador: 1, doorName: 'Recepcion' },
+          { panelIp: '192.168.200.191', numeroRelevador: 2, doorName: 'Salida a Planta PB' },
+          { panelIp: '192.168.200.191', numeroRelevador: 4, doorName: 'Puerta Cristal' }
+        ]
+      },
+      {
+        name: 'Sala de Juegos',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.194', numeroRelevador: 2, doorName: 'Sala de Juegos' }
+        ]
+      },
+      {
+        name: 'Oficinas D',
+        timeZone: {
+          idZKTeco: 2, // ID numérico que enviaremos al hardware para este horario
+          description: 'Dia Entre Semana (06:00 a 19:00)'
+        },
+        doors: [
+          // Del Panel: Segundo Piso (192.168.200.192)
+          { panelIp: '192.168.200.192', numeroRelevador: 1, doorName: 'Salida a Planta PA' },
+          // Del Panel: Site (192.168.200.191)
+          { panelIp: '192.168.200.191', numeroRelevador: 1, doorName: 'Recepcion' },
+          { panelIp: '192.168.200.191', numeroRelevador: 2, doorName: 'Salida a Planta PB' },
+          { panelIp: '192.168.200.191', numeroRelevador: 4, doorName: 'Puerta Cristal' }
+        ]
+      },
+      {
+        name: 'Comedor',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.194', numeroRelevador: 1, doorName: 'Puerta Cocina' }
+        ]
+      },
+      {
+        name: 'Customer Service',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.195', numeroRelevador: 1, doorName: 'Customer Service' }
+        ]
+      },
+      {
+        name: 'Account Manager',
+        timeZone: { idZKTeco: 1, description: '24-Hour Access' },
+        doors: [
+          { panelIp: '192.168.200.195', numeroRelevador: 2, doorName: 'Gerencia ventas' }
+        ]
+      }
+
+    ];
+
+    // 3. Insertamos en MongoDB
+    await AccessGroup.insertMany(initialGroups);
+    console.log('🚀 [Paperless Setup] Grupos de acceso (General, Oficinas D) creados con éxito.');
+
+  } catch (error) {
+    console.error('🔴 [Paperless Setup] Error inicializando los grupos de acceso:', error);
+  }
+};
+
+const seedCredentials = async () => {
+  try {
+    const count = await AccessCredential.countDocuments();
+    if (count > 0) {
+      console.log('✅ [Paperless Setup] Las credenciales ya están inicializadas.');
+      return;
+    }
+
+    console.log('⏳ [Paperless Setup] Procesando credenciales por defecto...');
+
+    // Datos extraídos exactamente de tu configuración en ZKBio
+    const rawCredentials = [
+      {
+        personnelId: "11513",
+        firstName: "Victor",
+        lastName: "Ibarra",
+        cardNumber: "6478759",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "1119456",
+        firstName: "Prestamo",
+        lastName: "Producción",
+        cardNumber: "5608526",
+        groupName: "Seguridad"
+      },
+      {
+        personnelId: "124358",
+        firstName: "Vishnu",
+        lastName: "Vidyadharan",
+        cardNumber: "5668059",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10329",
+        firstName: "Fabian",
+        lastName: "Ramos",
+        cardNumber: "6700872",
+        groupName: "IT"
+      },
+      {
+        personnelId: "11677",
+        firstName: "Itzel",
+        lastName: "Bustamante",
+        cardNumber: "5927288",
+        groupName: "IT"
+      },
+      {
+        personnelId: "11651",
+        firstName: "Daniel",
+        lastName: "Gonzalez",
+        cardNumber: "6700861",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "124357",
+        firstName: "Marilu",
+        lastName: "",
+        cardNumber: "7045658",
+        groupName: "Limpieza"
+      },
+      {
+        personnelId: "10952",
+        firstName: "Caleb",
+        lastName: "Sanchez",
+        cardNumber: "5667996",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11429",
+        firstName: "Gilberto",
+        lastName: "Medina",
+        cardNumber: "7045593",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10455",
+        firstName: "Jose",
+        lastName: "Barrera",
+        cardNumber: "5668093",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10175",
+        firstName: "Leonardo",
+        lastName: "Mateos",
+        cardNumber: "1992745",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10654",
+        firstName: "Guadalupe",
+        lastName: "Sanchez",
+        cardNumber: "5891639",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10822",
+        firstName: "Alejandro",
+        lastName: "Mata",
+        cardNumber: "5668176",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10624",
+        firstName: "Beatriz",
+        lastName: "Nolazco",
+        cardNumber: "1992821",
+        groupName: "Laboratorio"
+      },
+      {
+        personnelId: "11392",
+        firstName: "Eligio",
+        lastName: "Santiago",
+        cardNumber: "5891287",
+        groupName: "Laboratorio"
+      },
+      {
+        personnelId: "11376",
+        firstName: "Alberto",
+        lastName: "Enrriquez",
+        cardNumber: "5608540",
+        groupName: "Laboratorio"
+      },
+      {
+        personnelId: "11169",
+        firstName: "Gabriela",
+        lastName: "Hernandez",
+        cardNumber: "5668142",
+        groupName: "Laboratorio"
+      },
+      {
+        personnelId: "11469",
+        firstName: "Ricardo",
+        lastName: "Castellanos",
+        cardNumber: "5916043",
+        groupName: "Laboratorio"
+      },
+      {
+        personnelId: "11580",
+        firstName: "Jorge",
+        lastName: "Yamada",
+        cardNumber: "7045626",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11623",
+        firstName: "Oscar",
+        lastName: "Segura",
+        cardNumber: "7045619",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10707",
+        firstName: "Isabel",
+        lastName: "Sierra",
+        cardNumber: "5863228",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11560",
+        firstName: "Jaime",
+        lastName: "Sanchez",
+        cardNumber: "7045613",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "110234",
+        firstName: "Monica",
+        lastName: "Navarro",
+        cardNumber: "5852477",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11327",
+        firstName: "Jahzieel",
+        lastName: "Abizay",
+        cardNumber: "6700949",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10521",
+        firstName: "Victor",
+        lastName: "Ortiz",
+        cardNumber: "5608487",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10531",
+        firstName: "Emilio",
+        lastName: "Trejo",
+        cardNumber: "5903769",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10424",
+        firstName: "Randu",
+        lastName: "Blanquel",
+        cardNumber: "5668173",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10684",
+        firstName: "Ivan",
+        lastName: "de la Cruz",
+        cardNumber: "1992774",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "11170",
+        firstName: "Andree",
+        lastName: "Flores",
+        cardNumber: "7045629",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11113",
+        firstName: "Isai",
+        lastName: "Rodriguez",
+        cardNumber: "6702961",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11115",
+        firstName: "Braulio",
+        lastName: "Teran",
+        cardNumber: "7844495",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11136",
+        firstName: "Antonio",
+        lastName: "Guerrero",
+        cardNumber: "5870888",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11296",
+        firstName: "Oscar",
+        lastName: "Flores",
+        cardNumber: "7844501",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10941",
+        firstName: "Jose",
+        lastName: "Rubio",
+        cardNumber: "7045604",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11616",
+        firstName: "Jose",
+        lastName: "Baeza",
+        cardNumber: "7045659",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10928",
+        firstName: "Ernesto",
+        lastName: "Briones",
+        cardNumber: "6600360",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10975",
+        firstName: "Uriel",
+        lastName: "Hernandez",
+        cardNumber: "5905980",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10783",
+        firstName: "Cristofer",
+        lastName: "Gomez",
+        cardNumber: "7844498",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10742",
+        firstName: "Gerardo",
+        lastName: "Gomez",
+        cardNumber: "7844497",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11547",
+        firstName: "Cesar",
+        lastName: "Camarillo",
+        cardNumber: "7045597",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11307",
+        firstName: "Karina",
+        lastName: "Maldonado",
+        cardNumber: "1861135",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11586",
+        firstName: "Myriam",
+        lastName: "Guerrero",
+        cardNumber: "7045672",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10340",
+        firstName: "Omar",
+        lastName: "Guerrero",
+        cardNumber: "1992749",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11237",
+        firstName: "Jenifer",
+        lastName: "de la Vega",
+        cardNumber: "5668185",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11245",
+        firstName: "Sandra",
+        lastName: "Sanchez",
+        cardNumber: "5891643",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10681",
+        firstName: "Alejandro",
+        lastName: "Estrada",
+        cardNumber: "1992772",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10765",
+        firstName: "Milagros",
+        lastName: "Garcia",
+        cardNumber: "7045623",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10653",
+        firstName: "Alberto",
+        lastName: "Armenta",
+        cardNumber: "5872402",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10544",
+        firstName: "Marina",
+        lastName: "Garcia",
+        cardNumber: "1992777",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10274",
+        firstName: "Carmen",
+        lastName: "Briones",
+        cardNumber: "5608391",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11492",
+        firstName: "Ulises",
+        lastName: "Tovar",
+        cardNumber: "6703043",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10688",
+        firstName: "Sara",
+        lastName: "Zepeda",
+        cardNumber: "5608472",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10035",
+        firstName: "Fabiola",
+        lastName: "Bertadillo",
+        cardNumber: "5608390",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11538",
+        firstName: "Jadid",
+        lastName: "Castillo",
+        cardNumber: "5857766",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10306",
+        firstName: "Laura",
+        lastName: "Nieto",
+        cardNumber: "1861188",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11072",
+        firstName: "Carlos",
+        lastName: "Rodriguez",
+        cardNumber: "6703057",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "1002563",
+        firstName: "Michelle",
+        lastName: "Reyes",
+        cardNumber: "6703030",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10845",
+        firstName: "Daniela",
+        lastName: "Aguilar",
+        cardNumber: "7045679",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10548",
+        firstName: "Araceli",
+        lastName: "Mendoza",
+        cardNumber: "1992781",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10666",
+        firstName: "Jimena",
+        lastName: "Cortes",
+        cardNumber: "7045607",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10999",
+        firstName: "Rosa",
+        lastName: "Contreras",
+        cardNumber: "6703045",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10446",
+        firstName: "Judith",
+        lastName: "Garcia",
+        cardNumber: "5668134",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10679",
+        firstName: "Guillermina",
+        lastName: "Chavero",
+        cardNumber: "7844502",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10412",
+        firstName: "Laura",
+        lastName: "Arriaga",
+        cardNumber: "6478752",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10022",
+        firstName: "Veronica",
+        lastName: "Galvan",
+        cardNumber: "7045657",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10542",
+        firstName: "Guadalupe",
+        lastName: "Alvarez",
+        cardNumber: "5608423",
+        groupName: "Limpieza"
+      },
+      {
+        personnelId: "11522",
+        firstName: "Ofelia",
+        lastName: "Muñoz",
+        cardNumber: "5608574",
+        groupName: "Limpieza"
+      },
+      {
+        personnelId: "10443",
+        firstName: "Martina",
+        lastName: "Prado",
+        cardNumber: "5608584",
+        groupName: "Limpieza"
+      },
+      {
+        personnelId: "1",
+        firstName: "General Limpieza",
+        lastName: " ",
+        cardNumber: "5896307",
+        groupName: "Limpieza"
+      },
+      {
+        personnelId: "10372",
+        firstName: "Guadalupe",
+        lastName: "Orduña",
+        cardNumber: "5608515",
+        groupName: "Limpieza"
+      },
+      {
+        personnelId: "11476",
+        firstName: "Vanesa",
+        lastName: "Badillo",
+        cardNumber: "6703048",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10000",
+        firstName: "Sandy",
+        lastName: " ",
+        cardNumber: "6478760",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11110",
+        firstName: "Fernanda",
+        lastName: "Garcia",
+        cardNumber: "6478727",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "11624",
+        firstName: "Edith",
+        lastName: "Matehuala",
+        cardNumber: "7045621",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10353",
+        firstName: "Juan",
+        lastName: "Rocha",
+        cardNumber: "7844503",
+        groupName: "Seguridad"
+      },
+      {
+        personnelId: "10370",
+        firstName: "Leticia",
+        lastName: "Garcia",
+        cardNumber: "6700869",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10992",
+        firstName: "Sandra",
+        lastName: "Perez",
+        cardNumber: "7045591",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "11603",
+        firstName: "Paulina",
+        lastName: "Aredondo",
+        cardNumber: "7045595",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "11587",
+        firstName: "Martin",
+        lastName: "Quevedo",
+        cardNumber: "7045670",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10008",
+        firstName: "Ismael",
+        lastName: "Paz",
+        cardNumber: "8481362",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "106932",
+        firstName: "Pedro",
+        lastName: "Soto",
+        cardNumber: "5668033",
+        groupName: "IT"
+      },
+      {
+        personnelId: "11234321",
+        firstName: "Personal",
+        lastName: "Accesos a Molino",
+        cardNumber: "5865747",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11682",
+        firstName: "Sergio",
+        lastName: "Acevedo",
+        cardNumber: "7045639",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "11058",
+        firstName: "Manuel",
+        lastName: "Ramos",
+        cardNumber: "5668166",
+        groupName: "IT"
+      },
+      {
+        personnelId: "11006",
+        firstName: "Elsa",
+        lastName: "Rodriguez",
+        cardNumber: "7045650",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10759",
+        firstName: "Elena",
+        lastName: "Galvan",
+        cardNumber: "5668171",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10954",
+        firstName: "Nancy",
+        lastName: "Gamboa",
+        cardNumber: "5860501",
+        groupName: "Seguridad"
+      },
+      {
+        personnelId: "1000",
+        firstName: "Ananth",
+        lastName: "Pathmanathan",
+        cardNumber: "1992740",
+        groupName: "Gerencia General"
+      },
+      {
+        personnelId: "34286",
+        firstName: "Gerardo",
+        lastName: "Ortega",
+        cardNumber: "1861227",
+        groupName: "Laboratorio"
+      },
+      {
+        personnelId: "10981",
+        firstName: "Abigail",
+        lastName: "Felix",
+        cardNumber: "5668024",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10142",
+        firstName: "Fernando",
+        lastName: "Ramirez",
+        cardNumber: "7045683",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "6",
+        firstName: "Guadalupe",
+        lastName: "Teran",
+        cardNumber: "7045622",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10309",
+        firstName: "Abel",
+        lastName: "Robles",
+        cardNumber: "7045662",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10703",
+        firstName: "Erika",
+        lastName: "Flores",
+        cardNumber: "5608416",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "11316",
+        firstName: "Jaime",
+        lastName: "Balderas",
+        cardNumber: "7844496",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11559",
+        firstName: "Araceli",
+        lastName: "Olvera",
+        cardNumber: "7045611",
+        groupName: "IT"
+      },
+      {
+        personnelId: "19",
+        firstName: "Mahonri",
+        lastName: " ",
+        cardNumber: "5668152",
+        groupName: "IT"
+      },
+      {
+        personnelId: "10064",
+        firstName: "Ananth2",
+        lastName: "Pathmanathan",
+        cardNumber: "7045585",
+        groupName: "Gerencia General"
+      },
+      {
+        personnelId: "109520",
+        firstName: "Manuel",
+        lastName: "Ramos",
+        cardNumber: "5668181",
+        groupName: "IT"
+      },
+      {
+        personnelId: "10495",
+        firstName: "Denise",
+        lastName: "Hernandez",
+        cardNumber: "5668114",
+        groupName: "Seguridad"
+      },
+      {
+        personnelId: "100064",
+        firstName: "Ananth3",
+        lastName: "Pathmanathan",
+        cardNumber: "5668159",
+        groupName: "Gerencia General"
+      }
+
+
+    ];
+
+    for (const raw of rawCredentials) {
+      // 1. Buscar el Grupo de Acceso
+      const group = await AccessGroup.findOne({ name: raw.groupName });
+      if (!group) {
+        console.warn(`⚠️ No se encontró el grupo '${raw.groupName}' para la tarjeta ${raw.cardNumber}. Saltando...`);
+        continue;
+      }
+
+      // 2. Buscar si existe el Empleado en la base de datos
+      const employeeRecord = await Employees.findOne({ numberEmployee: raw.personnelId });
+
+      // 3. Preparar el documento de la credencial
+      const newCredential = new AccessCredential({
+        personnelId: raw.personnelId,
+        cardNumber: raw.cardNumber,
+        accessGroup: group._id,
+        // Lógica condicional: Si existe el empleado lo ligamos, si no, guardamos el nombre genérico
+        employee: employeeRecord ? employeeRecord._id : null,
+        guestName: !employeeRecord ? `${raw.firstName} ${raw.lastName}` : null
+      });
+
+      await newCredential.save();
+      console.log(`✔️ Credencial registrada: ${raw.cardNumber} (${employeeRecord ? 'Empleado' : 'Préstamo'})`);
+    }
+
+    console.log('🚀 [Paperless Setup] Carga de credenciales finalizada con éxito.');
+
+  } catch (error) {
+    console.error('🔴 [Paperless Setup] Error inicializando credenciales:', error);
+  }
+};
 
 module.exports = {
   createCompanys,
@@ -415,6 +1480,9 @@ module.exports = {
   createEmployees,
   createParts,
   updateEmployeesData,
-  createDevicesAutomation
+  createDevicesAutomation,
+  createPanel,
+  seedAccessGroups,
+  seedCredentials
 }
 

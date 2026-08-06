@@ -31,6 +31,7 @@ app.set("pkg", pkg);
 app.use(morgan("dev"));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: false }));
+app.use('/api/panels', require('./routes/panels.routes'));
 
 app.get('/', (req, res) => {
   res.json({
@@ -71,7 +72,11 @@ const {
   createPartsInfo,
   createMachine,
   updateEmployeesData,
-  createDevicesAutomation
+  createDevicesAutomation,
+  createPanel,
+  seedAccessGroups,
+  seedCredentials
+
 } = require("./libs/initialSetup.js");
 
 ////Routes
@@ -81,6 +86,7 @@ const apiRoutes = require('./routes/index');
 const sendEmailMiddleware = require("./middlewares/mailer");
 const { autoSendMessage, autoSendEmail } = require("./controllers/whatsapp.controller.js");
 const { autoSendDeviationAlerts } = require("./controllers/emailNotification.controller.js");
+
 
 
 //Primer inicio de API/////
@@ -106,7 +112,9 @@ const { autoSendDeviationAlerts } = require("./controllers/emailNotification.con
 
 //Agregar camposn a empleados//
 // updateEmployeesData();
-
+//createPanel();
+//seedAccessGroups();
+//seedCredentials();
 app.get("/api/cors", (req, res) => {
   res.status(200).json({ message: "Esta entrando" });
 });
