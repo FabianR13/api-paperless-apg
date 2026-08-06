@@ -1,4 +1,6 @@
 const Panel = require('../models/Panel');
+const AccessCredential = require('../models/Credential');
+const AccessGroup = require('../models/AccessGroups');
 
 const abrirPanelRemoto = async (req, res) => {
   try {
@@ -74,4 +76,38 @@ const crearPanel = async (req, res) => {
   }
 };
 
-module.exports = { abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel };
+const getCredentials = async (req, res) => {
+  try {
+    const { companyId } = req.params;
+
+    const credenciales = await AccessCredential.find()
+      .populate('accessGroup')
+      .populate('employee');
+
+    return res.status(200).json({
+      status: "200",
+      message: "Credenciales obtenidas con éxito",
+      body: credenciales
+    });
+  } catch (error) {
+    console.error("Error al obtener credenciales:", error);
+    return res.status(500).json({ message: "Error al obtener credenciales", error: error.message });
+  }
+};
+
+const getAccessGroups = async (req, res) => {
+  try {
+    const grupos = await AccessGroup.find();
+
+    return res.status(200).json({
+      status: "200",
+      message: "Grupos de acceso obtenidos con éxito",
+      body: grupos
+    });
+  } catch (error) {
+    console.error("Error al obtener grupos de acceso:", error);
+    return res.status(500).json({ message: "Error al obtener grupos", error: error.message });
+  }
+};
+
+module.exports = { abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel, getCredentials, getAccessGroups };
