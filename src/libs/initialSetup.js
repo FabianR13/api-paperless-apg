@@ -1070,250 +1070,370 @@ const seedCredentials = async () => {
         groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10274",
+        firstName: "Carmen",
+        lastName: "Briones",
+        cardNumber: "5608391",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11492",
+        firstName: "Ulises",
+        lastName: "Tovar",
+        cardNumber: "6703043",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10688",
+        firstName: "Sara",
+        lastName: "Zepeda",
+        cardNumber: "5608472",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10035",
+        firstName: "Fabiola",
+        lastName: "Bertadillo",
+        cardNumber: "5608390",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11538",
+        firstName: "Jadid",
+        lastName: "Castillo",
+        cardNumber: "5857766",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10306",
+        firstName: "Laura",
+        lastName: "Nieto",
+        cardNumber: "1861188",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11072",
+        firstName: "Carlos",
+        lastName: "Rodriguez",
+        cardNumber: "6703057",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "1002563",
+        firstName: "Michelle",
+        lastName: "Reyes",
+        cardNumber: "6703030",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10845",
+        firstName: "Daniela",
+        lastName: "Aguilar",
+        cardNumber: "7045679",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10548",
+        firstName: "Araceli",
+        lastName: "Mendoza",
+        cardNumber: "1992781",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10666",
+        firstName: "Jimena",
+        lastName: "Cortes",
+        cardNumber: "7045607",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10999",
+        firstName: "Rosa",
+        lastName: "Contreras",
+        cardNumber: "6703045",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10446",
+        firstName: "Judith",
+        lastName: "Garcia",
+        cardNumber: "5668134",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10679",
+        firstName: "Guillermina",
+        lastName: "Chavero",
+        cardNumber: "7844502",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10412",
+        firstName: "Laura",
+        lastName: "Arriaga",
+        cardNumber: "6478752",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10022",
+        firstName: "Veronica",
+        lastName: "Galvan",
+        cardNumber: "7045657",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10542",
+        firstName: "Guadalupe",
+        lastName: "Alvarez",
+        cardNumber: "5608423",
+        groupName: "Limpieza"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11522",
+        firstName: "Ofelia",
+        lastName: "Muñoz",
+        cardNumber: "5608574",
+        groupName: "Limpieza"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10443",
+        firstName: "Martina",
+        lastName: "Prado",
+        cardNumber: "5608584",
+        groupName: "Limpieza"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "1",
+        firstName: "General Limpieza",
+        lastName: " ",
+        cardNumber: "5896307",
+        groupName: "Limpieza"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10372",
+        firstName: "Guadalupe",
+        lastName: "Orduña",
+        cardNumber: "5608515",
+        groupName: "Limpieza"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11476",
+        firstName: "Vanesa",
+        lastName: "Badillo",
+        cardNumber: "6703048",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10000",
+        firstName: "Sandy",
+        lastName: " ",
+        cardNumber: "6478760",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11110",
+        firstName: "Fernanda",
+        lastName: "Garcia",
+        cardNumber: "6478727",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11624",
+        firstName: "Edith",
+        lastName: "Matehuala",
+        cardNumber: "7045621",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10353",
+        firstName: "Juan",
+        lastName: "Rocha",
+        cardNumber: "7844503",
+        groupName: "Seguridad"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10370",
+        firstName: "Leticia",
+        lastName: "Garcia",
+        cardNumber: "6700869",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10992",
+        firstName: "Sandra",
+        lastName: "Perez",
+        cardNumber: "7045591",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11603",
+        firstName: "Paulina",
+        lastName: "Aredondo",
+        cardNumber: "7045595",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11587",
+        firstName: "Martin",
+        lastName: "Quevedo",
+        cardNumber: "7045670",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "10008",
+        firstName: "Ismael",
+        lastName: "Paz",
+        cardNumber: "8481362",
+        groupName: "Oficinas D"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "106932",
+        firstName: "Pedro",
+        lastName: "Soto",
+        cardNumber: "5668033",
+        groupName: "IT"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11234321",
+        firstName: "Personal",
+        lastName: "Accesos a Molino",
+        cardNumber: "5865747",
+        groupName: "Mantenimiento"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11682",
+        firstName: "Sergio",
+        lastName: "Acevedo",
+        cardNumber: "7045639",
+        groupName: "Oficinas"
       },
       {
-        personnelId: "",
-        firstName: "",
-        lastName: "",
-        cardNumber: "",
-        groupName: ""
+        personnelId: "11058",
+        firstName: "Manuel",
+        lastName: "Ramos",
+        cardNumber: "5668166",
+        groupName: "IT"
       },
+      {
+        personnelId: "11006",
+        firstName: "Elsa",
+        lastName: "Rodriguez",
+        cardNumber: "7045650",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10759",
+        firstName: "Elena",
+        lastName: "Galvan",
+        cardNumber: "5668171",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "10954",
+        firstName: "Nancy",
+        lastName: "Gamboa",
+        cardNumber: "5860501",
+        groupName: "Seguridad"
+      },
+      {
+        personnelId: "1000",
+        firstName: "Ananth",
+        lastName: "Pathmanathan",
+        cardNumber: "1992740",
+        groupName: "Gerencia General"
+      },
+      {
+        personnelId: "34286",
+        firstName: "Gerardo",
+        lastName: "Ortega",
+        cardNumber: "1861227",
+        groupName: "Laboratorio"
+      },
+      {
+        personnelId: "10981",
+        firstName: "Abigail",
+        lastName: "Felix",
+        cardNumber: "5668024",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10142",
+        firstName: "Fernando",
+        lastName: "Ramirez",
+        cardNumber: "7045683",
+        groupName: "Oficinas"
+      },
+      {
+        personnelId: "6",
+        firstName: "Guadalupe",
+        lastName: "Teran",
+        cardNumber: "7045622",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "10309",
+        firstName: "Abel",
+        lastName: "Robles",
+        cardNumber: "7045662",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "10703",
+        firstName: "Erika",
+        lastName: "Flores",
+        cardNumber: "5608416",
+        groupName: "Oficinas D"
+      },
+      {
+        personnelId: "11316",
+        firstName: "Jaime",
+        lastName: "Balderas",
+        cardNumber: "7844496",
+        groupName: "Mantenimiento"
+      },
+      {
+        personnelId: "11559",
+        firstName: "Araceli",
+        lastName: "Olvera",
+        cardNumber: "7045611",
+        groupName: "IT"
+      },
+      {
+        personnelId: "19",
+        firstName: "Mahonri",
+        lastName: " ",
+        cardNumber: "5668152",
+        groupName: "IT"
+      },
+      {
+        personnelId: "10064",
+        firstName: "Ananth2",
+        lastName: "Pathmanathan",
+        cardNumber: "7045585",
+        groupName: "Gerencia General"
+      },
+      {
+        personnelId: "109520",
+        firstName: "Manuel",
+        lastName: "Ramos",
+        cardNumber: "5668181",
+        groupName: "IT"
+      },
+      {
+        personnelId: "10495",
+        firstName: "Denise",
+        lastName: "Hernandez",
+        cardNumber: "5668114",
+        groupName: "Seguridad"
+      },
+      {
+        personnelId: "100064",
+        firstName: "Ananth3",
+        lastName: "Pathmanathan",
+        cardNumber: "5668159",
+        groupName: "Gerencia General"
+      }
+
 
     ];
 
