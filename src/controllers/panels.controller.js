@@ -1,3 +1,5 @@
+const Panel = require('../models/Panel');
+
 const abrirPanelRemoto = async (req, res) => {
   try {
     // Ahora recibiremos el Número de Serie y el número de puerta (1, 2, 3 o 4)
@@ -51,9 +53,6 @@ const sincronizarLogsPanel = async (req, res) => {
   }
 };
 
-const Panel = require('../models/Panel');
-const RegistroPanel = require('../models/RegistroPanel');
-
 // 1. Obtener todos los paneles con sus puertas (para renderizar en el Frontend)
 const getPaneles = async (req, res) => {
   try {
@@ -76,6 +75,3 @@ const crearPanel = async (req, res) => {
 };
 
 module.exports = { abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel };
-
-
-
