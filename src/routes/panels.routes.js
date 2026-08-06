@@ -8,7 +8,7 @@ const { abrirPanelRemoto, sincronizarLogsPanel, configurarHorarioPanel, enviarCr
 router.post('/abrir', abrirPanelRemoto);
 
 // Ruta: POST /api/paneles/abrir
-router.post('/Logs', sincronizarLogsPanel);
+router.post('/logs', sincronizarLogsPanel);
 const panelCtrl = require('../controllers/panels.controller');
 
 router.get('/', panelCtrl.getPaneles);

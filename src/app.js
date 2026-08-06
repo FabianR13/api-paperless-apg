@@ -74,7 +74,9 @@ const {
   updateEmployeesData,
   createDevicesAutomation,
   createPanel,
-  seedAccessGroups
+  seedAccessGroups,
+  seedCredentials
+
 } = require("./libs/initialSetup.js");
 
 ////Routes
@@ -112,6 +114,7 @@ const { autoSendDeviationAlerts } = require("./controllers/emailNotification.con
 // updateEmployeesData();
 //createPanel();
 //seedAccessGroups();
+//seedCredentials();
 app.get("/api/cors", (req, res) => {
   res.status(200).json({ message: "Esta entrando" });
 });

@@ -1,3 +1,5 @@
+const Panel = require('../models/Panel');
+
 const abrirPanelRemoto = async (req, res) => {
   try {
     // Ahora recibiremos el Número de Serie y el número de puerta (1, 2, 3 o 4)
@@ -221,6 +223,5 @@ module.exports = {
   sincronizarTodoElPanel,
   eliminarCredencialUnica
 };
-
 
 
