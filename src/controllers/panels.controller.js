@@ -110,7 +110,6 @@ const getAccessGroups = async (req, res) => {
   }
 };
 
-module.exports = { abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel, getCredentials, getAccessGroups };
 // NUEVA FUNCIÓN 1: Mandar el Horario 2 al panel
 const configurarHorarioPanel = async (req, res) => {
   try {
@@ -256,7 +255,9 @@ module.exports = {
   configurarHorarioPanel,
   enviarCredencialUnica,
   sincronizarTodoElPanel,
-  eliminarCredencialUnica
+  eliminarCredencialUnica,
+  getCredentials, 
+  getAccessGroups 
 };
 
 
