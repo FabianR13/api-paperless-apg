@@ -53,8 +53,6 @@ const sincronizarLogsPanel = async (req, res) => {
   }
 };
 
-const Panel = require('../models/Panel');
-
 // 1. Obtener todos los paneles con sus puertas (para renderizar en el Frontend)
 const getPaneles = async (req, res) => {
   try {
