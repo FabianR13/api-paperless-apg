@@ -1,6 +1,8 @@
 const { Router } = require('express');
 const router = Router();
-const { abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel, getCredentials, getAccessGroups } = require('../controllers/panels.controller.js');
+const { abrirPanelRemoto, sincronizarLogsPanel, configurarHorarioPanel, enviarCredencialUnica,
+    sincronizarTodoElPanel,eliminarCredencialUnica, getPaneles, crearPanel, getCredentials, getAccessGroups 
+} = require('../controllers/panels.controller.js');
 
 // Ruta: POST /api/paneles/abrir
 router.post('/abrir', abrirPanelRemoto);
@@ -13,5 +15,10 @@ router.get('/', panelCtrl.getPaneles);
 router.get('/credentials/:companyId', getCredentials);
 router.get('/groups/:companyId', getAccessGroups);
 router.post('/', panelCtrl.crearPanel);
+
+router.post('/configurar-horario', configurarHorarioPanel);
+router.post('/credencial', enviarCredencialUnica);
+router.post('/sync-masiva', sincronizarTodoElPanel)
+router.post('/eliminar-credencial', eliminarCredencialUnica);
 
 module.exports = router;

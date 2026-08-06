@@ -108,40 +108,34 @@ if (cluster.isPrimary) {
             let insertados = 0;
 
             for (const linea of logsRaw) {
-                console.log(`[Worker ${process.pid}] 📝 Línea cruda: ${linea}`);
+                const logObj = {};
+                // Separamos por comas y luego por el signo igual
+                linea.split(',').forEach(par => {
+                    const [key, value] = par.split('=');
+                    if (key && value) logObj[key.trim()] = value.trim();
+                });
 
-                const partes = linea.split(',');
-                
-                // REORDENAMIENTO SEGÚN TU CAPTURA:
-                // Partes[0] es la Fecha real ("2026-08-05 15:22:25")
-                // La siguiente posición (o en la que venga tu PIN de empleado en el CSV) la asignamos al Pin.
-                // Generalmente en GetRTLog el formato es: Fecha, Pin, Tarjeta, Puerta, Evento...
-                
-                const fechaReal = partes[0] ? partes[0].trim() : null;
-                const pinEmpleado = partes[1] ? partes[1].trim() : null; // <--- Aquí viene el PIN real
-                const tarjeta = partes[2] ? partes[2].trim() : '';
-                const puerta = partes[3] ? partes[3].trim() : 1;
-                const evento = partes[4] ? partes[4].trim() : 0;
+                // ZKTeco a veces etiqueta la fecha como Time o Time_second
+                const fechaLog = logObj.Time_second || logObj.Time;
+                const numPuerta = logObj.DoorID || logObj.DoorId || 1;
 
-                // Validaciones de seguridad
-                if (!fechaReal || !pinEmpleado || pinEmpleado === "0") continue;
+                if (!fechaLog || !logObj.Pin || logObj.Pin === "0") continue;
 
                 let employeeId = null;
-                const emp = await Employees.findOne({ numberEmployee: pinEmpleado });
+                const emp = await Employees.findOne({ numberEmployee: logObj.Pin });
                 if (emp) employeeId = emp._id;
 
                 try {
                     await AccessLog.create({
                         panelIp: ipPanel,
-                        personnelId: pinEmpleado,    // Ahora sí guardará el número de empleado
-                        cardNumber: tarjeta,
-                        doorNumber: parseInt(puerta) || 1,
-                        eventType: parseInt(evento) || 0,
-                        verifiedTime: new Date(fechaReal), // Ahora sí guardará la fecha correcta del evento
+                        personnelId: logObj.Pin,
+                        cardNumber: logObj.Cardno || '',
+                        doorNumber: parseInt(numPuerta),
+                        eventType: parseInt(logObj.EventType) || 0,
+                        verifiedTime: new Date(fechaLog),
                         employee: employeeId
                     });
                     insertados++;
-                    console.log(`[Worker ${process.pid}] ✔️ ¡Checada guardada! Empleado: ${pinEmpleado} a las ${fechaReal}`);
                 } catch (err) {
                     // Duplicados ignorados
                 }
