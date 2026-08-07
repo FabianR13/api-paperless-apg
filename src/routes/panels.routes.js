@@ -1,26 +1,57 @@
 const { Router } = require('express');
 const router = Router();
-const { abrirPanelRemoto, sincronizarLogsPanel, configurarHorarioPanel, enviarCredencialUnica,
-    sincronizarTodoElPanel, eliminarCredencialUnica, getPaneles, crearPanel, getCredentials, getAccessGroups
+const {
+    // Paneles
+    getPaneles,
+    crearPanel,
+    updatePanel,
+    deletePanel,
+
+    // Access Groups
+    getAccessGroups,
+    crearAccessGroup,
+    updateAccessGroup,
+    deleteAccessGroup,
+
+    // Credentials
+    getCredentials,
+
+    // Comandos Agente ZK
+    abrirPanelRemoto,
+    sincronizarLogsPanel,
+    configurarHorarioPanel,
+    enviarCredencialUnica,
+    sincronizarTodoElPanel,
+    eliminarCredencialUnica
 } = require('../controllers/panels.controller.js');
 const panelCtrl = require('../controllers/panels.controller');
+const { verifyToken, isAutorized, isAdmin } = require('../middlewares/auth.Jwt.js');
 
-// Ruta: POST /api/paneles/abrir
-router.post('/abrir', abrirPanelRemoto);
+// Paneles
+router.get('/', getPaneles);
+router.post('/', crearPanel);
+router.put('/:id', updatePanel);
+router.delete('/:id', deletePanel);
 
 // Ruta: POST /api/paneles/abrir
 router.post('/logs', sincronizarLogsPanel);
 
-const { verifyToken, isAutorized, isAdmin } = require('../middlewares/auth.Jwt.js');
-
-router.get('/', panelCtrl.getPaneles);
-router.get('/credentials/:companyId', getCredentials);
+// Access Groups
 router.get('/groups/:companyId', getAccessGroups);
-router.post('/', panelCtrl.crearPanel);
+router.post('/groups', crearAccessGroup);
+router.put('/groups/:id', updateAccessGroup);
+router.delete('/groups/:id', deleteAccessGroup);
 
+// Credentials
+router.get('/credentials/:companyId', getCredentials);
+
+
+// Comandos Agente ZK
+router.post('/abrir', abrirPanelRemoto);
+router.post('/logs', sincronizarLogsPanel);
 router.post('/configurar-horario', configurarHorarioPanel);
 router.post('/credencial', enviarCredencialUnica);
-router.post('/sync-masiva', sincronizarTodoElPanel)
+router.post('/sync-masiva', sincronizarTodoElPanel);
 router.post('/eliminar-credencial', eliminarCredencialUnica);
 
 router.post(
