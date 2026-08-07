@@ -1,6 +1,7 @@
 const Panel = require('../models/Panel');
 const AccessCredential = require('../models/Credential');
 const AccessGroup = require('../models/AccessGroups');
+const Employees = require('../models/Employees');
 
 const abrirPanelRemoto = async (req, res) => {
   try {
@@ -82,7 +83,12 @@ const getCredentials = async (req, res) => {
 
     const credenciales = await AccessCredential.find()
       .populate('accessGroup')
-      .populate('employee');
+      .populate({
+        path: 'employee',
+        populate: [
+          { path: "department" }
+        ]
+      });
 
     return res.status(200).json({
       status: "200",
@@ -229,13 +235,13 @@ const eliminarCredencialUnica = async (req, res) => {
     const { ipPanel, pin } = req.body;
 
     if (!ipPanel || !pin) {
-      return res.status(400).json({ 
-        mensaje: "Faltan datos requeridos (ipPanel, pin)" 
+      return res.status(400).json({
+        mensaje: "Faltan datos requeridos (ipPanel, pin)"
       });
     }
 
     const io = req.app.get('io');
-    
+
     // Disparamos la orden al Agente en Windows
     io.emit('comando_eliminar_credencial', { ipPanel, pin });
 
@@ -250,14 +256,168 @@ const eliminarCredencialUnica = async (req, res) => {
   }
 };
 
+//Crear una crendencial nueva en DB
+const createNewCredential = async (req, res) => {
+  const { CompanyId } = req.params;
+
+  try {
+    const {
+      personnelId,
+      cardNumber,
+      employee,
+      guestName,
+      accessGroup,
+      active
+    } = req.body;
+
+    if (employee !== 'NoEmployee') {
+      const foundEmployee = await Employees.findById(employee);
+      if (!foundEmployee) {
+        return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
+      }
+    }
+
+    const foundGroup = await AccessGroup.findById(accessGroup);
+    if (!foundGroup) {
+      return res.status(404).json({ status: "error", message: "Grupo de acceso no encontrado" });
+    }
+
+    const newCredential = new AccessCredential({
+      personnelId,
+      cardNumber,
+      employee: employee === 'NoEmployee' ? null : employee,
+      guestName,
+      accessGroup,
+      active
+    });
+
+    await newCredential.save();
+
+    const io = req.app.get('io');
+
+    const pin = newCredential.personnelId;
+    const tarjeta = newCredential.cardNumber;
+    const timezone = foundGroup.timeZone.idZKTeco;
+
+    if (foundGroup.doors && foundGroup.doors.length > 0) {
+      for (const door of foundGroup.doors) {
+        if (door.panelIp && door.numeroRelevador) {
+          io.emit('comando_enviar_credencial', {
+            ipPanel: door.panelIp,
+            pin: pin,
+            tarjeta: tarjeta,
+            puerta: door.numeroRelevador,
+            timezone: timezone
+          });
+        }
+      }
+    }
+
+    res.status(201).json({ status: "200", message: "New credential register", body: newCredential });
+  } catch (error) {
+    console.error("Error en Crear credencial:", error);
+    res.status(500).json({ status: "500", message: "Internal Server Error" });
+  }
+};
+
+//Actualizar una crendencial nueva en DB
+const updateCredential = async (req, res) => {
+  const { CredentialId } = req.params;
+
+  try {
+    const {
+      personnelId,
+      cardNumber,
+      employee,
+      guestName,
+      accessGroup,
+      active
+    } = req.body;
+
+    const oldCredential = await AccessCredential.findById(CredentialId);
+    if (!oldCredential) {
+      return res.status(404).json({ status: "error", message: "Credencial no encontrada" });
+    }
+    const oldPersonnelId = oldCredential.personnelId;
+
+    if (employee !== 'NoEmployee') {
+      const foundEmployee = await Employees.findById(employee);
+      if (!foundEmployee) {
+        return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
+      }
+    }
+
+    const foundGroup = await AccessGroup.findById(accessGroup);
+    if (!foundGroup) {
+      return res.status(404).json({ status: "error", message: "Grupo de acceso no encontrado" });
+    }
+
+    const pinesABorrar = [oldPersonnelId];
+
+    if (oldPersonnelId !== personnelId) {
+      pinesABorrar.push(personnelId);
+    }
+
+    const allPanels = await Panel.find({}, 'ip');
+    const ipsTodosLosPaneles = allPanels.map(panel => panel.ip);
+
+    const arregloAccesos = [];
+    if (active && foundGroup.doors && foundGroup.doors.length > 0) {
+      for (const door of foundGroup.doors) {
+        if (door.panelIp && door.numeroRelevador) {
+          arregloAccesos.push({
+            ipPanel: door.panelIp,
+            puerta: door.numeroRelevador
+          });
+        }
+      }
+    }
+
+    const updateCard = await AccessCredential.findByIdAndUpdate(
+      CredentialId,
+      {
+        $set: {
+          personnelId,
+          cardNumber,
+          employee: employee === 'NoEmployee' ? null : employee,
+          guestName,
+          accessGroup,
+          active
+        }
+      },
+      { new: true }
+    );
+
+    const io = req.app.get('io');
+    io.emit('comando_actualizar_credencial_lote', {
+      pinesABorrar,
+      ipsTodosLosPaneles,
+      pinNuevo: personnelId,
+      tarjetaNueva: cardNumber,
+      timezone: foundGroup.timeZone.idZKTeco,
+      accesosNuevos: arregloAccesos
+    });
+
+    res.status(200).json({ status: "200", message: "Credential updated and synchronization started", body: updateCard });
+  } catch (error) {
+    console.error("Error en Actualizar credencial:", error);
+    res.status(500).json({ status: "500", message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
-  abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel,
+  abrirPanelRemoto,
+  sincronizarLogsPanel,
+  getPaneles,
+  crearPanel,
   configurarHorarioPanel,
   enviarCredencialUnica,
   sincronizarTodoElPanel,
   eliminarCredencialUnica,
-  getCredentials, 
-  getAccessGroups 
+  getCredentials,
+  getAccessGroups,
+  createNewCredential,
+  updateCredential
 };
 
 
