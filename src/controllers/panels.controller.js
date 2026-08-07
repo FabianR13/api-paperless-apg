@@ -76,6 +76,97 @@ const crearPanel = async (req, res) => {
   }
 };
 
+const updatePanel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const panelActualizado = await Panel.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!panelActualizado) {
+      return res.status(404).json({ message: "Panel no encontrado" });
+    }
+
+    return res.status(200).json({
+      exito: true,
+      mensaje: "Panel actualizado con éxito",
+      body: panelActualizado
+    });
+  } catch (error) {
+    console.error("Error al actualizar panel:", error);
+    return res.status(500).json({ message: "Error al actualizar panel", error: error.message });
+  }
+};
+
+const deletePanel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const panelEliminado = await Panel.findByIdAndDelete(id);
+
+    if (!panelEliminado) {
+      return res.status(404).json({ message: "Panel no encontrado" });
+    }
+
+    return res.status(200).json({ exito: true, mensaje: "Panel eliminado con éxito" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error al eliminar panel", error: error.message });
+  }
+};
+
+
+const getAccessGroups = async (req, res) => {
+  try {
+    const grupos = await AccessGroup.find();
+
+    return res.status(200).json({
+      status: "200",
+      message: "Grupos de acceso obtenidos con éxito",
+      body: grupos
+    });
+  } catch (error) {
+    console.error("Error al obtener grupos de acceso:", error);
+    return res.status(500).json({ message: "Error al obtener grupos", error: error.message });
+  }
+};
+
+const crearAccessGroup = async (req, res) => {
+  try {
+    const nuevoGrupo = new AccessGroup(req.body);
+    const grupoGuardado = await nuevoGrupo.save();
+    return res.status(201).json({ exito: true, body: grupoGuardado });
+  } catch (error) {
+    return res.status(400).json({ message: "Error al crear grupo de acceso", error: error.message });
+  }
+};
+
+const updateAccessGroup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const grupoActualizado = await AccessGroup.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!grupoActualizado) {
+      return res.status(404).json({ message: "Grupo no encontrado" });
+    }
+
+    return res.status(200).json({ exito: true, body: grupoActualizado });
+  } catch (error) {
+    return res.status(500).json({ message: "Error al actualizar grupo", error: error.message });
+  }
+};
+
+const deleteAccessGroup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const grupoEliminado = await AccessGroup.findByIdAndDelete(id);
+
+    if (!grupoEliminado) {
+      return res.status(404).json({ message: "Grupo no encontrado" });
+    }
+
+    return res.status(200).json({ exito: true, mensaje: "Grupo eliminado con éxito" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error al eliminar grupo", error: error.message });
+  }
+};
+
 const getCredentials = async (req, res) => {
   try {
     const { companyId } = req.params;
@@ -92,21 +183,6 @@ const getCredentials = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener credenciales:", error);
     return res.status(500).json({ message: "Error al obtener credenciales", error: error.message });
-  }
-};
-
-const getAccessGroups = async (req, res) => {
-  try {
-    const grupos = await AccessGroup.find();
-
-    return res.status(200).json({
-      status: "200",
-      message: "Grupos de acceso obtenidos con éxito",
-      body: grupos
-    });
-  } catch (error) {
-    console.error("Error al obtener grupos de acceso:", error);
-    return res.status(500).json({ message: "Error al obtener grupos", error: error.message });
   }
 };
 
@@ -251,13 +327,16 @@ const eliminarCredencialUnica = async (req, res) => {
 };
 
 module.exports = {
-  abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel,
+  abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel, updatePanel,
+  deletePanel,
   configurarHorarioPanel,
   enviarCredencialUnica,
   sincronizarTodoElPanel,
   eliminarCredencialUnica,
   getCredentials, 
-  getAccessGroups 
+  getAccessGroups, crearAccessGroup,
+  updateAccessGroup,
+  deleteAccessGroup
 };
 
 
