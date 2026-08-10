@@ -132,7 +132,7 @@ const crearAccessGroup = async (req, res) => {
   try {
     const nuevoGrupo = new AccessGroup(req.body);
     const grupoGuardado = await nuevoGrupo.save();
-    return res.status(201).json({ exito: true, body: grupoGuardado });
+    return res.status(201).json({message: "New group added", exito: true, body: grupoGuardado });
   } catch (error) {
     return res.status(400).json({ message: "Error al crear grupo de acceso", error: error.message });
   }
@@ -147,7 +147,7 @@ const updateAccessGroup = async (req, res) => {
       return res.status(404).json({ message: "Grupo no encontrado" });
     }
 
-    return res.status(200).json({ exito: true, body: grupoActualizado });
+    return res.status(200).json({message: "Group Updated", exito: true, body: grupoActualizado });
   } catch (error) {
     return res.status(500).json({ message: "Error al actualizar grupo", error: error.message });
   }
