@@ -112,6 +112,35 @@ const deletePanel = async (req, res) => {
   }
 };
 
+// Actualiza únicamente el nombre de una puerta dentro de un panel
+const updateDoorName = async (req, res) => {
+  try {
+    const { panelId, puertaId } = req.params;
+    const { nombre } = req.body;
+
+    if (!nombre || !nombre.trim()) {
+      return res.status(400).json({ exito: false, mensaje: "El nombre de la puerta es requerido." });
+    }
+
+    const panelActualizado = await Panel.findOneAndUpdate(
+      { _id: panelId, "puertas._id": puertaId },
+      { $set: { "puertas.$.nombre": nombre.trim() } },
+      { new: true }
+    );
+
+    if (!panelActualizado) {
+      return res.status(404).json({ exito: false, mensaje: "Panel o puerta no encontrada." });
+    }
+
+    return res.status(200).json({
+      exito: true,
+      mensaje: "Nombre de puerta actualizado con éxito.",
+      body: panelActualizado
+    });
+  } catch (error) {
+    return res.status(500).json({ exito: false, mensaje: "Error al actualizar la puerta", error: error.message });
+  }
+};
 
 const getAccessGroups = async (req, res) => {
   try {
@@ -498,7 +527,8 @@ module.exports = {
   updateCredential,
   crearAccessGroup,
   updateAccessGroup,
-  deleteAccessGroup
+  deleteAccessGroup,
+  updateDoorName
 };
 
 

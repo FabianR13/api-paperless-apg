@@ -6,6 +6,7 @@ const {
     crearPanel,
     updatePanel,
     deletePanel,
+    updateDoorName,
 
     // Access Groups
     getAccessGroups,
