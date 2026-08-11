@@ -1,4 +1,7 @@
 const Panel = require('../models/Panel');
+const AccessCredential = require('../models/Credential');
+const AccessGroup = require('../models/AccessGroups');
+const Employees = require('../models/Employees');
 
 const abrirPanelRemoto = async (req, res) => {
   try {
@@ -71,6 +74,150 @@ const crearPanel = async (req, res) => {
     return res.status(201).json(panelGuardado);
   } catch (error) {
     return res.status(400).json({ message: 'Error al crear panel', error: error.message });
+  }
+};
+
+const updatePanel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const panelActualizado = await Panel.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!panelActualizado) {
+      return res.status(404).json({ message: "Panel no encontrado" });
+    }
+
+    return res.status(200).json({
+      exito: true,
+      mensaje: "Panel actualizado con éxito",
+      body: panelActualizado
+    });
+  } catch (error) {
+    console.error("Error al actualizar panel:", error);
+    return res.status(500).json({ message: "Error al actualizar panel", error: error.message });
+  }
+};
+
+const deletePanel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const panelEliminado = await Panel.findByIdAndDelete(id);
+
+    if (!panelEliminado) {
+      return res.status(404).json({ message: "Panel no encontrado" });
+    }
+
+    return res.status(200).json({ exito: true, mensaje: "Panel eliminado con éxito" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error al eliminar panel", error: error.message });
+  }
+};
+
+// Actualiza únicamente el nombre de una puerta dentro de un panel
+const updateDoorName = async (req, res) => {
+  try {
+    const { panelId, puertaId } = req.params;
+    const { nombre } = req.body;
+
+    if (!nombre || !nombre.trim()) {
+      return res.status(400).json({ exito: false, mensaje: "El nombre de la puerta es requerido." });
+    }
+
+    const panelActualizado = await Panel.findOneAndUpdate(
+      { _id: panelId, "puertas._id": puertaId },
+      { $set: { "puertas.$.nombre": nombre.trim() } },
+      { new: true }
+    );
+
+    if (!panelActualizado) {
+      return res.status(404).json({ exito: false, mensaje: "Panel o puerta no encontrada." });
+    }
+
+    return res.status(200).json({
+      exito: true,
+      mensaje: "Nombre de puerta actualizado con éxito.",
+      body: panelActualizado
+    });
+  } catch (error) {
+    return res.status(500).json({ exito: false, mensaje: "Error al actualizar la puerta", error: error.message });
+  }
+};
+
+const getAccessGroups = async (req, res) => {
+  try {
+    const grupos = await AccessGroup.find();
+
+    return res.status(200).json({
+      status: "200",
+      message: "Grupos de acceso obtenidos con éxito",
+      body: grupos
+    });
+  } catch (error) {
+    console.error("Error al obtener grupos de acceso:", error);
+    return res.status(500).json({ message: "Error al obtener grupos", error: error.message });
+  }
+};
+
+const crearAccessGroup = async (req, res) => {
+  try {
+    const nuevoGrupo = new AccessGroup(req.body);
+    const grupoGuardado = await nuevoGrupo.save();
+    return res.status(201).json({ message: "New group added", exito: true, body: grupoGuardado });
+  } catch (error) {
+    return res.status(400).json({ message: "Error al crear grupo de acceso", error: error.message });
+  }
+};
+
+const updateAccessGroup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const grupoActualizado = await AccessGroup.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!grupoActualizado) {
+      return res.status(404).json({ message: "Grupo no encontrado" });
+    }
+
+    return res.status(200).json({ message: "Group Updated", exito: true, body: grupoActualizado });
+  } catch (error) {
+    return res.status(500).json({ message: "Error al actualizar grupo", error: error.message });
+  }
+};
+
+const deleteAccessGroup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const grupoEliminado = await AccessGroup.findByIdAndDelete(id);
+
+    if (!grupoEliminado) {
+      return res.status(404).json({ message: "Grupo no encontrado" });
+    }
+
+    return res.status(200).json({ exito: true, mensaje: "Grupo eliminado con éxito" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error al eliminar grupo", error: error.message });
+  }
+};
+
+const getCredentials = async (req, res) => {
+  try {
+    const { companyId } = req.params;
+
+    const credenciales = await AccessCredential.find()
+      .populate('accessGroup')
+      .populate({
+        path: 'employee',
+        populate: [
+          { path: "department" }
+        ]
+      });
+
+    return res.status(200).json({
+      status: "200",
+      message: "Credenciales obtenidas con éxito",
+      body: credenciales
+    });
+  } catch (error) {
+    console.error("Error al obtener credenciales:", error);
+    return res.status(500).json({ message: "Error al obtener credenciales", error: error.message });
   }
 };
 
@@ -153,13 +300,16 @@ const sincronizarTodoElPanel = async (req, res) => {
       if (!cred.accessGroup || !cred.accessGroup.active) continue;
 
       // Revisamos si el grupo de esta credencial tiene acceso al panel solicitado
-      const accesoEnPanel = cred.accessGroup.doors.find(door => door.panelIp === ipPanel);
+      const accesosEnPanel = cred.accessGroup.doors.filter(door => door.panelIp === ipPanel);
 
-      if (accesoEnPanel) {
+      if (accesosEnPanel.length > 0) {
+        // Unimos todas las puertas encontradas separadas por coma
+        const puertasCombinadas = accesosEnPanel.map(d => d.numeroRelevador).join(',');
+        
         credencialesParaEnviar.push({
           pin: cred.personnelId,
           tarjeta: cred.cardNumber,
-          puerta: accesoEnPanel.numeroRelevador,
+          puerta: puertasCombinadas,
           timezone: cred.accessGroup.timeZone.idZKTeco
         });
       }
@@ -193,13 +343,13 @@ const eliminarCredencialUnica = async (req, res) => {
     const { ipPanel, pin } = req.body;
 
     if (!ipPanel || !pin) {
-      return res.status(400).json({ 
-        mensaje: "Faltan datos requeridos (ipPanel, pin)" 
+      return res.status(400).json({
+        mensaje: "Faltan datos requeridos (ipPanel, pin)"
       });
     }
 
     const io = req.app.get('io');
-    
+
     // Disparamos la orden al Agente en Windows
     io.emit('comando_eliminar_credencial', { ipPanel, pin });
 
@@ -214,12 +364,196 @@ const eliminarCredencialUnica = async (req, res) => {
   }
 };
 
+//Crear una crendencial nueva en DB
+const createNewCredential = async (req, res) => {
+  const { CompanyId } = req.params;
+
+  try {
+    const {
+      personnelId,
+      cardNumber,
+      employee,
+      guestName,
+      accessGroup,
+      active
+    } = req.body;
+
+    if (employee !== 'NoEmployee') {
+      const foundEmployee = await Employees.findById(employee);
+      if (!foundEmployee) {
+        return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
+      }
+    }
+
+    const foundGroup = await AccessGroup.findById(accessGroup);
+    if (!foundGroup) {
+      return res.status(404).json({ status: "error", message: "Grupo de acceso no encontrado" });
+    }
+
+    const newCredential = new AccessCredential({
+      personnelId,
+      cardNumber,
+      employee: employee === 'NoEmployee' ? null : employee,
+      guestName,
+      accessGroup,
+      active
+    });
+
+    await newCredential.save();
+
+    const io = req.app.get('io');
+    const pin = newCredential.personnelId;
+    const tarjeta = newCredential.cardNumber;
+    const timezone = foundGroup.timeZone.idZKTeco;
+
+    // AGRUPAMOS LAS PUERTAS POR IP
+    const accesosAgrupados = {};
+    if (foundGroup.doors && foundGroup.doors.length > 0) {
+      for (const door of foundGroup.doors) {
+        if (door.panelIp && door.numeroRelevador) {
+          if (!accesosAgrupados[door.panelIp]) {
+            accesosAgrupados[door.panelIp] = [];
+          }
+          // Solo agregamos la puerta si no estaba ya (evitar duplicados)
+          if (!accesosAgrupados[door.panelIp].includes(door.numeroRelevador)) {
+            accesosAgrupados[door.panelIp].push(door.numeroRelevador);
+          }
+        }
+      }
+    }
+
+    // ENVIAMOS UNA SOLA INYECCIÓN POR PANEL (Con las puertas combinadas)
+    for (const ip in accesosAgrupados) {
+      io.emit('comando_enviar_credencial', {
+        ipPanel: ip,
+        pin: pin,
+        tarjeta: tarjeta,
+        puerta: accesosAgrupados[ip].join(','), // Esto enviará "1" o "1,3" o "1,2,3,4"
+        timezone: timezone
+      });
+    }
+
+    res.status(201).json({ status: "200", message: "New credential register", body: newCredential });
+  } catch (error) {
+    console.error("Error en Crear credencial:", error);
+    res.status(500).json({ status: "500", message: "Internal Server Error" });
+  }
+};
+
+//Actualizar una crendencial nueva en DB
+const updateCredential = async (req, res) => {
+  const { CredentialId } = req.params;
+
+  try {
+    const {
+      personnelId,
+      cardNumber,
+      employee,
+      guestName,
+      accessGroup,
+      active
+    } = req.body;
+
+    const oldCredential = await AccessCredential.findById(CredentialId);
+    if (!oldCredential) {
+      return res.status(404).json({ status: "error", message: "Credencial no encontrada" });
+    }
+    const oldPersonnelId = oldCredential.personnelId;
+
+    if (employee !== 'NoEmployee') {
+      const foundEmployee = await Employees.findById(employee);
+      if (!foundEmployee) {
+        return res.status(404).json({ status: "error", message: "Empleado no encontrado" });
+      }
+    }
+
+    const foundGroup = await AccessGroup.findById(accessGroup);
+    if (!foundGroup) {
+      return res.status(404).json({ status: "error", message: "Grupo de acceso no encontrado" });
+    }
+
+    const pinesABorrar = [oldPersonnelId];
+
+    if (oldPersonnelId !== personnelId) {
+      pinesABorrar.push(personnelId);
+    }
+
+    const allPanels = await Panel.find({}, 'ip');
+    const ipsTodosLosPaneles = allPanels.map(panel => panel.ip);
+
+    const accesosAgrupados = {};
+    if (active && foundGroup.doors && foundGroup.doors.length > 0) {
+      for (const door of foundGroup.doors) {
+        if (door.panelIp && door.numeroRelevador) {
+          if (!accesosAgrupados[door.panelIp]) {
+            accesosAgrupados[door.panelIp] = [];
+          }
+          if (!accesosAgrupados[door.panelIp].includes(door.numeroRelevador)) {
+            accesosAgrupados[door.panelIp].push(door.numeroRelevador);
+          }
+        }
+      }
+    }
+
+    const arregloAccesos = [];
+    for (const ip in accesosAgrupados) {
+      arregloAccesos.push({
+        ipPanel: ip,
+        puerta: accesosAgrupados[ip].join(',') // Genera las puertas separadas por coma
+      });
+    }
+
+    const updateCard = await AccessCredential.findByIdAndUpdate(
+      CredentialId,
+      {
+        $set: {
+          personnelId,
+          cardNumber,
+          employee: employee === 'NoEmployee' ? null : employee,
+          guestName,
+          accessGroup,
+          active
+        }
+      },
+      { new: true }
+    );
+
+    const io = req.app.get('io');
+    io.emit('comando_actualizar_credencial_lote', {
+      pinesABorrar,
+      ipsTodosLosPaneles,
+      pinNuevo: personnelId,
+      tarjetaNueva: cardNumber,
+      timezone: foundGroup.timeZone.idZKTeco,
+      accesosNuevos: arregloAccesos
+    });
+
+    res.status(200).json({ status: "200", message: "Credential updated and synchronization started", body: updateCard });
+  } catch (error) {
+    console.error("Error en Actualizar credencial:", error);
+    res.status(500).json({ status: "500", message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
-  abrirPanelRemoto, sincronizarLogsPanel, getPaneles, crearPanel,
+  abrirPanelRemoto,
+  sincronizarLogsPanel,
+  getPaneles,
+  crearPanel,
+  updatePanel,
+  deletePanel,
   configurarHorarioPanel,
   enviarCredencialUnica,
   sincronizarTodoElPanel,
-  eliminarCredencialUnica
+  eliminarCredencialUnica,
+  getCredentials,
+  getAccessGroups,
+  createNewCredential,
+  updateCredential,
+  crearAccessGroup,
+  updateAccessGroup,
+  deleteAccessGroup,
+  updateDoorName
 };
 
 
