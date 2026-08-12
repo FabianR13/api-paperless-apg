@@ -99,12 +99,28 @@ if (cluster.isPrimary) {
     // desde 1970 como asume por defecto `new Date(numero)` en JS.
     // Pasar el número crudo directo a `new Date()` genera una fecha en 1970,
     // silenciosamente incorrecta (sin error visible).
-    const ZK_EPOCH_MS = Date.UTC(2000, 0, 1, 0, 0, 0); // 946684800000
-
     function convertirFechaZK(timeSecondRaw) {
-        const segundos = parseInt(timeSecondRaw, 10);
-        if (isNaN(segundos)) return null;
-        return new Date(ZK_EPOCH_MS + segundos * 1000);
+        let valor = parseInt(timeSecondRaw, 10);
+        if (isNaN(valor)) return null;
+
+        const segundo = valor % 60;
+        valor = Math.floor(valor / 60);
+
+        const minuto = valor % 60;
+        valor = Math.floor(valor / 60);
+
+        const hora = valor % 24;
+        valor = Math.floor(valor / 24);
+
+        const dia = (valor % 31) + 1;
+        valor = Math.floor(valor / 31);
+
+        const mes = valor % 12; // Enero = 0, Agosto = 7
+        valor = Math.floor(valor / 12);
+
+        const anio = valor + 2000;
+
+        return new Date(anio, mes, dia, hora, minuto, segundo);
     }
 
     // Escuchar conexiones del Agente Local
