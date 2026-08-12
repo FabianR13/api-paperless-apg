@@ -57,6 +57,36 @@ const sincronizarLogsPanel = async (req, res) => {
   }
 };
 
+const borrarLogsPanel = async (req, res) => {
+  try {
+    const { ipPanel } = req.body;
+
+    if (!ipPanel) {
+      return res.status(400).json({ mensaje: "Falta la ipPanel" });
+    }
+
+    const io = req.app.get('io');
+
+    // Verificamos que haya al menos un agente conectado antes de decir "éxito"
+    const sockets = await io.fetchSockets();
+    if (sockets.length === 0) {
+      return res.status(503).json({ mensaje: "No hay ningún agente local conectado en este momento" });
+    }
+
+    // Disparamos la orden de borrado al Agente en Windows
+    io.emit('comando_borrar_logs', { ipPanel });
+
+    res.status(200).json({
+      exito: true,
+      mensaje: `Orden de borrado de memoria enviada al Agente para el panel ${ipPanel}`
+    });
+
+  } catch (error) {
+    console.error("Error pidiendo borrado de logs:", error);
+    res.status(500).json({ mensaje: "Error interno" });
+  }
+};
+
 // 1. Obtener todos los paneles con sus puertas (para renderizar en el Frontend)
 const getPaneles = async (req, res) => {
   try {
@@ -301,13 +331,16 @@ const sincronizarTodoElPanel = async (req, res) => {
       if (!cred.accessGroup || !cred.accessGroup.active) continue;
 
       // Revisamos si el grupo de esta credencial tiene acceso al panel solicitado
-      const accesoEnPanel = cred.accessGroup.doors.find(door => door.panelIp === ipPanel);
+      const accesosEnPanel = cred.accessGroup.doors.filter(door => door.panelIp === ipPanel);
 
-      if (accesoEnPanel) {
+      if (accesosEnPanel.length > 0) {
+        // Unimos todas las puertas encontradas separadas por coma
+        const puertasCombinadas = accesosEnPanel.map(d => d.numeroRelevador).join(',');
+        
         credencialesParaEnviar.push({
           pin: cred.personnelId,
           tarjeta: cred.cardNumber,
-          puerta: accesoEnPanel.numeroRelevador,
+          puerta: puertasCombinadas,
           timezone: cred.accessGroup.timeZone.idZKTeco
         });
       }
@@ -400,23 +433,35 @@ const createNewCredential = async (req, res) => {
     await newCredential.save();
 
     const io = req.app.get('io');
-
     const pin = newCredential.personnelId;
     const tarjeta = newCredential.cardNumber;
     const timezone = foundGroup.timeZone.idZKTeco;
 
+    // AGRUPAMOS LAS PUERTAS POR IP
+    const accesosAgrupados = {};
     if (foundGroup.doors && foundGroup.doors.length > 0) {
       for (const door of foundGroup.doors) {
         if (door.panelIp && door.numeroRelevador) {
-          io.emit('comando_enviar_credencial', {
-            ipPanel: door.panelIp,
-            pin: pin,
-            tarjeta: tarjeta,
-            puerta: door.numeroRelevador,
-            timezone: timezone
-          });
+          if (!accesosAgrupados[door.panelIp]) {
+            accesosAgrupados[door.panelIp] = [];
+          }
+          // Solo agregamos la puerta si no estaba ya (evitar duplicados)
+          if (!accesosAgrupados[door.panelIp].includes(door.numeroRelevador)) {
+            accesosAgrupados[door.panelIp].push(door.numeroRelevador);
+          }
         }
       }
+    }
+
+    // ENVIAMOS UNA SOLA INYECCIÓN POR PANEL (Con las puertas combinadas)
+    for (const ip in accesosAgrupados) {
+      io.emit('comando_enviar_credencial', {
+        ipPanel: ip,
+        pin: pin,
+        tarjeta: tarjeta,
+        puerta: accesosAgrupados[ip].join(','), // Esto enviará "1" o "1,3" o "1,2,3,4"
+        timezone: timezone
+      });
     }
 
     res.status(201).json({ status: "200", message: "New credential register", body: newCredential });
@@ -467,16 +512,26 @@ const updateCredential = async (req, res) => {
     const allPanels = await Panel.find({}, 'ip');
     const ipsTodosLosPaneles = allPanels.map(panel => panel.ip);
 
-    const arregloAccesos = [];
+    const accesosAgrupados = {};
     if (active && foundGroup.doors && foundGroup.doors.length > 0) {
       for (const door of foundGroup.doors) {
         if (door.panelIp && door.numeroRelevador) {
-          arregloAccesos.push({
-            ipPanel: door.panelIp,
-            puerta: door.numeroRelevador
-          });
+          if (!accesosAgrupados[door.panelIp]) {
+            accesosAgrupados[door.panelIp] = [];
+          }
+          if (!accesosAgrupados[door.panelIp].includes(door.numeroRelevador)) {
+            accesosAgrupados[door.panelIp].push(door.numeroRelevador);
+          }
         }
       }
+    }
+
+    const arregloAccesos = [];
+    for (const ip in accesosAgrupados) {
+      arregloAccesos.push({
+        ipPanel: ip,
+        puerta: accesosAgrupados[ip].join(',') // Genera las puertas separadas por coma
+      });
     }
 
     const updateCard = await AccessCredential.findByIdAndUpdate(
@@ -661,7 +716,8 @@ module.exports = {
   updateAccessGroup,
   deleteAccessGroup,
   updateDoorName,
-  getAccessLogsData
+  getAccessLogsData,
+  borrarLogsPanel
 };
 
 

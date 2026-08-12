@@ -1,4 +1,4 @@
-// index.js
+// index.js (SERVIDOR - Express/Mongo/Socket.io, NO confundir con el agente de Windows)
 
 const cluster = require('cluster');
 const os = require('os');
@@ -63,16 +63,15 @@ if (cluster.isPrimary) {
     const app = require("./app.js");
     require("./database");
 
-    // 1. IMPORTAR MODELOS PARA LOS LOGS
+    // 1. IMPORTAR MODELO PARA LOS LOGS
     const AccessLog = require('./models/AccessLog'); // <-- Ajusta la ruta si es necesario
-    const Employees = require('./models/Employees'); // <-- Ajusta la ruta si es necesario
 
     const http = require('http');
     const { Server } = require('socket.io');
     const { createAdapter } = require('@socket.io/cluster-adapter');
 
     // bot de Discord
-    // const { connectDiscordBot } = require("./discord/bot.js"); 
+    // const { connectDiscordBot } = require("./discord/bot.js");
     // connectDiscordBot();
 
     app.set('port', process.env.PORT || 4000);
@@ -92,6 +91,38 @@ if (cluster.isPrimary) {
     // Guardar la instancia global de Socket.io en Express para usarla en los controladores
     app.set('io', io);
 
+    // ==========================================
+    // CONVERSIÓN DE FECHA: ZKTeco NO usa epoch Unix (1970)
+    // ==========================================
+    // El campo Time_second del panel es "segundos transcurridos desde el
+    // 1 de enero del año 2000, 00:00:00" (hora local del panel), NO segundos
+    // desde 1970 como asume por defecto `new Date(numero)` en JS.
+    // Pasar el número crudo directo a `new Date()` genera una fecha en 1970,
+    // silenciosamente incorrecta (sin error visible).
+    function convertirFechaZK(timeSecondRaw) {
+        let valor = parseInt(timeSecondRaw, 10);
+        if (isNaN(valor)) return null;
+
+        const segundo = valor % 60;
+        valor = Math.floor(valor / 60);
+
+        const minuto = valor % 60;
+        valor = Math.floor(valor / 60);
+
+        const hora = valor % 24;
+        valor = Math.floor(valor / 24);
+
+        const dia = (valor % 31) + 1;
+        valor = Math.floor(valor / 31);
+
+        const mes = valor % 12; // Enero = 0, Agosto = 7
+        valor = Math.floor(valor / 12);
+
+        const anio = valor + 2000;
+
+        return new Date(anio, mes, dia, hora, minuto, segundo);
+    }
+
     // Escuchar conexiones del Agente Local
     io.on('connection', (socket) => {
         console.log(`[Worker ${process.pid}] 🔌 Agente Local conectado. ID: ${socket.id}`);
@@ -100,52 +131,79 @@ if (cluster.isPrimary) {
             console.log(`[Worker ${process.pid}] ✅ Respuesta del panel:`, data);
         });
 
-        // 2. NUEVO EVENTO: RECIBIR Y GUARDAR LOS LOGS
+        // RECIBIR Y GUARDAR LOS LOGS
         socket.on('respuesta_logs_panel', async (datos) => {
             const { ipPanel, logsRaw } = datos;
-            console.log(`[Worker ${process.pid}] 📥 Recibidos ${logsRaw.length} registros del panel ${ipPanel}`);
+            console.log(`[Worker ${process.pid}] 📥 Recibidas ${logsRaw.length} líneas del panel ${ipPanel}`);
 
-            let insertados = 0;
+            if (logsRaw.length < 2) {
+                console.log(`[Worker ${process.pid}] ⚠️ No hay datos suficientes (solo encabezado o vacío)`);
+                return;
+            }
 
-            for (const linea of logsRaw) {
+            // La primera línea es el encabezado con los nombres de campo reales
+            // que manda el panel (el orden puede variar entre paneles/firmwares,
+            // por eso NO se asume un orden fijo).
+            const encabezado = logsRaw[0].split(',').map(h => h.trim());
+            console.log(`[Worker ${process.pid}] 🔎 Encabezado detectado:`, encabezado);
+
+            // OPTIMIZACIÓN: 1 sola inserción en lote en vez de miles de .create()
+            // secuenciales. Ya NO se busca/vincula al empleado - se guarda tal
+            // cual lo que manda el panel (Pin, puerta, fecha, etc.), sin relacionar
+            // con la colección Employees.
+            const documentosParaInsertar = [];
+            let fechasInvalidas = 0;
+
+            for (let i = 1; i < logsRaw.length; i++) {
+                const valores = logsRaw[i].split(',').map(v => v.trim());
                 const logObj = {};
-                // Separamos por comas y luego por el signo igual
-                linea.split(',').forEach(par => {
-                    const [key, value] = par.split('=');
-                    if (key && value) logObj[key.trim()] = value.trim();
+                encabezado.forEach((campo, idx) => {
+                    logObj[campo] = valores[idx];
                 });
 
-                // ZKTeco a veces etiqueta la fecha como Time o Time_second
-                const fechaLog = logObj.Time_second || logObj.Time;
+                const timeSecondRaw = logObj.Time_second || logObj.Time;
                 const numPuerta = logObj.DoorID || logObj.DoorId || 1;
 
-                if (!fechaLog || !logObj.Pin || logObj.Pin === "0") continue;
+                if (!timeSecondRaw || !logObj.Pin || logObj.Pin === "0") continue;
 
-                let employeeId = null;
-                const emp = await Employees.findOne({ numberEmployee: logObj.Pin });
-                if (emp) employeeId = emp._id;
+                const fechaConvertida = convertirFechaZK(timeSecondRaw);
+                if (!fechaConvertida) {
+                    fechasInvalidas++;
+                    continue;
+                }
 
+                documentosParaInsertar.push({
+                    panelIp: ipPanel,
+                    personnelId: logObj.Pin,
+                    cardNumber: logObj.Cardno || logObj.CardNo || '',
+                    doorNumber: parseInt(numPuerta),
+                    eventType: parseInt(logObj.EventType) || 0,
+                    verifiedTime: fechaConvertida
+                });
+            }
+
+            // OPTIMIZACIÓN: insertMany en un solo viaje a Mongo en vez de miles de
+            // .create() secuenciales. ordered:false para que, si algún duplicado
+            // choca con un índice único, siga insertando el resto en vez de detenerse.
+            let insertados = 0;
+            if (documentosParaInsertar.length > 0) {
                 try {
-                    await AccessLog.create({
-                        panelIp: ipPanel,
-                        personnelId: logObj.Pin,
-                        cardNumber: logObj.Cardno || '',
-                        doorNumber: parseInt(numPuerta),
-                        eventType: parseInt(logObj.EventType) || 0,
-                        verifiedTime: new Date(fechaLog),
-                        employee: employeeId
-                    });
-                    insertados++;
+                    const resultado = await AccessLog.insertMany(documentosParaInsertar, { ordered: false });
+                    insertados = resultado.length;
                 } catch (err) {
-                    // Duplicados ignorados
+                    // insertMany con ordered:false lanza un error que igual contiene
+                    // cuántos sí se insertaron antes de topar con duplicados/errores.
+                    insertados = err.insertedDocs ? err.insertedDocs.length : (err.result ? err.result.nInserted : 0);
+                    console.error(`[Worker ${process.pid}] ⚠️ Algunos documentos fallaron (duplicados u otro error):`, err.writeErrors ? err.writeErrors.length : err.message);
                 }
             }
 
-            console.log(`[Worker ${process.pid}] ✔️ Total guardados: ${insertados}`);
+            console.log(`[Worker ${process.pid}] ✔️ Total guardados: ${insertados}${fechasInvalidas > 0 ? ` (⚠️ ${fechasInvalidas} con fecha inválida, omitidos)` : ''}`);
+
             // ========================================================
             // ⚠️ ZONA DE PELIGRO: GATILLO DE BORRADO
             // ========================================================
-            // Descomenta las siguientes dos líneas ÚNICAMENTE cuando hayas verificado 
+            // Descomenta las siguientes dos líneas ÚNICAMENTE cuando hayas verificado
             // en tu MongoDB que los registros se guardaron perfectamente.
 
             // io.emit('comando_borrar_logs', { ipPanel });

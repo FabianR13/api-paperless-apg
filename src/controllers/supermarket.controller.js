@@ -287,7 +287,10 @@ const createPedido = async (req, res) => {
     // -----------------------------------------------------------
 
     try {
-        const { usuario, maquina, materiales } = req.body.pedidos;
+        console.log(req.body)
+        const { usuario, maquina, materiales } = req.body;
+
+        
 
         // Validaciones básicas
         if (!usuario || !maquina || !materiales || materiales.length === 0) {
@@ -516,7 +519,7 @@ const updatePedido = async (req, res) => {
 
     try {
         const { idPedido } = req.params;
-        const { items, surtidor, pStatus } = req.body.pedido;
+        const { items, surtidor, pStatus } = req.body;
 
         if (!idPedido || !items || !Array.isArray(items)) {
             return res.status(400).json({ message: "Datos inválidos." });
@@ -650,7 +653,7 @@ const cancelPedido = async (req, res) => {
 
     try {
         const { idPedido } = req.params;
-        const { surtidor, pStatus, cancelReason } = req.body.pedido;
+        const { surtidor, pStatus, cancelReason } = req.body;
 
         // Buscar el pedido actual
         const pedidoActual = await Pedido.findOne({ idPedido: idPedido });
@@ -720,7 +723,7 @@ const confirmPedido = async (req, res) => {
 
     try {
         const { idPedido } = req.params;
-        const { confirmed, pStatus } = req.body.pedido;
+        const { confirmed, pStatus } = req.body;
 
         // Buscar el pedido actual
         const pedidoActual = await Pedido.findOne({ idPedido: idPedido });
@@ -825,7 +828,7 @@ const createDevolucion = async (req, res) => {
     }
 
     try {
-        const { usuario, items } = req.body.devolucion;
+        const { usuario, items } = req.body;
         const { CompanyId } = req.params; // Necesitamos el ID de la empresa
 
         if (!usuario || !items || items.length === 0) {
