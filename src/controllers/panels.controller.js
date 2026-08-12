@@ -2,6 +2,7 @@ const Panel = require('../models/Panel');
 const AccessCredential = require('../models/Credential');
 const AccessGroup = require('../models/AccessGroups');
 const Employees = require('../models/Employees');
+const AccessLog = require('../models/AccessLog');
 
 const abrirPanelRemoto = async (req, res) => {
   try {
@@ -161,7 +162,7 @@ const crearAccessGroup = async (req, res) => {
   try {
     const nuevoGrupo = new AccessGroup(req.body);
     const grupoGuardado = await nuevoGrupo.save();
-    return res.status(201).json({message: "New group added", exito: true, body: grupoGuardado });
+    return res.status(201).json({ message: "New group added", exito: true, body: grupoGuardado });
   } catch (error) {
     return res.status(400).json({ message: "Error al crear grupo de acceso", error: error.message });
   }
@@ -176,7 +177,7 @@ const updateAccessGroup = async (req, res) => {
       return res.status(404).json({ message: "Grupo no encontrado" });
     }
 
-    return res.status(200).json({message: "Group Updated", exito: true, body: grupoActualizado });
+    return res.status(200).json({ message: "Group Updated", exito: true, body: grupoActualizado });
   } catch (error) {
     return res.status(500).json({ message: "Error al actualizar grupo", error: error.message });
   }
@@ -510,6 +511,137 @@ const updateCredential = async (req, res) => {
   }
 };
 
+const getAccessLogsData = async (req, res) => {
+  const { CompanyId } = req.params;
+
+  try {
+    const [logs, panels, credentials, employeesList] = await Promise.all([
+      AccessLog.find()
+        .sort({ verifiedTime: -1 })
+        .limit(1000)
+        .lean()
+        .catch(() => []),
+
+      Panel.find().lean().catch(() => []),
+
+      AccessCredential.find({
+        $or: [{ company: CompanyId }, { companyId: CompanyId }]
+      }).lean().catch(() => []),
+
+      Employees.find({
+        $or: [{ company: CompanyId }, { companyId: CompanyId }]
+      }).lean().catch(() => [])
+    ]);
+
+    const activePanels = panels.length ? panels : await Panel.find().lean().catch(() => []);
+    const activeEmployees = employeesList.length ? employeesList : await Employees.find().lean().catch(() => []);
+    const activeCredentials = credentials.length ? credentials : await AccessCredential.find().lean().catch(() => []);
+
+    // 1. Mapa de Paneles asociando p.ip con p.nombre
+    const panelMap = new Map();
+    activePanels.forEach(p => {
+      if (p.ip) {
+        const cleanIp = String(p.ip).trim();
+        panelMap.set(cleanIp, p.nombre || cleanIp);
+      }
+    });
+
+    // 2. Mapa de Empleados
+    const employeeMap = new Map();
+    activeEmployees.forEach(e => {
+      const fn = e.firstName || e.name || '';
+      const ln = e.lastName || '';
+      const fullName = `${fn} ${ln}`.trim();
+
+      if (e.numberEmployee) employeeMap.set(String(e.numberEmployee).trim(), fullName);
+      if (e._id) employeeMap.set(String(e._id), fullName);
+    });
+
+    // 3. Mapa de Credenciales
+    const credCardMap = new Map();
+    const credPersonnelMap = new Map();
+
+    activeCredentials.forEach(c => {
+      const empName = employeeMap.get(String(c.employee)) || c.guestName || '';
+      if (c.cardNumber) credCardMap.set(String(c.cardNumber).trim(), empName);
+      if (c.personnelId) credPersonnelMap.set(String(c.personnelId).trim(), empName);
+    });
+
+    // 4. Mapeo de Logs
+    const formattedLogs = logs.map(log => {
+      const logCard = String(log.cardNumber || '').trim();
+      const logPersonnel = String(log.personnelId || '').trim();
+
+      const employeeName =
+        employeeMap.get(logPersonnel) ||
+        credPersonnelMap.get(logPersonnel) ||
+        credCardMap.get(logCard) ||
+        "----------";
+
+      let dateStr = '---';
+      let timeStr = '---';
+
+      if (log.verifiedTime) {
+        try {
+          const dateObj = log.verifiedTime instanceof Date
+            ? log.verifiedTime
+            : new Date(log.verifiedTime);
+
+          if (!isNaN(dateObj.getTime())) {
+            const isoStr = dateObj.toISOString();
+            const [datePart, timeWithZ] = isoStr.split('T');
+            const [year, month, day] = datePart.split('-');
+            const timePart = timeWithZ.substring(0, 8);
+            const [hh, mm, ss] = timePart.split(':');
+
+            dateStr = `${day}/${month}/${year}`;
+
+            let hourNum = parseInt(hh, 10);
+            const ampm = hourNum >= 12 ? 'p.m.' : 'a.m.';
+            hourNum = hourNum % 12 || 12;
+            const hourFormatted = String(hourNum).padStart(2, '0');
+
+            timeStr = `${hourFormatted}:${mm}:${ss} ${ampm}`;
+          }
+        } catch (e) {
+          console.error("Error al formatear fecha:", e);
+        }
+      }
+
+      const logIp = String(log.panelIp || '').trim();
+
+      return {
+        _id: log._id,
+        panelIp: logIp,
+        panelName: panelMap.get(logIp) || (logIp ? `Panel (${logIp})` : 'Desconocido'),
+        cardNumber: log.cardNumber || '---',
+        personnelId: log.personnelId || '---',
+        employeeName: employeeName,
+        date: dateStr,
+        time: timeStr,
+        verifiedTime: log.verifiedTime
+      };
+    });
+
+    // Lista formateada de paneles enviada al selector del cliente
+    const panelsList = activePanels.map(p => ({
+      ip: p.ip,
+      name: p.nombre || p.ip
+    }));
+
+    res.json({
+      status: "200",
+      message: "Access logs loaded successfully",
+      logs: formattedLogs,
+      panels: panelsList
+    });
+
+  } catch (error) {
+    console.error("Error fetching access logs:", error);
+    res.status(500).json({ status: "500", message: "Server error fetching access logs" });
+  }
+};
+
 module.exports = {
   abrirPanelRemoto,
   sincronizarLogsPanel,
@@ -528,7 +660,8 @@ module.exports = {
   crearAccessGroup,
   updateAccessGroup,
   deleteAccessGroup,
-  updateDoorName
+  updateDoorName,
+  getAccessLogsData
 };
 
 
