@@ -9,12 +9,13 @@ const accessLogSchema = new Schema(
         doorNumber: { type: Number }, // Puerta 1, 2, 3 o 4
         eventType: { type: Number }, // 0 = Acceso Normal, 27 = Sin Permiso, etc.
         verifiedTime: { type: Date, required: true }, // Fecha y hora exacta de la checada
-        employee: { 
-            type: Schema.Types.ObjectId, 
-            ref: "Employees" // Enlace a tu modelo de empleados (lo llenaremos al guardar)
-        }
     },
     { timestamps: true }
+);
+
+accessLogSchema.index(
+    { panelIp: 1, personnelId: 1, verifiedTime: 1, doorNumber: 1, eventType: 1 },
+    { unique: true }
 );
 
 module.exports = model("AccessLog", accessLogSchema);

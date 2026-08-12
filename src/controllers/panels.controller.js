@@ -56,6 +56,36 @@ const sincronizarLogsPanel = async (req, res) => {
   }
 };
 
+const borrarLogsPanel = async (req, res) => {
+  try {
+    const { ipPanel } = req.body;
+
+    if (!ipPanel) {
+      return res.status(400).json({ mensaje: "Falta la ipPanel" });
+    }
+
+    const io = req.app.get('io');
+
+    // Verificamos que haya al menos un agente conectado antes de decir "éxito"
+    const sockets = await io.fetchSockets();
+    if (sockets.length === 0) {
+      return res.status(503).json({ mensaje: "No hay ningún agente local conectado en este momento" });
+    }
+
+    // Disparamos la orden de borrado al Agente en Windows
+    io.emit('comando_borrar_logs', { ipPanel });
+
+    res.status(200).json({
+      exito: true,
+      mensaje: `Orden de borrado de memoria enviada al Agente para el panel ${ipPanel}`
+    });
+
+  } catch (error) {
+    console.error("Error pidiendo borrado de logs:", error);
+    res.status(500).json({ mensaje: "Error interno" });
+  }
+};
+
 // 1. Obtener todos los paneles con sus puertas (para renderizar en el Frontend)
 const getPaneles = async (req, res) => {
   try {
@@ -553,7 +583,8 @@ module.exports = {
   crearAccessGroup,
   updateAccessGroup,
   deleteAccessGroup,
-  updateDoorName
+  updateDoorName,
+  borrarLogsPanel
 };
 
 
