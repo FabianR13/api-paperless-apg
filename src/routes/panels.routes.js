@@ -18,6 +18,7 @@ const {
     getCredentials,
 
     // Comandos Agente ZK
+    borrarLogsPanel,
     abrirPanelRemoto,
     sincronizarLogsPanel,
     configurarHorarioPanel,
@@ -34,8 +35,6 @@ router.post('/', crearPanel);
 router.put('/:id', updatePanel);
 router.delete('/:id', deletePanel);
 
-// Ruta: POST /api/paneles/abrir
-router.post('/logs', sincronizarLogsPanel);
 
 // Access Groups
 router.get('/groups/:companyId', getAccessGroups);
@@ -50,6 +49,7 @@ router.get('/credentials/:companyId', getCredentials);
 // Comandos Agente ZK
 router.post('/abrir', abrirPanelRemoto);
 router.post('/logs', sincronizarLogsPanel);
+router.post('/borrar-logs', borrarLogsPanel);
 router.post('/configurar-horario', configurarHorarioPanel);
 router.post('/credencial', enviarCredencialUnica);
 router.post('/sync-masiva', sincronizarTodoElPanel);

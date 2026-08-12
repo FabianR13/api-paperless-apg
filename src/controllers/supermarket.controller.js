@@ -828,7 +828,7 @@ const createDevolucion = async (req, res) => {
     }
 
     try {
-        const { usuario, items } = req.body.devolucion;
+        const { usuario, items } = req.body;
         const { CompanyId } = req.params; // Necesitamos el ID de la empresa
 
         if (!usuario || !items || items.length === 0) {
