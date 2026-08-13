@@ -17,6 +17,9 @@ const {
     // Credentials
     getCredentials,
 
+    // Logs
+    getAccessLogsData,
+    
     // Comandos Agente ZK
     borrarLogsPanel,
     abrirPanelRemoto,
@@ -45,6 +48,13 @@ router.delete('/groups/:id', deleteAccessGroup);
 // Credentials
 router.get('/credentials/:companyId', getCredentials);
 
+// Logs
+router.get(
+    "/AccessLogs/:CompanyId",
+    verifyToken,
+    isAutorized,
+    getAccessLogsData
+);
 
 // Comandos Agente ZK
 router.post('/abrir', abrirPanelRemoto);
