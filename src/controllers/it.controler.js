@@ -12,6 +12,7 @@ const LabelPrinters = require("../models/LabelPrinters.js");
 const Chromebooks = require("../models/Chromebooks.js");
 const Scanners = require("../models/Scanners.js");
 const ScheduledService = require("../models/ScheduledService.js");
+const ResponsibilitySignatures = require("../models/ResponsibilitySignatures.js");
 const { differenceInMonths } = require('date-fns');
 const mongoose = require('mongoose');
 
@@ -142,6 +143,7 @@ const getAllLaptops = async (req, res) => {
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
+        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
     res.json({ status: "200", message: "Requisitions Loaded", body: laptops });
 };
 
@@ -713,6 +715,7 @@ const getAllCellphones = async (req, res) => {
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
         .populate({ path: "number" })
+        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
     res.json({ status: "200", message: "Cellphones Loaded", body: cellphones });
 };
 
@@ -1922,6 +1925,114 @@ const updateServiceDay = async (req, res) => {
     });
 };
 
+const generateSignatureDoc = async (req, res) => {
+    const { assetId, assetType, employeeId, CompanyId } = req.body;
+
+    try {
+        // 1. Crear el nuevo registro de firma en estado Pendiente
+        const newDoc = new ResponsibilitySignatures({
+            assetType, // "Laptop" o "Cellphone"
+            assetId,
+            employee: employeeId || null,
+            company: [CompanyId],
+            status: "Pending"
+        });
+        await newDoc.save();
+
+        // 2. Vincular el ID del nuevo documento al equipo correspondiente
+        if (assetType === "Laptop") {
+            await Laptops.findByIdAndUpdate(assetId, { responsiveLetterSigned: newDoc._id });
+        } else if (assetType === "Cellphone") {
+            await Cellphones.findByIdAndUpdate(assetId, { responsiveLetterSigned: newDoc._id });
+        }
+
+        return res.status(200).json({
+            status: "200",
+            message: "Documento de firma generado. Aparecerá en pendientes.",
+            body: newDoc
+        });
+    } catch (error) {
+        console.error("Error al generar doc de firma:", error);
+        return res.status(500).json({ status: "500", message: "Error al generar documento" });
+    }
+};
+
+const getPendingSignatures = async (req, res) => {
+    try {
+        const companyId = req.params.companyId || req.params.CompanyId || req.params.company;
+        const showAll = req.query.all === "true";
+
+        if (!companyId) {
+            return res.status(400).json({
+                status: "400",
+                message: "Parámetro companyId no proporcionado."
+            });
+        }
+
+        const filter = showAll
+            ? { company: companyId }
+            : { company: companyId, status: "Pending" };
+
+        const pendingSignatures = await ResponsibilitySignatures.find(filter)
+            .populate("employee", "name lastName numberEmployee");
+
+        return res.status(200).json({
+            status: "200",
+            body: pendingSignatures
+        });
+    } catch (error) {
+        console.error("Error en getPendingSignatures:", error);
+        return res.status(500).json({
+            status: "500",
+            message: "Error al obtener firmas pendientes",
+            error: error.message
+        });
+    }
+};
+
+const saveSignature = async (req, res) => {
+    // Soportar tanto signatureDocId como id
+    const signatureDocId = req.params.signatureDocId || req.params.id;
+
+    try {
+        let signatureImgKey = "";
+
+        // Extracción de la clave S3 según el middleware de Multer utilizado
+        if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
+            signatureImgKey = req.files["signatureImage"][0].key.split('/').pop();
+        } else if (req.file) {
+            signatureImgKey = req.file.key.split('/').pop();
+        }
+
+        if (!signatureImgKey) {
+            return res.status(400).json({ status: "400", message: "No se recibió el archivo de imagen de la firma" });
+        }
+
+        const updatedDoc = await ResponsibilitySignatures.findByIdAndUpdate(
+            signatureDocId,
+            {
+                signatureImg: signatureImgKey, // Verifica si en el Schema el campo se llama signatureImg o signatureImage
+                status: "Signed",
+                signedAt: new Date()
+            },
+            { new: true }
+        );
+
+        if (!updatedDoc) {
+            return res.status(404).json({ status: "404", message: "Documento de firma no encontrado" });
+        }
+
+        return res.status(200).json({
+            status: "200",
+            message: "Firma guardada correctamente",
+            body: updatedDoc
+        });
+    } catch (error) {
+        console.error("Error al guardar la firma:", error);
+        return res.status(500).json({ status: "500", message: "Error al guardar la firma" });
+    }
+};
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -1956,5 +2067,8 @@ module.exports = {
     updateScanner,
     createNewServiceDay,
     getScheduledService,
-    updateServiceDay
+    updateServiceDay,
+    generateSignatureDoc,
+    getPendingSignatures,
+    saveSignature
 };
