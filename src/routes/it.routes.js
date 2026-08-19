@@ -34,11 +34,15 @@ const {
     updateScanner,
     createNewServiceDay,
     getScheduledService,
-    updateServiceDay
+    updateServiceDay,
+    getPendingSignatures,
+    generateSignatureDoc,
+    saveSignature
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
 const uploadAccountsFile = require("../middlewares/uploadAccountsFile.js");
+const uploadITSignature = require("../middlewares/uploadItSignatures.js");
 const uploadFaqImages = require("../middlewares/uploadFaqImg.js");
 const { createFaq, getAllFaqs } = require("../controllers/faq.controller.js");
 const router = Router();
@@ -358,6 +362,36 @@ router.put(
     isAutorized,
     isAdmin,
     updateServiceDay
+);
+
+// Generar registro de firma desde la vista del equipo
+router.put("/SignLaptop/:laptopId",
+    verifyToken,
+    isAutorized,
+    generateSignatureDoc
+);
+
+// Obtener la lista de firmas pendientes por compañía
+// Prueba temporal sin middleware:
+router.get(
+    "/PendingSignatures/:companyId",
+    getPendingSignatures
+);
+
+// Guardar la firma enviada desde el modal de React
+router.put(
+    "/saveSignature/:signatureDocId",
+    verifyToken,
+    isAutorized,
+    uploadITSignature, // Middleware de MulterS3 para la carpeta Uploads/itsignatures/
+    saveSignature
+);
+// Generar registro de carta responsiva pendiente (Laptops o Cellphones)
+router.put(
+    "/GenerateSignatureDoc",
+    verifyToken,
+    isAutorized,
+    generateSignatureDoc
 );
 
 module.exports = router;
