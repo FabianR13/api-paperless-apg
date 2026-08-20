@@ -7,7 +7,7 @@ const credentialSchema = new Schema(
             type: String, 
             required: true, 
             unique: true 
-        }, // Ej. "10329" o "1119456". ZKTeco lo requiere estrictamente.
+        }, 
         cardNumber: { 
             type: String, 
             required: true, 
@@ -16,10 +16,10 @@ const credentialSchema = new Schema(
         employee: { 
             type: Schema.Types.ObjectId, 
             ref: "Employees",
-            default: null // Será nulo si es un préstamo/visitante
+            default: null 
         }, 
         guestName: { 
-            type: String // Ej. "Prestamo Producción". Solo se usa si employee es nulo.
+            type: String 
         }, 
         accessGroup: { 
             type: Schema.Types.ObjectId, 

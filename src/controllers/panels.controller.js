@@ -6,7 +6,6 @@ const AccessLog = require('../models/AccessLog');
 
 const abrirPanelRemoto = async (req, res) => {
   try {
-    // Ahora recibiremos el Número de Serie y el número de puerta (1, 2, 3 o 4)
     const { ipPanel, numeroPuerta } = req.body;
 
     if (!ipPanel || !numeroPuerta) {
@@ -15,13 +14,10 @@ const abrirPanelRemoto = async (req, res) => {
       });
     }
 
-    // 1. Extraemos la instancia de Socket.io que configuramos en index.js
     const io = req.app.get('io');
 
-    // 2. Emitimos la orden hacia tu Agente Local con las nuevas variables
     io.emit('comando_abrir_puerta', { ipPanel, numeroPuerta });
 
-    // 3. Respondemos al cliente (Postman/Frontend)
     res.status(200).json({
       exito: true,
       mensaje: `Orden encolada para el panel: ${ipPanel} en la puerta ${numeroPuerta}`
@@ -336,7 +332,7 @@ const sincronizarTodoElPanel = async (req, res) => {
       if (accesosEnPanel.length > 0) {
         // Unimos todas las puertas encontradas separadas por coma
         const puertasCombinadas = accesosEnPanel.map(d => d.numeroRelevador).join(',');
-        
+
         credencialesParaEnviar.push({
           pin: cred.personnelId,
           tarjeta: cred.cardNumber,
@@ -601,6 +597,17 @@ const getAccessLogsData = async (req, res) => {
       }
     });
 
+    // Mapa de Puertas: clave "ip|numeroRelevador" -> nombre de la puerta
+    const doorMap = new Map();
+    activePanels.forEach(p => {
+      if (p.ip && Array.isArray(p.puertas)) {
+        const cleanIp = String(p.ip).trim();
+        p.puertas.forEach(puerta => {
+          doorMap.set(`${cleanIp}|${puerta.numeroRelevador}`, puerta.nombre);
+        });
+      }
+    });
+
     // 2. Mapa de Empleados
     const employeeMap = new Map();
     activeEmployees.forEach(e => {
@@ -664,11 +671,13 @@ const getAccessLogsData = async (req, res) => {
       }
 
       const logIp = String(log.panelIp || '').trim();
+      const doorName = doorMap.get(`${logIp}|${log.doorNumber}`) || (log.doorNumber ? `Puerta ${log.doorNumber}` : '---');
 
       return {
         _id: log._id,
         panelIp: logIp,
         panelName: panelMap.get(logIp) || (logIp ? `Panel (${logIp})` : 'Desconocido'),
+         doorName: doorName,
         cardNumber: log.cardNumber || '---',
         personnelId: log.personnelId || '---',
         employeeName: employeeName,

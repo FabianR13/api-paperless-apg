@@ -140,17 +140,9 @@ if (cluster.isPrimary) {
                 console.log(`[Worker ${process.pid}] ⚠️ No hay datos suficientes (solo encabezado o vacío)`);
                 return;
             }
-
-            // La primera línea es el encabezado con los nombres de campo reales
-            // que manda el panel (el orden puede variar entre paneles/firmwares,
-            // por eso NO se asume un orden fijo).
             const encabezado = logsRaw[0].split(',').map(h => h.trim());
             console.log(`[Worker ${process.pid}] 🔎 Encabezado detectado:`, encabezado);
-
-            // OPTIMIZACIÓN: 1 sola inserción en lote en vez de miles de .create()
-            // secuenciales. Ya NO se busca/vincula al empleado - se guarda tal
-            // cual lo que manda el panel (Pin, puerta, fecha, etc.), sin relacionar
-            // con la colección Employees.
+            
             const documentosParaInsertar = [];
             let fechasInvalidas = 0;
 
@@ -182,17 +174,12 @@ if (cluster.isPrimary) {
                 });
             }
 
-            // OPTIMIZACIÓN: insertMany en un solo viaje a Mongo en vez de miles de
-            // .create() secuenciales. ordered:false para que, si algún duplicado
-            // choca con un índice único, siga insertando el resto en vez de detenerse.
             let insertados = 0;
             if (documentosParaInsertar.length > 0) {
                 try {
                     const resultado = await AccessLog.insertMany(documentosParaInsertar, { ordered: false });
                     insertados = resultado.length;
                 } catch (err) {
-                    // insertMany con ordered:false lanza un error que igual contiene
-                    // cuántos sí se insertaron antes de topar con duplicados/errores.
                     insertados = err.insertedDocs ? err.insertedDocs.length : (err.result ? err.result.nInserted : 0);
                     console.error(`[Worker ${process.pid}] ⚠️ Algunos documentos fallaron (duplicados u otro error):`, err.writeErrors ? err.writeErrors.length : err.message);
                 }

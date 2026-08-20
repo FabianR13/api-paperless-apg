@@ -75,6 +75,11 @@ const cellphonesSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
             }
         ],
+        responsiveLetterSigned: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "ResponsibilitySignatures",
+            default: null
+        }
     },
     {
         timestamps: true,

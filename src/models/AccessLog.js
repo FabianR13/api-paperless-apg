@@ -3,12 +3,12 @@ const { Schema, model } = mongoose;
 
 const accessLogSchema = new Schema(
     {
-        panelIp: { type: String, required: true }, // Para saber de qué panel vino
-        personnelId: { type: String }, // El número de empleado (ZKTeco lo llama PIN)
+        panelIp: { type: String, required: true },
+        personnelId: { type: String },
         cardNumber: { type: String }, 
-        doorNumber: { type: Number }, // Puerta 1, 2, 3 o 4
-        eventType: { type: Number }, // 0 = Acceso Normal, 27 = Sin Permiso, etc.
-        verifiedTime: { type: Date, required: true }, // Fecha y hora exacta de la checada
+        doorNumber: { type: Number },
+        eventType: { type: Number }, 
+        verifiedTime: { type: Date, required: true }, 
     },
     { timestamps: true }
 );

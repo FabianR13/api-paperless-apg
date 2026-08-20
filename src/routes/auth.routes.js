@@ -13,7 +13,8 @@ const {
   getCompany,
   getAccess,
   saveTokenPush,
-  enviarNotificacionPush
+  enviarNotificacionPush,
+  getUserSignature
 } = require("../controllers/auth.controller.js");
 const {
   checkDuplicateUsernameorEmail,
@@ -96,5 +97,6 @@ router.post(
   "/SendNotificacion",
   enviarNotificacionPush
 );
+router.get("/UserSignature/:userId", verifyToken, getUserSignature);
 
 module.exports = router;
