@@ -838,6 +838,23 @@ const enviarNotificacionPush = async (req, res) => {
 //   return res.sendStatus(204);
 // };
 
+// Obtener firma de un usuario específico (ej. gerente IT) ////////////////////////////////////////////
+const getUserSignature = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId).populate({ path: 'signature', select: 'signature' });
+    if (!user) {
+      return res.status(404).json({ status: "404", message: "Usuario no encontrado" });
+    }
+    return res.status(200).json({
+      status: "200",
+      body: { signature: user.signature?.[0]?.signature || null }
+    });
+  } catch (error) {
+    console.error("Error al obtener firma del usuario:", error);
+    return res.status(500).json({ status: "500", message: "Error al obtener firma" });
+  }
+};
 
 
 
@@ -861,4 +878,5 @@ module.exports = {
   // notifyInteresErrorProofing,
   // notificarInicioDevolucion,
   // notificarConfirmacionDevolucion,
+  getUserSignature
 };

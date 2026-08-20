@@ -1794,7 +1794,8 @@ const createNewServiceDay = async (req, res) => {
 
     const {
         selectedDate, // Fecha del nuevo servicio solicitado
-        employeeNumber
+        employeeNumber,
+        observations
     } = req.body;
 
     if (employeeNumber) {
@@ -1835,6 +1836,7 @@ const createNewServiceDay = async (req, res) => {
             selectedDate,
             serviceStatus: "Open",
             employee: foundEmployee._id, // Asignar el empleado aquí
+            observations: observations || "",
         });
 
         if (CompanyId) {
