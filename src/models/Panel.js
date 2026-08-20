@@ -1,22 +1,20 @@
 const mongoose = require('mongoose');
 
-// 1. Definimos el Subesquema de las Puertas (No crea una colección extra en MongoDB)
 const PuertaSchema = new mongoose.Schema({
   nombre: { 
     type: String, 
     required: true,
     trim: true
-    // Ej: "Torniquete Entrada Principal"
   },
   numeroRelevador: { 
     type: Number, 
     required: true,
     min: 1, 
-    max: 4 // El panel SYSCA4R4D soporta hasta 4 relevadores
+    max: 4 
   },
   tiempoApertura: {
     type: Number,
-    default: 5 // Segundos de apertura
+    default: 5
   },
   estadoActual: {
     type: String,
@@ -25,13 +23,11 @@ const PuertaSchema = new mongoose.Schema({
   }
 });
 
-// 2. Definimos el Esquema Principal del Panel
 const PanelSchema = new mongoose.Schema({
   nombre: { 
     type: String, 
     required: true,
     trim: true
-    // Ej: "Panel Principal Corporativo"
   },
   serial: { 
     type: String, 
@@ -42,7 +38,6 @@ const PanelSchema = new mongoose.Schema({
     type: String, 
     required: true,
     unique: true 
-    // Ej: "192.168.1.201"
   },
   puerto: { 
     type: Number, 
@@ -60,8 +55,6 @@ const PanelSchema = new mongoose.Schema({
   ultimaConexion: {
     type: Date
   },
-  
-  // 3. Insertamos las puertas como un arreglo de subdocumentos
   puertas: [PuertaSchema]
 
 }, { 

@@ -42,7 +42,7 @@ const {
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
 const uploadAccountsFile = require("../middlewares/uploadAccountsFile.js");
-const uploadITSignature = require("../middlewares/uploadItSignatures.js");
+const uploadITSignature = require("../middlewares/uploadITSignatures.js");
 const uploadFaqImages = require("../middlewares/uploadFaqImg.js");
 const { createFaq, getAllFaqs } = require("../controllers/faq.controller.js");
 const router = Router();

@@ -6,7 +6,6 @@ const AccessLog = require('../models/AccessLog');
 
 const abrirPanelRemoto = async (req, res) => {
   try {
-    // Ahora recibiremos el Número de Serie y el número de puerta (1, 2, 3 o 4)
     const { ipPanel, numeroPuerta } = req.body;
 
     if (!ipPanel || !numeroPuerta) {
@@ -15,13 +14,10 @@ const abrirPanelRemoto = async (req, res) => {
       });
     }
 
-    // 1. Extraemos la instancia de Socket.io que configuramos en index.js
     const io = req.app.get('io');
 
-    // 2. Emitimos la orden hacia tu Agente Local con las nuevas variables
     io.emit('comando_abrir_puerta', { ipPanel, numeroPuerta });
 
-    // 3. Respondemos al cliente (Postman/Frontend)
     res.status(200).json({
       exito: true,
       mensaje: `Orden encolada para el panel: ${ipPanel} en la puerta ${numeroPuerta}`
