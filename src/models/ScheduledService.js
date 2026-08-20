@@ -23,6 +23,10 @@ const scheduledServiceSchema = new mongoose.Schema(
         serviceStatus: {
             type: String,
         },
+        observations: {
+            type: String,
+            default: "",
+        },
     },
     {
         timestamps: true,
