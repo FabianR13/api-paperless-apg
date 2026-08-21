@@ -365,7 +365,7 @@ router.put(
 );
 
 // Generar registro de firma desde la vista del equipo
-router.put("/SignLaptop/:laptopId",
+router.put("/SignLaptop/:laptopId/:CompanyId",
     verifyToken,
     isAutorized,
     generateSignatureDoc

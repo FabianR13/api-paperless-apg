@@ -1928,8 +1928,8 @@ const updateServiceDay = async (req, res) => {
 };
 
 const generateSignatureDoc = async (req, res) => {
-    const { assetId, assetType, employeeId, CompanyId } = req.body;
-
+    const { assetId, assetType, employeeId } = req.body;
+    const { CompanyId } = req.params;
     try {
         // 1. Crear el nuevo registro de firma en estado Pendiente
         const newDoc = new ResponsibilitySignatures({
