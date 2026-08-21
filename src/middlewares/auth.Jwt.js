@@ -695,7 +695,7 @@ const isAutorized = async (req, res, next) => {
   Access.company = await Company.find({ _id: { $in: CompanyId } });
   const companyAccess = await Company.find({ _id: { $in: user.companyAccess } });
   for (let i = 0; i < companyAccess.length; i++) {
-    if (companyAccess[i].name === Access.company[0].name) {
+    if (companyAccess[i]?.name === Access?.company?.[0]?.name) {
       next();
       return;
     }
