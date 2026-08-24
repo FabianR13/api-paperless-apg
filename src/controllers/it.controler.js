@@ -1962,7 +1962,6 @@ const generateSignatureDoc = async (req, res) => {
 const getPendingSignatures = async (req, res) => {
     try {
         const companyId = req.params.companyId || req.params.CompanyId || req.params.company;
-        const showAll = req.query.all === "true";
 
         if (!companyId) {
             return res.status(400).json({
@@ -1971,6 +1970,7 @@ const getPendingSignatures = async (req, res) => {
             });
         }
 
+        const showAll = req.query.all === "true";
         const filter = showAll
             ? { company: companyId }
             : { company: companyId, status: "Pending" };
@@ -1978,9 +1978,19 @@ const getPendingSignatures = async (req, res) => {
         const pendingSignatures = await ResponsibilitySignatures.find(filter)
             .populate("employee", "name lastName numberEmployee");
 
+        // Populate manual del asset (Laptop o Cellphone) según assetType
+        const populatedSignatures = await Promise.all(
+            pendingSignatures.map(async (doc) => {
+                const Model = doc.assetType === "Laptop" ? Laptops : Cellphones;
+                const asset = await Model.findById(doc.assetId)
+                    .select("laptopName cellphoneName system monitor ram processor serialNo initialCost status");
+                return { ...doc.toObject(), assetId: asset };
+            })
+        );
+
         return res.status(200).json({
             status: "200",
-            body: pendingSignatures
+            body: populatedSignatures
         });
     } catch (error) {
         console.error("Error en getPendingSignatures:", error);

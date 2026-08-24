@@ -380,10 +380,10 @@ router.get(
 
 // Guardar la firma enviada desde el modal de React
 router.put(
-    "/saveSignature/:signatureDocId",
+    "/saveSignature/:signatureDocId/:CompanyId",
     verifyToken,
     isAutorized,
-    uploadITSignature, // Middleware de MulterS3 para la carpeta Uploads/itsignatures/
+    uploadITSignature,
     saveSignature
 );
 // Generar registro de carta responsiva pendiente (Laptops o Cellphones)
