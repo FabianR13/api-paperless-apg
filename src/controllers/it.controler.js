@@ -1895,6 +1895,7 @@ const updateServiceDay = async (req, res) => {
 
     const {
         serviceStatus,
+        observations
     } = req.body;
 
     if (req.body.username) {
@@ -1909,6 +1910,7 @@ const updateServiceDay = async (req, res) => {
         {
             $set: {
                 serviceStatus,
+                observations,
                 modifiedBy,
             },
         }
