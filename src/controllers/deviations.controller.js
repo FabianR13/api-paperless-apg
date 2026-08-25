@@ -88,7 +88,7 @@ const createDeviation = async (req, res) => {
         // 2. Procesar Imágenes (Multer)
         let deviationImages = [];
         if (req.files && req.files["deviationImages"]) {
-            deviationImages = req.files["deviationImages"].map((file) => ({ img: file.key }));
+            deviationImages = req.files["deviationImages"].map((file) => ({ img: file.key.split('/').pop() }));
         }
 
         // 3. Generar Consecutivo (APG-2026-XXX)
