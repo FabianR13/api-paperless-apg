@@ -13,6 +13,7 @@ const Chromebooks = require("../models/Chromebooks.js");
 const Scanners = require("../models/Scanners.js");
 const ScheduledService = require("../models/ScheduledService.js");
 const ResponsibilitySignatures = require("../models/ResponsibilitySignatures.js");
+const Gadget = require("../models/Gadget");
 const { differenceInMonths } = require('date-fns');
 const mongoose = require('mongoose');
 
