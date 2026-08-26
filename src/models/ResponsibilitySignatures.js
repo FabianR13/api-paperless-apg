@@ -24,6 +24,27 @@ const responsibilitySignaturesSchema = new mongoose.Schema(
             type: String,
             default: null // Inicia en null hasta que se firma
         },
+        signers: [
+            {
+                employee: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Employees"
+                },
+                signatureImg: {
+                    type: String,
+                    default: null
+                },
+                status: {
+                    type: String,
+                    enum: ["Pending", "Signed"],
+                    default: "Pending"
+                },
+                signedAt: {
+                    type: Date,
+                    default: null
+                }
+            }
+        ],
         status: {
             type: String,
             enum: ["Pending", "Signed"],
