@@ -2095,6 +2095,85 @@ const saveSignature = async (req, res) => {
     }
 };
 
+const getGadgets = async (req, res) => {
+    try {
+        const { company } = req.params;
+        const gadgets = await Gadget.find({ company }).sort({ createdAt: -1 });
+        
+        return res.status(200).json({
+            body: gadgets
+        });
+    } catch (error) {
+        console.error("Error fetching gadgets:", error);
+        return res.status(500).json({ message: error.message || "Error al obtener gadgets" });
+    }
+};
+
+const createGadget = async (req, res) => {
+    try {
+        const { company } = req.params;
+        const {
+            employeeId,
+            employeeName,
+            gadgetType,
+            gadgetName,
+            condition,
+            deliveryDate,
+            status,
+            notes,
+            createdBy
+        } = req.body;
+
+        const newGadget = new Gadget({
+            company,
+            employeeId,
+            employeeName,
+            gadgetType,
+            gadgetName,
+            condition,
+            deliveryDate: deliveryDate || new Date(),
+            status: status || "Asignado",
+            notes,
+            createdBy
+        });
+
+        const savedGadget = await newGadget.save();
+
+        return res.status(201).json({
+            message: "Gadget guardado exitosamente",
+            body: savedGadget
+        });
+    } catch (error) {
+        console.error("Error creating gadget:", error);
+        return res.status(500).json({ message: error.message || "Error al guardar el gadget" });
+    }
+};
+
+const updateGadget = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const updatedGadget = await Gadget.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true }
+        );
+
+        if (!updatedGadget) {
+            return res.status(404).json({ message: "Registro no encontrado" });
+        }
+
+        return res.status(200).json({
+            message: "Gadget actualizado correctamente",
+            body: updatedGadget
+        });
+    } catch (error) {
+        console.error("Error updating gadget:", error);
+        return res.status(500).json({ message: error.message || "Error al actualizar el gadget" });
+    }
+};
+
 module.exports = {
     createNewLaptop,
     getAllLaptops,
@@ -2132,5 +2211,8 @@ module.exports = {
     updateServiceDay,
     generateSignatureDoc,
     getPendingSignatures,
-    saveSignature
+    saveSignature,
+    getGadgets,
+    createGadget,
+    updateGadget
 };
