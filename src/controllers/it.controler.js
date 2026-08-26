@@ -51,7 +51,8 @@ const createNewLaptop = async (req, res) => {
         modifiedBy,
         modified,
         version,
-        cato
+        cato,
+        netCard
     } = req.body;
 
     const newLaptop = new Laptops({
@@ -73,7 +74,7 @@ const createNewLaptop = async (req, res) => {
         responsibeLetter,
         modified,
         version,
-        cato
+        cato,netCard
     });
 
     newLaptop.responsibleAlt = "";
@@ -172,7 +173,8 @@ const updateLaptop = async (req, res) => {
         purchaseDate,
         status,
         modified,
-        cato
+        cato,
+        netCard
     } = req.body;
 
     if (req.body.modifiedBy) {
@@ -230,7 +232,8 @@ const updateLaptop = async (req, res) => {
                 responsibleGroup,
                 modifiedBy,
                 modified,
-                cato
+                cato,
+                netCard
             },
         }
     );
@@ -977,6 +980,7 @@ const getAllAccounts = async (req, res) => {
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
+        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
     res.json({ status: "200", message: "Accounts Loaded", body: accounts });
 };
 
@@ -1948,6 +1952,8 @@ const generateSignatureDoc = async (req, res) => {
             await Laptops.findByIdAndUpdate(assetId, { responsiveLetterSigned: newDoc._id });
         } else if (assetType === "Cellphone") {
             await Cellphones.findByIdAndUpdate(assetId, { responsiveLetterSigned: newDoc._id });
+        } else if (assetType === "Account") {
+            await Accounts.findByIdAndUpdate(assetId, { responsiveLetterSigned: newDoc._id });
         }
 
         return res.status(200).json({
@@ -1983,9 +1989,17 @@ const getPendingSignatures = async (req, res) => {
         // Populate manual del asset (Laptop o Cellphone) según assetType
         const populatedSignatures = await Promise.all(
             pendingSignatures.map(async (doc) => {
-                const Model = doc.assetType === "Laptop" ? Laptops : Cellphones;
+                let Model;
+                if (doc.assetType === "Laptop") Model = Laptops;
+                else if (doc.assetType === "Cellphone") Model = Cellphones;
+                else if (doc.assetType === "Account") Model = Accounts;
+
                 const asset = await Model.findById(doc.assetId)
-                    .select("laptopName cellphoneName system monitor ram processor serialNo initialCost status");
+                    .select("laptopName cellphoneName system monitor ram processor serialNo initialCost status marca model imei number prismUser email windowsUser paperlessUser printerUser responsible responsibleGroup modifiedBy responsiveLetterSigned")
+                    .populate({ path: "responsible", select: "name lastName" })
+                    .populate({ path: "responsibleGroup", select: "groupName members", populate: { path: "members", select: "name lastName" } })
+                    .populate({ path: "modifiedBy", select: "username" })
+                    .populate({ path: "responsiveLetterSigned", select: "status signatureImg" });
                 return { ...doc.toObject(), assetId: asset };
             })
         );

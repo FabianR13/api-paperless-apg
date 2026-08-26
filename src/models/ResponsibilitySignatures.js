@@ -12,7 +12,13 @@ const responsibilitySignaturesSchema = new mongoose.Schema(
         },
         employee: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Employees"
+            ref: "Employees",
+            required: true
+        },
+        genericAccount: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "GenericAccount",
+            default: null // Opcional, para saber a qué grupo pertenecía al firmar
         },
         signatureImg: {
             type: String,

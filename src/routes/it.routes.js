@@ -372,7 +372,6 @@ router.put("/SignLaptop/:laptopId/:CompanyId",
 );
 
 // Obtener la lista de firmas pendientes por compañía
-// Prueba temporal sin middleware:
 router.get(
     "/PendingSignatures/:companyId",
     getPendingSignatures
@@ -385,13 +384,6 @@ router.put(
     isAutorized,
     uploadITSignature,
     saveSignature
-);
-// Generar registro de carta responsiva pendiente (Laptops o Cellphones)
-router.put(
-    "/GenerateSignatureDoc",
-    verifyToken,
-    isAutorized,
-    generateSignatureDoc
 );
 
 module.exports = router;
