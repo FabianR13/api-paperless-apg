@@ -27,7 +27,8 @@ const upload = multer({
   })
 });
 
-///Metodo para subir una sola imagen///
-const uploadPicture = upload.single("picture")
+const uploadPicture = upload.fields([
+    { name: "picture", maxCount: 1 }
+]);
 
 module.exports = uploadPicture;

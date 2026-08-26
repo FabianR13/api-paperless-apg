@@ -33,9 +33,13 @@ const createEmployee = async (req, res) => {
     } = req.body;
 
     let picture = "";
-    if (req.file) {
+
+    if (req.files && req.files["picture"] && req.files["picture"].length > 0) {
+      picture = req.files["picture"][0].key.split('/').pop();
+    } else if (req.file) {
       picture = req.file.key.split('/').pop();
     }
+
 
     const newEmployee = new Employees({
       name,
@@ -326,7 +330,9 @@ const modifyProfileImg = async (req, res) => {
   //Retreiving the data for each profile Image and adding to the schema
   let picture = "";
 
-  if (req.file) {
+  if (req.files && req.files["picture"] && req.files["picture"].length > 0) {
+    picture = req.files["picture"][0].key.split('/').pop();
+  } else if (req.file) {
     picture = req.file.key.split('/').pop();
   }
 

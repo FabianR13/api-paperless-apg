@@ -78,6 +78,9 @@ const laptopsSchema = new mongoose.Schema(
         cato: {
             type: Boolean,
         },
+        netCard: {
+            type: String, default: ""
+        },
         version: {
             type: Number,
         },
