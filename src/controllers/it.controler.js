@@ -51,7 +51,8 @@ const createNewLaptop = async (req, res) => {
         modifiedBy,
         modified,
         version,
-        cato
+        cato,
+        netCard
     } = req.body;
 
     const newLaptop = new Laptops({
@@ -73,7 +74,7 @@ const createNewLaptop = async (req, res) => {
         responsibeLetter,
         modified,
         version,
-        cato
+        cato,netCard
     });
 
     newLaptop.responsibleAlt = "";
@@ -172,7 +173,8 @@ const updateLaptop = async (req, res) => {
         purchaseDate,
         status,
         modified,
-        cato
+        cato,
+        netCard
     } = req.body;
 
     if (req.body.modifiedBy) {
@@ -230,7 +232,8 @@ const updateLaptop = async (req, res) => {
                 responsibleGroup,
                 modifiedBy,
                 modified,
-                cato
+                cato,
+                netCard
             },
         }
     );
