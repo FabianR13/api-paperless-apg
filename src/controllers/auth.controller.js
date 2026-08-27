@@ -253,7 +253,8 @@ const signIn = async (req, res) => {
     // QUARANTINE ROLES
     QuarantineR: [44],
     QuarantineC: [45],
-
+    // ACCESS PANELS ROLES
+    AccessPanelsM: [46],
   };
 
   // 7. Configuración de Mapeo de Roles Axiom (Afecta tanto a AXG como a APG)
@@ -314,6 +315,8 @@ const signIn = async (req, res) => {
     // QUARANTINE ROLES
     QuarantineR: [44],
     QuarantineC: [45],
+    // ACCESS PANELS ROLES
+    AccessPanelsM: [46],
   };
 
   // 8. Aplicar accesos buscando asíncronamente los roles a la DB

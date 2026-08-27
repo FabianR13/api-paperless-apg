@@ -19,7 +19,7 @@ const {
 
     // Logs
     getAccessLogsData,
-    
+
     // Comandos Agente ZK
     borrarLogsPanel,
     abrirPanelRemoto,
@@ -30,23 +30,74 @@ const {
     eliminarCredencialUnica
 } = require('../controllers/panels.controller.js');
 const panelCtrl = require('../controllers/panels.controller');
-const { verifyToken, isAutorized, isAdmin } = require('../middlewares/auth.Jwt.js');
+const { verifyToken, isAutorized, isAdmin, isAccessPanelsM } = require('../middlewares/auth.Jwt.js');
 
 // Paneles
-router.get('/', getPaneles);
-router.post('/', crearPanel);
-router.put('/:id', updatePanel);
-router.delete('/:id', deletePanel);
+router.get(
+    '/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    getPaneles);
+
+router.post(
+    '/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    crearPanel);
+
+router.put(
+    '/:id/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    updatePanel);
+
+router.delete(
+    '/:id/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    deletePanel);
 
 
 // Access Groups
-router.get('/groups/:companyId', getAccessGroups);
-router.post('/groups', crearAccessGroup);
-router.put('/groups/:id', updateAccessGroup);
-router.delete('/groups/:id', deleteAccessGroup);
+router.get(
+    '/groups/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    getAccessGroups);
+
+router.post(
+    '/groups/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    crearAccessGroup);
+
+router.put(
+    '/groups/:id/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    updateAccessGroup);
+
+router.delete(
+    '/groups/:id/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    deleteAccessGroup);
 
 // Credentials
-router.get('/credentials/:companyId', getCredentials);
+router.get(
+    '/credentials/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    getCredentials);
 
 // Logs
 router.get(
@@ -57,13 +108,54 @@ router.get(
 );
 
 // Comandos Agente ZK
-router.post('/abrir', abrirPanelRemoto);
-router.post('/logs', sincronizarLogsPanel);
-router.post('/borrar-logs', borrarLogsPanel);
-router.post('/configurar-horario', configurarHorarioPanel);
-router.post('/credencial', enviarCredencialUnica);
-router.post('/sync-masiva', sincronizarTodoElPanel);
-router.post('/eliminar-credencial', eliminarCredencialUnica);
+router.post(
+    '/abrir/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    abrirPanelRemoto);
+
+router.post(
+    '/logs/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    sincronizarLogsPanel);
+
+router.post(
+    '/borrar-logs/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    borrarLogsPanel);
+
+router.post(
+    '/configurar-horario/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    configurarHorarioPanel);
+
+router.post(
+    '/credencial/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    enviarCredencialUnica);
+
+router.post(
+    '/sync-masiva/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    sincronizarTodoElPanel);
+
+router.post(
+    '/eliminar-credencial/:CompanyId',
+    verifyToken,
+    isAutorized,
+    isAccessPanelsM,
+    eliminarCredencialUnica);
 
 router.post(
     '/NewCredential/:CompanyId',
