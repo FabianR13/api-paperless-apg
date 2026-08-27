@@ -188,7 +188,7 @@ const updateRegisters = async (req, res) => {
 const releaseFromQuarantine = async (req, res) => {
     try {
         const { CompanyId } = req.params;
-        const { releaseType, records } = req.body; // records: [{ quarantineID, seriales }]
+        const { releaseType, records, exitReason } = req.body; // records: [{ quarantineID, seriales }]
 
         if (!records || records.length === 0) {
             return res.status(400).json({ status: "error", message: "No se enviaron registros" });
@@ -204,6 +204,7 @@ const releaseFromQuarantine = async (req, res) => {
                 {
                     $set: {
                         status: "No Cuarentena",
+                        exitReason: exitReason,
                         modifiedby: req.userId
                     }
                 }

@@ -18,6 +18,7 @@ const QuarantineSchema = new mongoose.Schema({
     batch: {type: String},
     status: {type: String}, 
     reason: {type: String},
+    exitReason: { type: String, default: ""},
     //consecutive: {type: Number},
     modifiedby: {
         ref: "User",
