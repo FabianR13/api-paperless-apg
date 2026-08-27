@@ -37,7 +37,10 @@ const {
     updateServiceDay,
     getPendingSignatures,
     generateSignatureDoc,
-    saveSignature
+    saveSignature,
+    getGadgets,
+    createGadget,
+    updateGadget
 } = require("../controllers/it.controler");
 const uploadLaptopFile = require("../middlewares/uploadLaptopFile.js");
 const uploadCellphoneFile = require("../middlewares/uploadCellphoneFile.js");
@@ -384,6 +387,19 @@ router.put(
     isAutorized,
     uploadITSignature,
     saveSignature
+);
+
+router.get(
+    "/Gadgets/:company",
+    getGadgets
+);
+router.post(
+    "/Gadgets/:company",
+    createGadget
+);
+router.put(
+    "/Gadgets/:company/:id",
+    updateGadget
 );
 
 module.exports = router;

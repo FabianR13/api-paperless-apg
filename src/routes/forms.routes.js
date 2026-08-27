@@ -10,7 +10,8 @@ const {
   isProductionR,
   isAutorized,
   isLogisticR,
-  isManagementR
+  isManagementR,
+  isSecurityR
 } = require("../middlewares/auth.Jwt.js");
 const {
   getForms,
@@ -101,5 +102,15 @@ router.get(
   isAdmin,
   getDashboardById
 );
+
+///Route forms in Reports dashboard///
+router.get(
+  "/Security/:formsId/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isSecurityR,
+  getDashboardById
+);
+
 
 module.exports = router;

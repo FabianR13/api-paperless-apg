@@ -13,6 +13,7 @@ const Chromebooks = require("../models/Chromebooks.js");
 const Scanners = require("../models/Scanners.js");
 const ScheduledService = require("../models/ScheduledService.js");
 const ResponsibilitySignatures = require("../models/ResponsibilitySignatures.js");
+const Gadget = require("../models/Gadget");
 const { differenceInMonths } = require('date-fns');
 const mongoose = require('mongoose');
 
@@ -1934,20 +1935,41 @@ const updateServiceDay = async (req, res) => {
 };
 
 const generateSignatureDoc = async (req, res) => {
-    const { assetId, assetType, employeeId } = req.body;
+    const { assetId, assetType, employeeId, genericGroupId } = req.body;
     const { CompanyId } = req.params;
+
     try {
-        // 1. Crear el nuevo registro de firma en estado Pendiente
-        const newDoc = new ResponsibilitySignatures({
-            assetType, // "Laptop" o "Cellphone"
+        let newDocData = {
+            assetType,
             assetId,
-            employee: employeeId || null,
             company: [CompanyId],
             status: "Pending"
-        });
+        };
+
+        if (genericGroupId) {
+            // Caso: Cuenta Genérica -> buscar miembros y crear un renglón por cada uno
+            const genericGroup = await GenericAccount.findById(genericGroupId);
+            if (!genericGroup || !genericGroup.members || genericGroup.members.length === 0) {
+                return res.status(400).json({ status: "400", message: "La cuenta genérica no tiene miembros asignados." });
+            }
+
+            newDocData.employee = null;
+            newDocData.signers = genericGroup.members.map((memberId) => ({
+                employee: memberId,
+                signatureImg: null,
+                status: "Pending"
+            }));
+        } else if (employeeId) {
+            // Caso: Empleado individual (comportamiento actual, sin cambios)
+            newDocData.employee = employeeId;
+        } else {
+            return res.status(400).json({ status: "400", message: "Se requiere employeeId o genericGroupId." });
+        }
+
+        const newDoc = new ResponsibilitySignatures(newDocData);
         await newDoc.save();
 
-        // 2. Vincular el ID del nuevo documento al equipo correspondiente
+        // Vincular el ID del nuevo documento al equipo correspondiente
         if (assetType === "Laptop") {
             await Laptops.findByIdAndUpdate(assetId, { responsiveLetterSigned: newDoc._id });
         } else if (assetType === "Cellphone") {
@@ -1984,7 +2006,8 @@ const getPendingSignatures = async (req, res) => {
             : { company: companyId, status: "Pending" };
 
         const pendingSignatures = await ResponsibilitySignatures.find(filter)
-            .populate("employee", "name lastName numberEmployee");
+            .populate("employee", "name lastName numberEmployee")
+            .populate("signers.employee", "name lastName numberEmployee");
 
         // Populate manual del asset (Laptop o Cellphone) según assetType
         const populatedSignatures = await Promise.all(
@@ -2019,13 +2042,12 @@ const getPendingSignatures = async (req, res) => {
 };
 
 const saveSignature = async (req, res) => {
-    // Soportar tanto signatureDocId como id
     const signatureDocId = req.params.signatureDocId || req.params.id;
+    const { memberId } = req.body; // Si viene, indica que es firma de un miembro dentro de signers[]
 
     try {
         let signatureImgKey = "";
 
-        // Extracción de la clave S3 según el middleware de Multer utilizado
         if (req.files && req.files["signatureImage"] && req.files["signatureImage"].length > 0) {
             signatureImgKey = req.files["signatureImage"][0].key.split('/').pop();
         } else if (req.file) {
@@ -2036,28 +2058,120 @@ const saveSignature = async (req, res) => {
             return res.status(400).json({ status: "400", message: "No se recibió el archivo de imagen de la firma" });
         }
 
-        const updatedDoc = await ResponsibilitySignatures.findByIdAndUpdate(
-            signatureDocId,
-            {
-                signatureImg: signatureImgKey, // Verifica si en el Schema el campo se llama signatureImg o signatureImage
-                status: "Signed",
-                signedAt: new Date()
-            },
-            { new: true }
-        );
-
-        if (!updatedDoc) {
+        const doc = await ResponsibilitySignatures.findById(signatureDocId);
+        if (!doc) {
             return res.status(404).json({ status: "404", message: "Documento de firma no encontrado" });
         }
+
+        if (memberId && doc.signers && doc.signers.length > 0) {
+            // Caso: firma de un miembro dentro de una cuenta genérica
+            const signer = doc.signers.find(s => s.employee.toString() === memberId);
+            if (!signer) {
+                return res.status(404).json({ status: "404", message: "Miembro no encontrado en la lista de firmantes" });
+            }
+            signer.signatureImg = signatureImgKey;
+            signer.status = "Signed";
+            signer.signedAt = new Date();
+
+            // Verificar si TODOS los miembros ya firmaron
+            const allSigned = doc.signers.every(s => s.status === "Signed");
+            doc.status = allSigned ? "Signed" : "Pending";
+        } else {
+            // Caso: firma individual (comportamiento actual, sin cambios)
+            doc.signatureImg = signatureImgKey;
+            doc.status = "Signed";
+            doc.signedAt = new Date();
+        }
+
+        await doc.save();
 
         return res.status(200).json({
             status: "200",
             message: "Firma guardada correctamente",
-            body: updatedDoc
+            body: doc
         });
     } catch (error) {
         console.error("Error al guardar la firma:", error);
         return res.status(500).json({ status: "500", message: "Error al guardar la firma" });
+    }
+};
+
+const getGadgets = async (req, res) => {
+    try {
+        const { company } = req.params;
+        const gadgets = await Gadget.find({ company }).sort({ createdAt: -1 });
+        
+        return res.status(200).json({
+            body: gadgets
+        });
+    } catch (error) {
+        console.error("Error fetching gadgets:", error);
+        return res.status(500).json({ message: error.message || "Error al obtener gadgets" });
+    }
+};
+
+const createGadget = async (req, res) => {
+    try {
+        const { company } = req.params;
+        const {
+            employeeId,
+            employeeName,
+            gadgetType,
+            gadgetName,
+            condition,
+            deliveryDate,
+            status,
+            notes,
+            createdBy
+        } = req.body;
+
+        const newGadget = new Gadget({
+            company,
+            employeeId,
+            employeeName,
+            gadgetType,
+            gadgetName,
+            condition,
+            deliveryDate: deliveryDate || new Date(),
+            status: status || "Asignado",
+            notes,
+            createdBy
+        });
+
+        const savedGadget = await newGadget.save();
+
+        return res.status(201).json({
+            message: "Gadget guardado exitosamente",
+            body: savedGadget
+        });
+    } catch (error) {
+        console.error("Error creating gadget:", error);
+        return res.status(500).json({ message: error.message || "Error al guardar el gadget" });
+    }
+};
+
+const updateGadget = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const updatedGadget = await Gadget.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true }
+        );
+
+        if (!updatedGadget) {
+            return res.status(404).json({ message: "Registro no encontrado" });
+        }
+
+        return res.status(200).json({
+            message: "Gadget actualizado correctamente",
+            body: updatedGadget
+        });
+    } catch (error) {
+        console.error("Error updating gadget:", error);
+        return res.status(500).json({ message: error.message || "Error al actualizar el gadget" });
     }
 };
 
@@ -2098,5 +2212,8 @@ module.exports = {
     updateServiceDay,
     generateSignatureDoc,
     getPendingSignatures,
-    saveSignature
+    saveSignature,
+    getGadgets,
+    createGadget,
+    updateGadget
 };

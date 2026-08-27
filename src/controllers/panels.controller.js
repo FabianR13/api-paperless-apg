@@ -226,7 +226,7 @@ const deleteAccessGroup = async (req, res) => {
 
 const getCredentials = async (req, res) => {
   try {
-    const { companyId } = req.params;
+    const { CompanyId } = req.params;
 
     const credenciales = await AccessCredential.find()
       .populate('accessGroup')
@@ -460,7 +460,7 @@ const createNewCredential = async (req, res) => {
       });
     }
 
-    res.status(201).json({ status: "200", message: "New credential register", body: newCredential });
+    res.status(201).json({ status: "200", message: "New credential register wait 5 minutes for send any more or try open doors", body: newCredential });
   } catch (error) {
     console.error("Error en Crear credencial:", error);
     res.status(500).json({ status: "500", message: "Internal Server Error" });
@@ -555,7 +555,7 @@ const updateCredential = async (req, res) => {
       accesosNuevos: arregloAccesos
     });
 
-    res.status(200).json({ status: "200", message: "Credential updated and synchronization started", body: updateCard });
+    res.status(200).json({ status: "200", message: "Credential updated and synchronization started wait 5 minutes for send any more or try open doors", body: updateCard });
   } catch (error) {
     console.error("Error en Actualizar credencial:", error);
     res.status(500).json({ status: "500", message: "Internal Server Error" });
