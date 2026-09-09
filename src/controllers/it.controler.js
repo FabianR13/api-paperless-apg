@@ -2132,7 +2132,7 @@ const getPendingSignatures = async (req, res) => {
 
 const saveSignature = async (req, res) => {
     const signatureDocId = req.params.signatureDocId || req.params.id;
-    const { memberId } = req.body; // Si viene, indica que es firma de un miembro dentro de signers[]
+    const { memberId } = req.body; // ID del empleado que está firmando
 
     try {
         let signatureImgKey = "";
@@ -2152,21 +2152,31 @@ const saveSignature = async (req, res) => {
             return res.status(404).json({ status: "404", message: "Documento de firma no encontrado" });
         }
 
+        // Caso: Firma de un miembro dentro de una cuenta genérica / grupo
         if (memberId && doc.signers && doc.signers.length > 0) {
-            // Caso: firma de un miembro dentro de una cuenta genérica
-            const signer = doc.signers.find(s => s.employee.toString() === memberId);
-            if (!signer) {
+            const signerIndex = doc.signers.findIndex(s => s.employee && s.employee.toString() === memberId.toString());
+
+            if (signerIndex === -1) {
                 return res.status(404).json({ status: "404", message: "Miembro no encontrado en la lista de firmantes" });
             }
-            signer.signatureImg = signatureImgKey;
-            signer.status = "Signed";
-            signer.signedAt = new Date();
+
+            // Actualizar el firmante en la posición exacta
+            doc.signers[signerIndex].signatureImg = signatureImgKey;
+            doc.signers[signerIndex].status = "Signed";
+            doc.signers[signerIndex].signedAt = new Date();
+
+            // Indicar a Mongoose que el arreglo 'signers' fue modificado
+            doc.markModified('signers');
 
             // Verificar si TODOS los miembros ya firmaron
             const allSigned = doc.signers.every(s => s.status === "Signed");
             doc.status = allSigned ? "Signed" : "Pending";
+
+            if (allSigned) {
+                doc.signedAt = new Date();
+            }
         } else {
-            // Caso: firma individual (comportamiento actual, sin cambios)
+            // Caso: Firma individual
             doc.signatureImg = signatureImgKey;
             doc.status = "Signed";
             doc.signedAt = new Date();
@@ -2176,12 +2186,14 @@ const saveSignature = async (req, res) => {
 
         return res.status(200).json({
             status: "200",
-            message: "Firma guardada correctamente",
+            message: doc.status === "Signed"
+                ? "Documento completado y firmado por todos"
+                : "Firma individual guardada correctamente",
             body: doc
         });
     } catch (error) {
         console.error("Error al guardar la firma:", error);
-        return res.status(500).json({ status: "500", message: "Error al guardar la firma" });
+        return res.status(500).json({ status: "500", message: "Error al guardar la firma", error: error.message });
     }
 };
 
