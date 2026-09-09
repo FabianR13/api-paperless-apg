@@ -145,7 +145,14 @@ const getAllLaptops = async (req, res) => {
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
-        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
+        .populate({
+            path: "responsiveLetterSigned",
+            select: "status signatureImg signedAt signers",
+            populate: {
+                path: "signers.employee",
+                select: "name lastName numberEmployee"
+            }
+        });
     res.json({ status: "200", message: "Requisitions Loaded", body: laptops });
 };
 
@@ -719,7 +726,14 @@ const getAllCellphones = async (req, res) => {
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
         .populate({ path: "number" })
-        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
+        .populate({
+            path: "responsiveLetterSigned",
+            select: "status signatureImg signedAt signers",
+            populate: {
+                path: "signers.employee",
+                select: "name lastName numberEmployee"
+            }
+        });
     res.json({ status: "200", message: "Cellphones Loaded", body: cellphones });
 };
 
@@ -981,7 +995,14 @@ const getAllAccounts = async (req, res) => {
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
-        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
+        .populate({
+            path: "responsiveLetterSigned",
+            select: "status signatureImg signedAt signers",
+            populate: {
+                path: "signers.employee",
+                select: "name lastName numberEmployee"
+            }
+        });
     res.json({ status: "200", message: "Accounts Loaded", body: accounts });
 };
 
