@@ -13,7 +13,7 @@ const responsibilitySignaturesSchema = new mongoose.Schema(
         employee: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employees",
-            required: true
+            required: null
         },
         genericAccount: {
             type: mongoose.Schema.Types.ObjectId,
