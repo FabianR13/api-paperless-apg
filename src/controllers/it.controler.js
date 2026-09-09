@@ -75,7 +75,7 @@ const createNewLaptop = async (req, res) => {
         responsibeLetter,
         modified,
         version,
-        cato,netCard
+        cato, netCard
     });
 
     newLaptop.responsibleAlt = "";
@@ -87,6 +87,9 @@ const createNewLaptop = async (req, res) => {
         newLaptop.modifiedBy = foundUsers.map((user) => user._id);
     }
 
+    // Variable auxiliar para saber si asignamos un grupo
+    let assignedGroup = null;
+
     if (mongoose.Types.ObjectId.isValid(responsible)) {
 
         const foundEmployee = await Employees.find({ _id: responsible });
@@ -97,6 +100,7 @@ const createNewLaptop = async (req, res) => {
             const foundAccounts = await GenericAccount.find({ _id: responsible });
             if (foundAccounts.length > 0) {
                 newLaptop.responsibleGroup = foundAccounts.map((account) => account._id);
+                assignedGroup = foundAccounts[0];
             }
         }
     }
@@ -112,12 +116,36 @@ const createNewLaptop = async (req, res) => {
         newLaptop.company = foundCompany.map((company) => company._id);
     }
 
+    // Guardamos la laptop
     const saveLaptop = await newLaptop.save();
 
     if (!saveLaptop) {
         res
             .status(403)
             .json({ status: "403", message: "Laptop not Saved", body: "" });
+    }
+
+    // SI ES UN GRUPO: Inicializamos la carta responsiva con los integrantes
+    if (assignedGroup && assignedGroup.members && assignedGroup.members.length > 0) {
+        const signersList = assignedGroup.members.map((memberId) => ({
+            employee: memberId,
+            status: "Pending"
+        }));
+
+        const newSignature = new ResponsibilitySignatures({
+            company: CompanyId,
+            assetType: "Laptop",
+            assetId: saveLaptop._id,
+            status: "Pending",
+            signers: signersList,
+            employee: assignedGroup.members[0]
+        });
+
+        const savedSignature = await newSignature.save();
+
+        // Enlazamos la firma recién creada a la Laptop
+        saveLaptop.responsiveLetterSigned = savedSignature._id;
+        await saveLaptop.save();
     }
 
     return res
@@ -145,17 +173,25 @@ const getAllLaptops = async (req, res) => {
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
-        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
+        .populate({
+            path: "responsiveLetterSigned",
+            select: "status signatureImg signedAt signers",
+            populate: {
+                path: "signers.employee",
+                select: "name lastName numberEmployee"
+            }
+        });
     res.json({ status: "200", message: "Requisitions Loaded", body: laptops });
 };
 
-//create deviation request//////////////////////////////////////////////////////////////////////////////////////
+//update laptop//////////////////////////////////////////////////////////////////////////////////////
 const updateLaptop = async (req, res) => {
     const { laptopId } = req.params;
     let responsible;
     let responsibleAlt;
     let responsibleGroup;
     let modifiedBy;
+    let foundGroupAccount = null;
 
     const {
         laptopName,
@@ -191,7 +227,6 @@ const updateLaptop = async (req, res) => {
         responsibleAlt = "";
 
         if (mongoose.Types.ObjectId.isValid(req.body.responsible)) {
-
             const foundEmployee = await Employees.find({ _id: req.body.responsible });
 
             if (foundEmployee.length > 0) {
@@ -200,6 +235,7 @@ const updateLaptop = async (req, res) => {
                 const foundAccounts = await GenericAccount.find({ _id: req.body.responsible });
                 if (foundAccounts.length > 0) {
                     responsibleGroup = foundAccounts.map((account) => account._id);
+                    foundGroupAccount = foundAccounts[0]; // Captura la referencia del grupo
                 }
             }
         }
@@ -209,6 +245,43 @@ const updateLaptop = async (req, res) => {
         }
     }
 
+    // 1. Buscamos la laptop actual
+    const currentLaptop = await Laptops.findById(laptopId);
+
+    if (!currentLaptop) {
+        return res
+            .status(404)
+            .json({ status: "404", message: "Laptop not found", body: "" });
+    }
+
+    let newSignatureId = currentLaptop.responsiveLetterSigned;
+
+    // 2. Alineación exacta con la estructura de generateSignatureDoc
+    if (foundGroupAccount && foundGroupAccount.members && foundGroupAccount.members.length > 0) {
+        if (!currentLaptop.responsiveLetterSigned) {
+            const companyArray = currentLaptop.company && currentLaptop.company.length > 0
+                ? currentLaptop.company
+                : (req.body.company ? [req.body.company] : []);
+
+            const newSignature = new ResponsibilitySignatures({
+                assetType: "Laptop",
+                assetId: laptopId,
+                company: companyArray, // Alineado con company: [CompanyId]
+                status: "Pending",
+                employee: null, // Igual que en generateSignatureDoc
+                signers: foundGroupAccount.members.map((memberId) => ({
+                    employee: memberId,
+                    signatureImg: null,
+                    status: "Pending"
+                }))
+            });
+
+            const savedSig = await newSignature.save();
+            newSignatureId = savedSig._id;
+        }
+    }
+
+    // 3. Actualizamos el registro de la laptop
     const updatedLaptopDevice = await Laptops.updateOne(
         { _id: laptopId },
         {
@@ -231,6 +304,7 @@ const updateLaptop = async (req, res) => {
                 responsible,
                 responsibleAlt,
                 responsibleGroup,
+                responsiveLetterSigned: newSignatureId,
                 modifiedBy,
                 modified,
                 cato,
@@ -240,14 +314,14 @@ const updateLaptop = async (req, res) => {
     );
 
     if (!updatedLaptopDevice) {
-        res
+        return res
             .status(403)
             .json({ status: "403", message: "Laptop not Updated", body: "" });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
         status: "200",
-        message: "Laptop Updated ",
+        message: "Laptop Updated",
         body: updatedLaptopDevice,
     });
 };
@@ -719,7 +793,14 @@ const getAllCellphones = async (req, res) => {
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
         .populate({ path: "number" })
-        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
+        .populate({
+            path: "responsiveLetterSigned",
+            select: "status signatureImg signedAt signers",
+            populate: {
+                path: "signers.employee",
+                select: "name lastName numberEmployee"
+            }
+        });
     res.json({ status: "200", message: "Cellphones Loaded", body: cellphones });
 };
 
@@ -981,7 +1062,14 @@ const getAllAccounts = async (req, res) => {
         .populate({ path: 'responsible', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
         .populate({ path: 'responsibleGroup', select: "groupName", populate: { path: "department members", select: "name lastName numberEmployee" } })
         .populate({ path: "modifiedBy", select: "username" })
-        .populate({ path: "responsiveLetterSigned", select: "status signatureImg" })
+        .populate({
+            path: "responsiveLetterSigned",
+            select: "status signatureImg signedAt signers",
+            populate: {
+                path: "signers.employee",
+                select: "name lastName numberEmployee"
+            }
+        });
     res.json({ status: "200", message: "Accounts Loaded", body: accounts });
 };
 
@@ -1954,6 +2042,7 @@ const generateSignatureDoc = async (req, res) => {
             }
 
             newDocData.employee = null;
+            newDocData.genericAccount = genericGroupId;
             newDocData.signers = genericGroup.members.map((memberId) => ({
                 employee: memberId,
                 signatureImg: null,
@@ -2043,7 +2132,7 @@ const getPendingSignatures = async (req, res) => {
 
 const saveSignature = async (req, res) => {
     const signatureDocId = req.params.signatureDocId || req.params.id;
-    const { memberId } = req.body; // Si viene, indica que es firma de un miembro dentro de signers[]
+    const { memberId } = req.body; // ID del empleado que está firmando
 
     try {
         let signatureImgKey = "";
@@ -2063,21 +2152,31 @@ const saveSignature = async (req, res) => {
             return res.status(404).json({ status: "404", message: "Documento de firma no encontrado" });
         }
 
+        // Caso: Firma de un miembro dentro de una cuenta genérica / grupo
         if (memberId && doc.signers && doc.signers.length > 0) {
-            // Caso: firma de un miembro dentro de una cuenta genérica
-            const signer = doc.signers.find(s => s.employee.toString() === memberId);
-            if (!signer) {
+            const signerIndex = doc.signers.findIndex(s => s.employee && s.employee.toString() === memberId.toString());
+
+            if (signerIndex === -1) {
                 return res.status(404).json({ status: "404", message: "Miembro no encontrado en la lista de firmantes" });
             }
-            signer.signatureImg = signatureImgKey;
-            signer.status = "Signed";
-            signer.signedAt = new Date();
+
+            // Actualizar el firmante en la posición exacta
+            doc.signers[signerIndex].signatureImg = signatureImgKey;
+            doc.signers[signerIndex].status = "Signed";
+            doc.signers[signerIndex].signedAt = new Date();
+
+            // Indicar a Mongoose que el arreglo 'signers' fue modificado
+            doc.markModified('signers');
 
             // Verificar si TODOS los miembros ya firmaron
             const allSigned = doc.signers.every(s => s.status === "Signed");
             doc.status = allSigned ? "Signed" : "Pending";
+
+            if (allSigned) {
+                doc.signedAt = new Date();
+            }
         } else {
-            // Caso: firma individual (comportamiento actual, sin cambios)
+            // Caso: Firma individual
             doc.signatureImg = signatureImgKey;
             doc.status = "Signed";
             doc.signedAt = new Date();
@@ -2087,12 +2186,14 @@ const saveSignature = async (req, res) => {
 
         return res.status(200).json({
             status: "200",
-            message: "Firma guardada correctamente",
+            message: doc.status === "Signed"
+                ? "Documento completado y firmado por todos"
+                : "Firma individual guardada correctamente",
             body: doc
         });
     } catch (error) {
         console.error("Error al guardar la firma:", error);
-        return res.status(500).json({ status: "500", message: "Error al guardar la firma" });
+        return res.status(500).json({ status: "500", message: "Error al guardar la firma", error: error.message });
     }
 };
 
@@ -2100,7 +2201,7 @@ const getGadgets = async (req, res) => {
     try {
         const { company } = req.params;
         const gadgets = await Gadget.find({ company }).sort({ createdAt: -1 });
-        
+
         return res.status(200).json({
             body: gadgets
         });

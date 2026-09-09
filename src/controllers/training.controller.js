@@ -437,7 +437,7 @@ const getMatrixEvaluations = async (req, res) => {
             TrainingEvaluation.find({
                 company: CompanyId
             })
-                .select('evaluationStatus qualification evaluationType operationType numberEmployee partNumber')
+                .select('evaluationStatus qualification evaluationType operationType numberEmployee partNumber trainer evaluationDate')
                 .populate({
                     path: 'numberEmployee',
                     match: {
@@ -453,6 +453,10 @@ const getMatrixEvaluations = async (req, res) => {
                         showInTraining: true
                     },
                     select: 'partnumber'
+                })
+                .populate({
+                    path: 'trainer',
+                    populate: { path: "employee", model: "Employees" }
                 })
                 .lean(),
 

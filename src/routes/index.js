@@ -20,7 +20,8 @@ const dailyAuditsRoutes = require("./dailyAudits.routes.js");
 const ppeRequestRoutes = require("./ppeRequest.routes.js");
 const setupValidationRoutes = require("./SetupValidation.routes.js");
 const quarantineroutes = require("./quarantine.routes.js")
-const panelsroutes = require("./panels.routes.js")
+const panelsroutes = require("./panels.routes.js") 
+const ptInspectionroutes = require("./ptInspection.routes.js")
 
 router.use("/forms", formsRoutes);
 router.use("/auth", authRoutes);
@@ -42,5 +43,6 @@ router.use("/ppe", ppeRequestRoutes);
 router.use("/setupvalidation", setupValidationRoutes);
 router.use("/quarantine", quarantineroutes);
 router.use('/panels', panelsroutes);
+router.use('/ptinspection', ptInspectionroutes);
 
 module.exports = router;
