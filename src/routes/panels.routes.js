@@ -161,7 +161,7 @@ router.post(
     '/NewCredential/:CompanyId',
     verifyToken,
     isAutorized,
-    isAdmin,
+    isAccessPanelsM,
     panelCtrl.createNewCredential
 )
 
@@ -169,7 +169,7 @@ router.put(
     '/UpdateCredential/:CredentialId/:CompanyId',
     verifyToken,
     isAutorized,
-    isAdmin,
+    isAccessPanelsM,
     panelCtrl.updateCredential
 )
 
