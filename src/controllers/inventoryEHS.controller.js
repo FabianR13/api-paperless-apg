@@ -2,6 +2,7 @@ const User = require("../models/User");
 const EHSUbicacion = require("../models/EHSUbicacion");
 const EHSComponente = require("../models/EHSComponente");
 const EHSProducto = require("../models/EHSProducto");
+const EHSMovimiento = require("../models/EHSMovimiento");
 
 // ---------- UBICACIONES ----------
 const createUbicacion = async (req, res) => {
@@ -65,13 +66,38 @@ const toggleUbicacionStatus = async (req, res) => {
 // ---------- COMPONENTES ----------
 const createComponente = async (req, res) => {
     try {
-        const { nombre, concentracion } = req.body;
+        const nombre = (req.body.nombre || "").trim().toUpperCase();
+        if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
+
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
-        const newComponente = new EHSComponente({ nombre, concentracion, createdBy: user._id, modifiedBy: user._id });
+        const existente = await EHSComponente.findOne({ nombre });
+        if (existente) return res.status(409).json({ status: "error", message: "Ese componente ya existe" });
+
+        const newComponente = new EHSComponente({ nombre, createdBy: user._id, modifiedBy: user._id });
         await newComponente.save();
         res.status(201).json({ status: "success", data: newComponente });
+    } catch (error) {
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
+const updateComponente = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const nombre = (req.body.nombre || "").trim().toUpperCase();
+        if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
+
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+        const duplicado = await EHSComponente.findOne({ nombre, _id: { $ne: id } });
+        if (duplicado) return res.status(409).json({ status: "error", message: "Ese componente ya existe" });
+
+        const updated = await EHSComponente.findByIdAndUpdate(id, { nombre, modifiedBy: user._id }, { new: true });
+        if (!updated) return res.status(404).json({ status: "error", message: "Componente no encontrado" });
+        res.status(200).json({ status: "success", data: updated });
     } catch (error) {
         res.status(500).json({ status: "error", message: error.message });
     }
@@ -81,21 +107,6 @@ const getComponentes = async (req, res) => {
     try {
         const componentes = await EHSComponente.find().sort({ nombre: 1 });
         res.status(200).json({ status: "success", data: componentes });
-    } catch (error) {
-        res.status(500).json({ status: "error", message: error.message });
-    }
-};
-
-const updateComponente = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { nombre, concentracion } = req.body;
-        const user = await User.findById(req.userId);
-        if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
-
-        const updated = await EHSComponente.findByIdAndUpdate(id, { nombre, concentracion, modifiedBy: user._id }, { new: true });
-        if (!updated) return res.status(404).json({ status: "error", message: "Componente no encontrado" });
-        res.status(200).json({ status: "success", data: updated });
     } catch (error) {
         res.status(500).json({ status: "error", message: error.message });
     }
@@ -119,12 +130,12 @@ const createProducto = async (req, res) => {
             descripcion, componentes, funcionPrincipal, unidad, unidadesPorEnvase, tipoEnvase,
             categoria, viaAdministracion, noDescontar, foto, stockMinimo, existencias
         } = req.body;
-
+        const descripcionNormalizada = (descripcion || "").trim().toUpperCase();
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
         const newProducto = new EHSProducto({
-            descripcion,
+            descripcion: descripcionNormalizada,
             componentes, // [{ componente, concentracion }]
             funcionPrincipal,
             unidad,
@@ -174,11 +185,11 @@ const updateProducto = async (req, res) => {
             categoria, viaAdministracion, noDescontar, foto, stockMinimo
         } = req.body;
         // "existencias" no se toca aquí, se maneja con ingreso/transferencia aparte
-
+        const descripcionNormalizada = (descripcion || "").trim().toUpperCase();
         const updated = await EHSProducto.findByIdAndUpdate(
             id,
             {
-                descripcion, componentes, funcionPrincipal, unidad, unidadesPorEnvase, tipoEnvase,
+                descripcion: descripcionNormalizada, componentes, funcionPrincipal, unidad, unidadesPorEnvase, tipoEnvase,
                 categoria, viaAdministracion, noDescontar, foto, stockMinimo,
                 modifiedBy: user._id
             },
@@ -214,7 +225,6 @@ const toggleProductoStatus = async (req, res) => {
 const registrarIngreso = async (req, res) => {
     try {
         const { productoId, lote, fechaCaducidad, factura, distribuciones } = req.body;
-        // distribuciones = [{ ubicacion, cantidad }]
 
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
@@ -226,6 +236,8 @@ const registrarIngreso = async (req, res) => {
         const producto = await EHSProducto.findById(productoId);
         if (!producto) return res.status(404).json({ status: "error", message: "Producto no encontrado" });
 
+        const movimientos = [];
+
         distribuciones.forEach((dist) => {
             producto.existencias.push({
                 ubicacion: dist.ubicacion,
@@ -234,10 +246,23 @@ const registrarIngreso = async (req, res) => {
                 fechaCaducidad,
                 factura
             });
+
+            movimientos.push({
+                producto: producto._id,
+                tipo: "Ingreso",
+                lote,
+                fechaCaducidad,
+                cantidad: Number(dist.cantidad),
+                ubicacionDestino: dist.ubicacion,
+                factura,
+                createdBy: user._id
+            });
         });
 
         producto.modifiedBy = user._id;
         await producto.save();
+        await EHSMovimiento.insertMany(movimientos);
+
         res.status(200).json({ status: "success", data: producto });
     } catch (error) {
         res.status(500).json({ status: "error", message: error.message });
@@ -299,15 +324,58 @@ const registrarTraspaso = async (req, res) => {
 
         producto.modifiedBy = user._id;
         await producto.save();
+
+        await EHSMovimiento.create({
+            producto: producto._id,
+            tipo: "Traspaso",
+            lote,
+            fechaCaducidad,
+            cantidad: cantidadMover,
+            ubicacionOrigen,
+            ubicacionDestino,
+            factura: origenFactura,
+            createdBy: user._id
+        });
+
         res.status(200).json({ status: "success", data: producto });
     } catch (error) {
         res.status(500).json({ status: "error", message: error.message });
     }
 };
+const getMovimientos = async (req, res) => {
+    try {
+        const { page = 1, limit = 50 } = req.query;
+        const skip = (Number(page) - 1) * Number(limit);
 
+        const [movimientos, total] = await Promise.all([
+            EHSMovimiento.find()
+                .populate("producto", "descripcion")
+                .populate("ubicacionOrigen", "nombre")
+                .populate("ubicacionDestino", "nombre")
+                .populate("createdBy", "name")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(Number(limit)),
+            EHSMovimiento.countDocuments()
+        ]);
+
+        res.status(200).json({
+            status: "success",
+            data: movimientos,
+            pagination: {
+                page: Number(page),
+                limit: Number(limit),
+                total,
+                hasMore: skip + movimientos.length < total
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
 module.exports = {
     createUbicacion, getUbicaciones, updateUbicacion, toggleUbicacionStatus,
     createComponente, getComponentes, updateComponente, deleteComponente,
     createProducto, getProductos, updateProducto, toggleProductoStatus,
-    registrarIngreso, registrarTraspaso
+    registrarIngreso, registrarTraspaso, getMovimientos
 };

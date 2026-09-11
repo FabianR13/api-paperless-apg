@@ -3,7 +3,7 @@ const {
     createUbicacion, getUbicaciones, updateUbicacion, toggleUbicacionStatus,
     createComponente, getComponentes, updateComponente, deleteComponente,
     createProducto, getProductos, updateProducto, toggleProductoStatus,
-    registrarIngreso, registrarTraspaso
+    registrarIngreso, registrarTraspaso, getMovimientos
 } = require("../controllers/inventoryEHS.controller");
 const { verifyToken, isAutorized } = require("../middlewares/auth.Jwt");
 const router = Router();
@@ -29,5 +29,6 @@ router.patch("/productos/:id/toggle", verifyToken, toggleProductoStatus);
 // Movimientos
 router.post("/ingreso", verifyToken, registrarIngreso);
 router.post("/traspaso", verifyToken, registrarTraspaso);
+router.get("/movimientos/:CompanyId?", verifyToken, getMovimientos);
 
 module.exports = router;

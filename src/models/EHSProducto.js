@@ -18,7 +18,7 @@ const ComponenteProductoSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    concentracion: { type: String, trim: true } // varía por producto, no viene del catálogo
+    concentracion: { type: String, trim: true }
 }, { _id: false });
 
 const EHSProductoSchema = new mongoose.Schema({
