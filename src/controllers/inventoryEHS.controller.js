@@ -54,9 +54,21 @@ const toggleUbicacionStatus = async (req, res) => {
         const ubicacion = await EHSUbicacion.findById(id);
         if (!ubicacion) return res.status(404).json({ status: "error", message: "Ubicación no encontrada" });
 
+        // Si se intenta desactivar, verificar si hay productos asignados a esta ubicación
+        if (ubicacion.status === "Activo") {
+            const tieneStock = await EHSProducto.findOne({ "lotes.ubicacion": ubicacion.nombre }); // o ubicacion._id según tu estructura
+            if (tieneStock) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "No se puede desactivar la ubicación porque tiene existencias asignadas."
+                });
+            }
+        }
+
         ubicacion.status = ubicacion.status === "Activo" ? "Inactivo" : "Activo";
         ubicacion.modifiedBy = user._id;
         await ubicacion.save();
+
         res.status(200).json({ status: "success", data: ubicacion });
     } catch (error) {
         res.status(500).json({ status: "error", message: error.message });

@@ -28,9 +28,24 @@ const EHSProductoSchema = new mongoose.Schema({
 
     funcionPrincipal: [{ type: String, trim: true }], // síntomas/indicaciones
 
+    // En tu backend: EHSProducto.js
     unidad: {
         type: String,
-        enum: ["caja", "pieza", "tableta", "comprimido", "cápsula", "sobre", "paquete", "frasco", "rollo", "ampolleta", "tubo", "otro"],
+        enum: [
+            "Pieza",
+            "Tableta",
+            "Comprimido",
+            "Cápsula",
+            "Sobre",
+            "Paquete",
+            "Frasco",
+            "Rollo",
+            "Ampolleta",
+            "Tubo",
+            "Par",
+            "Caja",
+            "Otro"
+        ],
         required: true
     },
     unidadesPorEnvase: { type: Number },
@@ -45,7 +60,7 @@ const EHSProductoSchema = new mongoose.Schema({
     },
     viaAdministracion: {
         type: String,
-        enum: ["Oral", "Oftálmica", "Ótica", "Tópica / Dérmica", "Nasal", "Intramuscular", "Intravenosa", "Sublingual", "Otra / No especificada"]
+        enum: ["No aplica", "Oral", "Oftálmica", "Ótica", "Tópica / Dérmica", "Nasal", "Intramuscular", "Intravenosa", "Sublingual", "Otra / No especificada"]
     },
     noDescontar: { type: Boolean, default: false },
     foto: { type: String, trim: true },
