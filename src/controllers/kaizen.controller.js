@@ -854,6 +854,7 @@ const getKaizens = async (req, res) => {
   }
   const kaizens = await Kaizen.find({
     company: { $in: CompanyId },
+    showAudit: true
   }).sort({ consecutive: -1 })
     .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
     .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
@@ -1068,8 +1069,8 @@ const modifyKaizenImg = async (req, res) => {
         } else {
           // console.log(`ELIMINAR (B): La imagen '${dbImageFilename}' fue eliminada por el usuario.`);
           const params = {
-            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-            Key: dbImageFilename
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: "/Uploads/KaizenImgs" + dbImageFilename
           };
 
           const command = new DeleteObjectCommand(params);
@@ -1091,8 +1092,8 @@ const modifyKaizenImg = async (req, res) => {
         } else {
           // console.log(`ELIMINAR (B): La imagen '${dbImageFilename}' fue eliminada por el usuario.`);
           const params = {
-            Bucket: process.env.S3_BUCKET_NAME + "/Uploads/KaizenImgs",
-            Key: dbImageFilename
+            Bucket: process.env.S3_BUCKET_NAME ,
+            Key: "/Uploads/KaizenImgs" + dbImageFilename
           };
 
           const command = new DeleteObjectCommand(params);
@@ -1168,7 +1169,7 @@ const modifyKaizenImg = async (req, res) => {
   //   });
   // }
   //Retreiving the data for each Before Kaizen Image and adding to the schema
-
+// console.log(req)
   if (req.files["kaizenImagesB"]) {
     if (req.files["kaizenImagesB"].length > 0) {
       const newUploadedImagesB = req.files["kaizenImagesB"].map((file) => {
