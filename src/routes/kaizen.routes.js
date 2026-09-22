@@ -19,7 +19,8 @@ const {
   getRedemptions,
   completeRedeem,
   createInvestigation,
-  validateSuggestion
+  validateSuggestion,
+  getKaizensAudit
 } = require("../controllers/kaizen.controller.js");
 const uploadKaizenImgs = require("../middlewares/uploadKaizenImg.js");
 const {
@@ -149,6 +150,14 @@ router.get(
   isAutorized,
   isKaizenR,
   getKaizens,
+);
+//Ruta para obtener kaizen auditables
+router.get(
+  "/Kaizens/Audit/:CompanyId",
+  verifyToken,
+  isAutorized,
+  isKaizenR,
+  getKaizensAudit,
 );
 ///Route to get a Specific Kaizen by Id///
 router.get(

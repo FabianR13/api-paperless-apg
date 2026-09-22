@@ -45,8 +45,8 @@ const EHSMovimientoSchema = new mongoose.Schema({
     },
 
     createdBy: {
-        ref: "User",
-        type: mongoose.Schema.Types.ObjectId
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }
 
 }, {

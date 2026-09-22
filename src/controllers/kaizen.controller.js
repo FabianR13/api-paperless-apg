@@ -854,7 +854,28 @@ const getKaizens = async (req, res) => {
   }
   const kaizens = await Kaizen.find({
     company: { $in: CompanyId },
-    showAudit: true
+    // showAudit: true
+  }).sort({ consecutive: -1 })
+    .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
+    .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
+    .populate({ path: "area", select: "name" });
+  res.json({ status: "200", message: "Kaizens Loaded", body: kaizens });
+};
+// Getting all Kaizens//////////////////////////////////////////////////////////////////////////////////////////////////////
+const getKaizensAudit = async (req, res) => {
+  const { CompanyId } = req.params
+  if (CompanyId.length !== 24) {
+    return;
+  }
+  const company = await Company.find({
+    _id: { $in: CompanyId },
+  })
+  if (!company) {
+    return;
+  }
+  const kaizens = await Kaizen.find({
+    company: { $in: CompanyId },
+     showAudit: true
   }).sort({ consecutive: -1 })
     .populate({ path: 'createdBy', select: "name lastName numberEmployee picture", populate: { path: "department position", select: "name" } })
     .populate({ path: 'modifiedBy', select: "name lastName numberEmployee", populate: { path: "department position", select: "name" } })
@@ -1312,5 +1333,6 @@ module.exports = {
   getRedemptions,
   completeRedeem,
   createInvestigation,
-  validateSuggestion
+  validateSuggestion,
+  getKaizensAudit
 };
