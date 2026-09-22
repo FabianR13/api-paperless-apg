@@ -4,12 +4,26 @@ const EHSComponente = require("../models/EHSComponente");
 const EHSProducto = require("../models/EHSProducto");
 const EHSMovimiento = require("../models/EHSMovimiento");
 
+// Helper para limpiar texto: Mayúsculas, Trim y Sin Acentos/Tildes
+const cleanText = (str = "") => {
+    return str
+        .trim()
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+};
+
 // ---------- UBICACIONES ----------
 const createUbicacion = async (req, res) => {
     try {
-        const { nombre } = req.body;
+        const nombre = cleanText(req.body.nombre);
+        if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
+
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+        const existente = await EHSUbicacion.findOne({ nombre });
+        if (existente) return res.status(409).json({ status: "error", message: "Esa ubicación ya existe" });
 
         const newUbicacion = new EHSUbicacion({ nombre, createdBy: user._id, modifiedBy: user._id });
         await newUbicacion.save();
@@ -33,9 +47,14 @@ const getUbicaciones = async (req, res) => {
 const updateUbicacion = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre } = req.body;
+        const nombre = cleanText(req.body.nombre);
+        if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
+
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+        const duplicado = await EHSUbicacion.findOne({ nombre, _id: { $ne: id } });
+        if (duplicado) return res.status(409).json({ status: "error", message: "Esa ubicación ya existe" });
 
         const updated = await EHSUbicacion.findByIdAndUpdate(id, { nombre, modifiedBy: user._id }, { new: true });
         if (!updated) return res.status(404).json({ status: "error", message: "Ubicación no encontrada" });
@@ -56,7 +75,7 @@ const toggleUbicacionStatus = async (req, res) => {
 
         // Si se intenta desactivar, verificar si hay productos asignados a esta ubicación
         if (ubicacion.status === "Activo") {
-            const tieneStock = await EHSProducto.findOne({ "lotes.ubicacion": ubicacion.nombre }); // o ubicacion._id según tu estructura
+            const tieneStock = await EHSProducto.findOne({ "lotes.ubicacion": ubicacion.nombre });
             if (tieneStock) {
                 return res.status(400).json({
                     status: "error",
@@ -78,7 +97,7 @@ const toggleUbicacionStatus = async (req, res) => {
 // ---------- COMPONENTES ----------
 const createComponente = async (req, res) => {
     try {
-        const nombre = (req.body.nombre || "").trim().toUpperCase();
+        const nombre = cleanText(req.body.nombre);
         if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
 
         const user = await User.findById(req.userId);
@@ -98,7 +117,7 @@ const createComponente = async (req, res) => {
 const updateComponente = async (req, res) => {
     try {
         const { id } = req.params;
-        const nombre = (req.body.nombre || "").trim().toUpperCase();
+        const nombre = cleanText(req.body.nombre);
         if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
 
         const user = await User.findById(req.userId);
@@ -142,7 +161,7 @@ const createProducto = async (req, res) => {
             descripcion, componentes, funcionPrincipal, unidad, unidadesPorEnvase, tipoEnvase,
             categoria, viaAdministracion, noDescontar, foto, stockMinimo, existencias
         } = req.body;
-        const descripcionNormalizada = (descripcion || "").trim().toUpperCase();
+        const descripcionNormalizada = cleanText(descripcion);
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
@@ -196,8 +215,8 @@ const updateProducto = async (req, res) => {
             descripcion, componentes, funcionPrincipal, unidad, unidadesPorEnvase, tipoEnvase,
             categoria, viaAdministracion, noDescontar, foto, stockMinimo
         } = req.body;
-        // "existencias" no se toca aquí, se maneja con ingreso/transferencia aparte
-        const descripcionNormalizada = (descripcion || "").trim().toUpperCase();
+
+        const descripcionNormalizada = cleanText(descripcion);
         const updated = await EHSProducto.findByIdAndUpdate(
             id,
             {
@@ -364,7 +383,11 @@ const getMovimientos = async (req, res) => {
                 .populate("producto", "descripcion")
                 .populate("ubicacionOrigen", "nombre")
                 .populate("ubicacionDestino", "nombre")
-                .populate("createdBy", "name")
+                .populate({
+                    path: "createdBy",
+                    select: "employee",
+                    populate: { path: "employee", select: "name lastName" }
+                })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(Number(limit)),
