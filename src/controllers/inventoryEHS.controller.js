@@ -3,6 +3,7 @@ const EHSUbicacion = require("../models/EHSUbicacion");
 const EHSComponente = require("../models/EHSComponente");
 const EHSProducto = require("../models/EHSProducto");
 const EHSMovimiento = require("../models/EHSMovimiento");
+const EHSBitacora = require("../models/EHSBitacora");
 
 // Helper para limpiar texto: Mayúsculas, Trim y Sin Acentos/Tildes
 const cleanText = (str = "") => {
@@ -22,8 +23,19 @@ const createUbicacion = async (req, res) => {
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
-        const existente = await EHSUbicacion.findOne({ nombre });
-        if (existente) return res.status(409).json({ status: "error", message: "Esa ubicación ya existe" });
+        let ubicacion = await EHSUbicacion.findOne({ nombre });
+
+        if (ubicacion) {
+            if (ubicacion.status === "Activo") {
+                return res.status(409).json({ status: "error", message: "Esa ubicación ya existe" });
+            } else {
+                // Si existía pero estaba inactiva, la reactivamos y actualizamos
+                ubicacion.status = "Activo";
+                ubicacion.modifiedBy = user._id;
+                await ubicacion.save();
+                return res.status(200).json({ status: "success", data: ubicacion });
+            }
+        }
 
         const newUbicacion = new EHSUbicacion({ nombre, createdBy: user._id, modifiedBy: user._id });
         await newUbicacion.save();
@@ -408,9 +420,76 @@ const getMovimientos = async (req, res) => {
         res.status(500).json({ status: "error", message: error.message });
     }
 };
+
+const getBitacora = async (req, res) => {
+
+    try {
+
+        const { page = 1, limit = 50 } = req.query;
+
+        const skip = (Number(page) - 1) * Number(limit);
+
+
+
+        const [bitacora, total] = await Promise.all([
+
+            EHSBitacora.find()
+
+                .populate({
+
+                    path: "createdBy",
+
+                    select: "employee",
+
+                    populate: { path: "employee", select: "name lastName" }
+
+                })
+
+                .sort({ createdAt: -1 })
+
+                .skip(skip)
+
+                .limit(Number(limit)),
+
+            EHSBitacora.countDocuments()
+
+        ]);
+
+
+
+        res.status(200).json({
+
+            status: "success",
+
+            data: bitacora,
+
+            pagination: {
+
+                page: Number(page),
+
+                limit: Number(limit),
+
+                total,
+
+                hasMore: skip + bitacora.length < total
+
+            }
+
+        });
+
+    } catch (error) {
+
+        res.status(500).json({ status: "error", message: error.message });
+
+    }
+
+};
+
+
+
 module.exports = {
     createUbicacion, getUbicaciones, updateUbicacion, toggleUbicacionStatus,
     createComponente, getComponentes, updateComponente, deleteComponente,
     createProducto, getProductos, updateProducto, toggleProductoStatus,
-    registrarIngreso, registrarTraspaso, getMovimientos
+    registrarIngreso, registrarTraspaso, getMovimientos, getBitacora
 };

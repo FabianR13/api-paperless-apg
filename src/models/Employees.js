@@ -46,6 +46,12 @@ const employeesSchema = new mongoose.Schema(
         user: {
             type: Boolean
         },
+        birthDate: {
+            type: Date,
+        },
+        nss: {
+            type: String,
+        },
         discordId: { type: String, unique: true, sparse: true },
         enrolledCourses: [{
             courseId: { type: Schema.Types.ObjectId, ref: 'Course' },
