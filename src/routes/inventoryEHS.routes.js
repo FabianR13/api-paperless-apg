@@ -5,33 +5,105 @@ const {
     createProducto, getProductos, updateProducto, toggleProductoStatus,
     registrarIngreso, registrarTraspaso, getMovimientos, getBitacora
 } = require("../controllers/inventoryEHS.controller");
-const { verifyToken, isAutorized } = require("../middlewares/auth.Jwt");
+const { verifyToken, isAutorized, isEHS } = require("../middlewares/auth.Jwt");
 const router = Router();
 
 // Ubicaciones
-router.get("/ubicaciones/:CompanyId?", verifyToken, getUbicaciones);
-router.post("/ubicaciones", verifyToken, createUbicacion);
-router.put("/ubicaciones/:id", verifyToken, updateUbicacion);
-router.patch("/ubicaciones/:id/toggle", verifyToken, toggleUbicacionStatus);
+router.get("/ubicaciones/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    getUbicaciones
+);
+router.post("/ubicaciones/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    createUbicacion
+);
+router.put("/ubicaciones/:id/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    updateUbicacion
+);
+router.patch("/ubicaciones/:id/toggle",
+    verifyToken,
+    toggleUbicacionStatus
+);
 
 // Componentes
-router.get("/componentes/:CompanyId?", verifyToken, getComponentes);
-router.post("/componentes", verifyToken, createComponente);
-router.put("/componentes/:id", verifyToken, updateComponente);
-router.delete("/componentes/:id", verifyToken, deleteComponente);
+router.get("/componentes/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    getComponentes
+);
+router.post("/componentes/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    createComponente
+);
+router.put("/componentes/:id/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    updateComponente
+);
+router.delete("/componentes/:id/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    deleteComponente
+);
 
 // Productos
-router.get("/productos/:CompanyId?", verifyToken, getProductos);
-router.post("/productos", verifyToken, createProducto);
-router.put("/productos/:id", verifyToken, updateProducto);
-router.patch("/productos/:id/toggle", verifyToken, toggleProductoStatus);
+router.get("/productos/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    getProductos
+);
+router.post("/productos/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    createProducto);
+router.put("/productos/:id/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    updateProducto
+);
+router.patch("/productos/:id/toggle/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    toggleProductoStatus
+);
 
 // Movimientos
-router.post("/ingreso", verifyToken, registrarIngreso);
-router.post("/traspaso", verifyToken, registrarTraspaso);
-router.get("/movimientos/:CompanyId?", verifyToken, getMovimientos);
+router.post("/ingreso",
+    verifyToken,
+    registrarIngreso
+);
+router.post("/traspaso",
+    verifyToken,
+    registrarTraspaso
+);
+router.get("/movimientos/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    getMovimientos
+);
 
 // Bitácora / Auditoría de Sistema
-router.get("/bitacora/:CompanyId?", verifyToken, getBitacora);
+router.get("/bitacora/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isEHS,
+    getBitacora);
 
 module.exports = router;

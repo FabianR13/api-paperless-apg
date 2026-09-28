@@ -10,7 +10,7 @@ const inspectionRowSchema = new mongoose.Schema({
     deliveryDate: { type: String, },
     supervisorId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employees', 
+        ref: 'Employees',
         required: true
     },
     deliveredQty: { type: Number, required: true },
@@ -39,6 +39,7 @@ const ptInspectionSchema = new mongoose.Schema({
     problemDescription: { type: String },
     totalInventorySystem: { type: Number },
     totalInventoryPhysical: { type: Number },
+    requestBy: { type: Schema.Types.ObjectId, ref: "User" },
     status: {
         type: String,
         enum: ['In Progress', 'Completed', 'Cancelled'],

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
 const EHSComponenteSchema = new mongoose.Schema({
     nombre: {
@@ -20,7 +21,8 @@ const EHSComponenteSchema = new mongoose.Schema({
     modifiedBy: {
         ref: "User",
         type: mongoose.Schema.Types.ObjectId
-    }
+    },
+    company: { type: Schema.Types.ObjectId, ref: "Company" },
 
 }, {
     timestamps: true

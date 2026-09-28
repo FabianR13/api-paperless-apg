@@ -4,6 +4,7 @@ const EHSComponente = require("../models/EHSComponente");
 const EHSProducto = require("../models/EHSProducto");
 const EHSMovimiento = require("../models/EHSMovimiento");
 const EHSBitacora = require("../models/EHSBitacora");
+const Company = require("../models/Company");
 
 // Helper para limpiar texto: Mayúsculas, Trim y Sin Acentos/Tildes
 const cleanText = (str = "") => {
@@ -16,6 +17,14 @@ const cleanText = (str = "") => {
 
 // ---------- UBICACIONES ----------
 const createUbicacion = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const foundCompany = await Company.find({
+        _id: { $in: CompanyId },
+    });
+
+    if (!foundCompany) return res.status(400).json({ status: "error", message: "La compañia no fue encontrada" });
+
     try {
         const nombre = cleanText(req.body.nombre);
         if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
@@ -37,7 +46,7 @@ const createUbicacion = async (req, res) => {
             }
         }
 
-        const newUbicacion = new EHSUbicacion({ nombre, createdBy: user._id, modifiedBy: user._id });
+        const newUbicacion = new EHSUbicacion({ nombre, createdBy: user._id, modifiedBy: user._id, company: CompanyId });
         await newUbicacion.save();
         res.status(201).json({ status: "success", data: newUbicacion });
     } catch (error) {
@@ -46,10 +55,22 @@ const createUbicacion = async (req, res) => {
 };
 
 const getUbicaciones = async (req, res) => {
+    const { CompanyId } = req.params
+
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+
     try {
-        const { all } = req.query;
-        const filter = all === "true" ? {} : { status: "Activo" };
-        const ubicaciones = await EHSUbicacion.find(filter).sort({ nombre: 1 });
+        const ubicaciones = await EHSUbicacion.find({
+            company: { $in: CompanyId },
+            status: "Activo"
+        }).sort({ nombre: 1 })
+
         res.status(200).json({ status: "success", data: ubicaciones });
     } catch (error) {
         res.status(500).json({ status: "error", message: error.message });
@@ -108,6 +129,14 @@ const toggleUbicacionStatus = async (req, res) => {
 
 // ---------- COMPONENTES ----------
 const createComponente = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const foundCompany = await Company.find({
+        _id: { $in: CompanyId },
+    });
+
+    if (!foundCompany) return res.status(400).json({ status: "error", message: "La compañia no fue encontrada" });
+
     try {
         const nombre = cleanText(req.body.nombre);
         if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
@@ -118,7 +147,7 @@ const createComponente = async (req, res) => {
         const existente = await EHSComponente.findOne({ nombre });
         if (existente) return res.status(409).json({ status: "error", message: "Ese componente ya existe" });
 
-        const newComponente = new EHSComponente({ nombre, createdBy: user._id, modifiedBy: user._id });
+        const newComponente = new EHSComponente({ nombre, createdBy: user._id, modifiedBy: user._id, company: CompanyId });
         await newComponente.save();
         res.status(201).json({ status: "success", data: newComponente });
     } catch (error) {
@@ -168,6 +197,14 @@ const deleteComponente = async (req, res) => {
 
 // ---------- PRODUCTOS ----------
 const createProducto = async (req, res) => {
+    const { CompanyId } = req.params;
+
+    const foundCompany = await Company.find({
+        _id: { $in: CompanyId },
+    });
+
+    if (!foundCompany) return res.status(400).json({ status: "error", message: "La compañia no fue encontrada" });
+
     try {
         const {
             descripcion, componentes, funcionPrincipal, unidad, unidadesPorEnvase, tipoEnvase,
@@ -191,7 +228,8 @@ const createProducto = async (req, res) => {
             stockMinimo,
             existencias,
             createdBy: user._id,
-            modifiedBy: user._id
+            modifiedBy: user._id,
+            company: CompanyId
         });
 
         await newProducto.save();
