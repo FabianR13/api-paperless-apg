@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
 const ExistenciaSchema = new mongoose.Schema({
     ubicacion: {
@@ -70,8 +71,8 @@ const EHSProductoSchema = new mongoose.Schema({
     existencias: [ExistenciaSchema],
 
     createdBy: { ref: "User", type: mongoose.Schema.Types.ObjectId },
-    modifiedBy: { ref: "User", type: mongoose.Schema.Types.ObjectId }
-
+    modifiedBy: { ref: "User", type: mongoose.Schema.Types.ObjectId },
+    company: { type: Schema.Types.ObjectId, ref: "Company" },
 }, { timestamps: true });
 
 module.exports = mongoose.model("EHSProducto", EHSProductoSchema);
