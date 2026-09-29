@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
 
 const EHSUbicacionSchema = new mongoose.Schema({
     nombre: {
@@ -18,6 +20,8 @@ const EHSUbicacionSchema = new mongoose.Schema({
         ref: "User",
         type: mongoose.Schema.Types.ObjectId
     },
+
+    company: { type: Schema.Types.ObjectId, ref: "Company" },
 
     modifiedBy: {
         ref: "User",
