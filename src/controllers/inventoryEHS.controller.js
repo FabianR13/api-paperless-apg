@@ -385,6 +385,7 @@ const registrarTraspaso = async (req, res) => {
         res.status(500).json({ status: "error", message: error.message });
     }
 };
+
 const getMovimientos = async (req, res) => {
     try {
         const { page = 1, limit = 50 } = req.query;
