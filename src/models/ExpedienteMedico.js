@@ -8,7 +8,12 @@ const ExpedienteMedicoSchema = new mongoose.Schema(
     // Datos complementarios
     gender: { type: String, default: "" },
     bloodType: { type: String, default: "" },
-    emergencyContact: { type: String, default: "" },
+    emergencyContact: {
+      name: { type: String, default: "" },
+      relationship: { type: String, default: "" },
+      mainPhone: { type: String, default: "" },
+      altPhone: { type: String, default: "" },
+    },
     maritalStatus: { type: String, default: "" },
     birthDate: { type: Date, default: null },
     nss: { type: String, default: "" },
@@ -18,7 +23,13 @@ const ExpedienteMedicoSchema = new mongoose.Schema(
     chronicDiseases: { type: [String], default: [] },
     allergies: { type: [String], default: [] },
     otherAllergies: { type: String, default: "" },
-
+    familyHistory: { type: String, default: "" },   // Antecedentes Heredo-Familiares
+    personalHistory: { type: String, default: "" }, // Antecedentes Patológicos Personales
+    continuousMedication: { type: String, default: "" }, // texto libre por ahora
+    covidVaccine: { type: Boolean, default: false },
+    smoking: { type: String, default: "" },
+    alcoholism: { type: String, default: "" },
+    physicalActivity: { type: String, default: "" },
     updatedBy: { type: String, default: "" },
   },
   { timestamps: true }

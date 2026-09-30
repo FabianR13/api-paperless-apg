@@ -3,6 +3,7 @@ const User = require("../models/User");
 const EHSProducto = require("../models/EHSProducto");
 const EHSMovimiento = require("../models/EHSMovimiento");
 const ConsultaMedica = require("../models/ConsultaMedica");
+const ExpedienteMedico = require("../models/ExpedienteMedico");
 
 // Convierte la cantidad capturada a la unidad base del producto
 const aUnidadBase = (producto, quantity, uom) => {
@@ -52,7 +53,11 @@ const crearConsulta = async (req, res) => {
       symptoms,
       physicalExam,
       medicalHistory,
-      externalMedication,
+      externalMedicationPrescribed,
+      bloodPressure,                // <-- Nuevos
+      temperature,                  // <-- Signos
+      heartRate,                    // <-- Vitales
+      weight,
       diagnosis,
       medicalIndications,
       insumos = []
@@ -73,7 +78,11 @@ const crearConsulta = async (req, res) => {
       symptoms,
       physicalExam,
       medicalHistory,
-      externalMedication,
+      externalMedicationPrescribed,
+      bloodPressure,
+      temperature,
+      heartRate,
+      weight,
       diagnosis,
       medicalIndications,
       insumos: [],
@@ -165,4 +174,73 @@ const crearConsulta = async (req, res) => {
   }
 };
 
-module.exports = { crearConsulta };
+// ---------- OBTENER TODAS LAS CONSULTAS (Bitácora General) ----------
+const getConsultas = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const { startDate, endDate, employeeId, attentionType } = req.query;
+
+    const filter = { company: CompanyId };
+
+    if (employeeId) filter.employeeId = employeeId;
+    if (attentionType && attentionType !== "ALL") filter.attentionType = attentionType;
+
+    if (startDate || endDate) {
+      filter.consultationDate = {};
+      if (startDate) filter.consultationDate.$gte = new Date(startDate);
+      if (endDate) filter.consultationDate.$lte = new Date(endDate);
+    }
+
+    const consultas = await ConsultaMedica.find(filter)
+      .sort({ consultationDate: -1 })
+      .populate("createdBy", "name email");
+
+    res.status(200).json({ status: "success", data: consultas });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- OBTENER EXPEDIENTE DE UN EMPLEADO ----------
+const getExpediente = async (req, res) => {
+  try {
+    const { CompanyId, employeeId } = req.params;
+    const expediente = await ExpedienteMedico.findOne({ company: CompanyId, employeeId });
+    res.status(200).json({ status: "success", data: expediente || null });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- CREAR O ACTUALIZAR EXPEDIENTE ---------
+const guardarExpediente = async (req, res) => {
+  try {
+    const { CompanyId, employeeId } = req.params; 
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+    const {
+      gender, bloodType, emergencyContact, maritalStatus, birthDate, nss,
+      hasChronicDisease, chronicDiseases, allergies, otherAllergies,
+      familyHistory, personalHistory, continuousMedication
+    } = req.body;
+
+    const expediente = await ExpedienteMedico.findOneAndUpdate(
+      { company: CompanyId, employeeId }, 
+      {
+        company: CompanyId, employeeId,
+        gender, bloodType, emergencyContact, maritalStatus, birthDate, nss,
+        hasChronicDisease, chronicDiseases, allergies, otherAllergies,
+        familyHistory, personalHistory, continuousMedication,
+        updatedBy: user._id
+      },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    res.status(200).json({ status: "success", data: expediente });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+module.exports = { crearConsulta, getConsultas, getExpediente, guardarExpediente };

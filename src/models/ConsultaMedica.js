@@ -20,6 +20,10 @@ const ConsultaMedicaSchema = new mongoose.Schema(
         // Datos de la consulta
         consultationDate: { type: Date, required: true, default: Date.now },
         shift: { type: String, enum: ["D", "A", "N"], required: true },
+        bloodPressure: { type: String, default: "" },
+        temperature: { type: String, default: "" },
+        heartRate: { type: String, default: "" },
+        weight: { type: String, default: "" },
         administeredBy: { type: String, required: true },
         attentionType: {
             type: String,
@@ -36,8 +40,8 @@ const ConsultaMedicaSchema = new mongoose.Schema(
         symptoms: { type: [String], default: [] },
         physicalExam: { type: String, default: "" },
         medicalHistory: { type: String, default: "" },
+        externalMedicationPrescribed: { type: Boolean, default: false },
         externalMedication: { type: String, default: "" },
-        diagnosis: { type: String, default: "" },
         medicalIndications: { type: String, default: "" },
 
         // Insumos del inventario EHS
