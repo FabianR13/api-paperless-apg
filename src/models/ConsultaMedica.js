@@ -8,6 +8,7 @@ const InsumoSchema = new mongoose.Schema(
         uom: { type: String, default: "" },
         quantityBase: { type: Number, default: 0 },   // cantidad en unidad base del producto
         descontado: { type: Boolean, default: true }, // false si el producto es noDescontar
+        indication: { type: String, default: "" },
     },
     { _id: false }
 );
@@ -15,8 +16,8 @@ const InsumoSchema = new mongoose.Schema(
 const ConsultaMedicaSchema = new mongoose.Schema(
     {
         company: { type: String, required: true, index: true },
-        employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", required: true },
-
+        employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employees", required: true },
+        folio: { type: String, unique: true },
         // Datos de la consulta
         consultationDate: { type: Date, required: true, default: Date.now },
         shift: { type: String, enum: ["D", "A", "N"], required: true },

@@ -3,6 +3,7 @@ const User = require("../models/User");
 const EHSProducto = require("../models/EHSProducto");
 const EHSMovimiento = require("../models/EHSMovimiento");
 const ConsultaMedica = require("../models/ConsultaMedica");
+const Employees = require("../models/Employees.js");
 const ExpedienteMedico = require("../models/ExpedienteMedico");
 
 // Convierte la cantidad capturada a la unidad base del producto
@@ -67,9 +68,13 @@ const crearConsulta = async (req, res) => {
       return res.status(400).json({ status: "error", message: "Falta el empleado atendido" });
     }
 
+    const totalConsultas = await ConsultaMedica.countDocuments({ company: CompanyId });
+    const folio = `ATT-${1001 + totalConsultas}`;
+
     // Creación de la consulta en memoria
     const consulta = new ConsultaMedica({
       company: CompanyId,
+      folio,
       employeeId,
       consultationDate: consultationDate || new Date(),
       shift,
@@ -119,7 +124,9 @@ const crearConsulta = async (req, res) => {
         quantity: cantidad,
         uom: item.uom,
         quantityBase: cantidadBase,
-        descontado: !producto.noDescontar
+        descontado: !producto.noDescontar,
+        indication: item.indication || "",
+
       });
 
       if (producto.noDescontar) continue;
@@ -193,10 +200,21 @@ const getConsultas = async (req, res) => {
 
     const consultas = await ConsultaMedica.find(filter)
       .sort({ consultationDate: -1 })
+      .populate({
+        path: "employeeId",
+        select: "name lastName numberEmployee department",
+        populate: { path: "department", select: "name" }
+      })
       .populate("createdBy", "name email");
+
+    // DESACTIVAR CACHÉ HTTP PARA EVITAR EL 304 NOT MODIFIED
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
 
     res.status(200).json({ status: "success", data: consultas });
   } catch (error) {
+    console.error("Error en getConsultas:", error);
     res.status(500).json({ status: "error", message: error.message });
   }
 };
@@ -215,23 +233,17 @@ const getExpediente = async (req, res) => {
 // ---------- CREAR O ACTUALIZAR EXPEDIENTE ---------
 const guardarExpediente = async (req, res) => {
   try {
-    const { CompanyId, employeeId } = req.params; 
+    const { CompanyId, employeeId } = req.params;
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
-    const {
-      gender, bloodType, emergencyContact, maritalStatus, birthDate, nss,
-      hasChronicDisease, chronicDiseases, allergies, otherAllergies,
-      familyHistory, personalHistory, continuousMedication
-    } = req.body;
-
+    // Pasamos req.body completo para que Mongoose guarde todos los campos válidos del Schema
     const expediente = await ExpedienteMedico.findOneAndUpdate(
-      { company: CompanyId, employeeId }, 
+      { company: CompanyId, employeeId },
       {
-        company: CompanyId, employeeId,
-        gender, bloodType, emergencyContact, maritalStatus, birthDate, nss,
-        hasChronicDisease, chronicDiseases, allergies, otherAllergies,
-        familyHistory, personalHistory, continuousMedication,
+        ...req.body,
+        company: CompanyId,
+        employeeId,
         updatedBy: user._id
       },
       { new: true, upsert: true, runValidators: true }
