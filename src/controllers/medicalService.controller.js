@@ -5,6 +5,10 @@ const EHSMovimiento = require("../models/EHSMovimiento");
 const ConsultaMedica = require("../models/ConsultaMedica");
 const Employees = require("../models/Employees.js");
 const ExpedienteMedico = require("../models/ExpedienteMedico");
+const CronicoDegenerativo = require("../models/CronicoDegenerativo");
+const SeguimientoMedicoGeneral = require("../models/SeguimientoMedicoGeneral");
+const PersonalLactante = require("../models/PersonalLactante");
+const ControlPrenatal = require("../models/ControlPrenatal");
 
 // Convierte la cantidad capturada a la unidad base del producto
 const aUnidadBase = (producto, quantity, uom) => {
@@ -255,4 +259,210 @@ const guardarExpediente = async (req, res) => {
   }
 };
 
-module.exports = { crearConsulta, getConsultas, getExpediente, guardarExpediente };
+// ---------- CREAR REGISTRO DE SEGUIMIENTO CRÓNICO ----------
+const crearCronicoDegenerativo = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+    const {
+      employeeId, diseaseType, diagnosisDate, lastCheckupDate,
+      treatingPhysician, nextCheckupDate, currentTreatment, restrictions, notes
+    } = req.body;
+
+    if (!employeeId) {
+      return res.status(400).json({ status: "error", message: "Falta el colaborador" });
+    }
+
+    const registro = await CronicoDegenerativo.create({
+      company: CompanyId,
+      employeeId,
+      diseaseType,
+      diagnosisDate,
+      lastCheckupDate,
+      treatingPhysician,
+      nextCheckupDate,
+      currentTreatment,
+      restrictions,
+      notes,
+      createdBy: user._id,
+    });
+
+    res.status(201).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en crearCronicoDegenerativo:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- OBTENER REGISTROS (tabla "Registro de seguimiento") ----------
+const getCronicoDegenerativo = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const registros = await CronicoDegenerativo.find({ company: CompanyId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "employeeId",
+        select: "name lastName numberEmployee department",
+        populate: { path: "department", select: "name" }
+      });
+
+    res.status(200).json({ status: "success", data: registros });
+  } catch (error) {
+    console.error("Error en getCronicoDegenerativo:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- DETECTADOS AUTOMÁTICAMENTE (desde Expediente) ----------
+const getDetectadosCronicos = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const detectados = await ExpedienteMedico.find({
+      company: CompanyId,
+      hasChronicDisease: "Sí",
+    })
+      .select("employeeId chronicDiseases")
+      .populate({
+        path: "employeeId",
+        select: "name lastName numberEmployee department",
+        populate: { path: "department", select: "name" }
+      });
+
+    res.status(200).json({ status: "success", data: detectados });
+  } catch (error) {
+    console.error("Error en getDetectadosCronicos:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- SEGUIMIENTO MÉDICO GENERAL ----------
+const crearSeguimientoGeneral = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+    const { employeeId, reason, absenceStartDate, returnDate, nextCheckupDate, restrictions, notes } = req.body;
+    if (!employeeId) return res.status(400).json({ status: "error", message: "Falta el colaborador" });
+
+    const registro = await SeguimientoMedicoGeneral.create({
+      company: CompanyId, employeeId, reason, absenceStartDate, returnDate,
+      nextCheckupDate, restrictions, notes, createdBy: user._id,
+    });
+
+    res.status(201).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en crearSeguimientoGeneral:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+const getSeguimientoGeneral = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const registros = await SeguimientoMedicoGeneral.find({ company: CompanyId })
+      .sort({ createdAt: -1 })
+      .populate({ path: "employeeId", select: "name lastName numberEmployee department", populate: { path: "department", select: "name" } });
+    res.status(200).json({ status: "success", data: registros });
+  } catch (error) {
+    console.error("Error en getSeguimientoGeneral:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// Detectados: consultas con attentionType = Seguimiento médico (reincorporación...)
+const getDetectadosSeguimiento = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const detectados = await ConsultaMedica.find({
+      company: CompanyId,
+      attentionType: "Seguimiento médico (reincorporación laboral tras incapacidad o ausencia)",
+    })
+      .select("employeeId consultationDate diagnosis")
+      .sort({ consultationDate: -1 })
+      .populate({ path: "employeeId", select: "name lastName numberEmployee department", populate: { path: "department", select: "name" } });
+    res.status(200).json({ status: "success", data: detectados });
+  } catch (error) {
+    console.error("Error en getDetectadosSeguimiento:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- PERSONAL LACTANTE ----------
+const crearLactante = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+    const { employeeId, startDate, estimatedEndDate, notes } = req.body;
+    if (!employeeId) return res.status(400).json({ status: "error", message: "Falta el colaborador" });
+
+    const registro = await PersonalLactante.create({
+      company: CompanyId, employeeId, startDate, estimatedEndDate, notes, createdBy: user._id,
+    });
+
+    res.status(201).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en crearLactante:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+const getLactantes = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const registros = await PersonalLactante.find({ company: CompanyId })
+      .sort({ createdAt: -1 })
+      .populate({ path: "employeeId", select: "name lastName numberEmployee department", populate: { path: "department", select: "name" } });
+    res.status(200).json({ status: "success", data: registros });
+  } catch (error) {
+    console.error("Error en getLactantes:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- CONTROL PRENATAL ----------
+const crearPrenatal = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+    const { employeeId, dueDate, gestationWeeks, estimatedLeaveDate, nextAppointmentDate, notes } = req.body;
+    if (!employeeId) return res.status(400).json({ status: "error", message: "Falta el colaborador" });
+
+    const registro = await ControlPrenatal.create({
+      company: CompanyId, employeeId, dueDate, gestationWeeks, estimatedLeaveDate,
+      nextAppointmentDate, notes, createdBy: user._id,
+    });
+
+    res.status(201).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en crearPrenatal:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+const getPrenatales = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const registros = await ControlPrenatal.find({ company: CompanyId })
+      .sort({ createdAt: -1 })
+      .populate({ path: "employeeId", select: "name lastName numberEmployee department", populate: { path: "department", select: "name" } });
+    res.status(200).json({ status: "success", data: registros });
+  } catch (error) {
+    console.error("Error en getPrenatales:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+module.exports = {
+  crearConsulta, getConsultas, getExpediente, guardarExpediente,
+  crearCronicoDegenerativo, getCronicoDegenerativo, getDetectadosCronicos,
+  crearSeguimientoGeneral, getSeguimientoGeneral, getDetectadosSeguimiento,
+  crearLactante, getLactantes,
+  crearPrenatal, getPrenatales,
+};
