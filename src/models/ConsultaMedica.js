@@ -33,6 +33,7 @@ const ConsultaMedicaSchema = new mongoose.Schema(
                 "Segunda atención subsecuente",
                 "Tercera atención subsecuente",
                 "Seguimiento médico (reincorporación laboral tras incapacidad o ausencia)",
+                "Urgencia / Accidente",
             ],
             required: true,
         },

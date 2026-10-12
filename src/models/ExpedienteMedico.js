@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const ExpedienteMedicoSchema = new mongoose.Schema(
   {
     company: { type: String, required: true, index: true },
-    employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", required: true },
+    employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employees", required: true },
 
     // Datos complementarios
     gender: { type: String, default: "" },

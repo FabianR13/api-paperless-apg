@@ -241,7 +241,7 @@ const guardarExpediente = async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
-    // Pasamos req.body completo para que Mongoose guarde todos los campos válidos del Schema
+    // 1. Guardar/Actualizar Expediente Médico
     const expediente = await ExpedienteMedico.findOneAndUpdate(
       { company: CompanyId, employeeId },
       {
@@ -253,8 +253,35 @@ const guardarExpediente = async (req, res) => {
       { new: true, upsert: true, runValidators: true }
     );
 
+    // 2. SINCRONIZACIÓN AUTOMÁTICA CON POBLACIÓN VULNERABLE (Crónico Degenerativa)
+    if (expediente.hasChronicDisease === "Sí" && expediente.chronicDiseases.length > 0) {
+      await CronicoDegenerativo.findOneAndUpdate(
+        { company: CompanyId, employeeId },
+        {
+          $addToSet: { diseaseType: { $each: expediente.chronicDiseases } }, // Agrega enfermedades sin duplicar
+          currentTreatment: expediente.continuousMedication || "",           // Sincroniza tratamiento continuo
+          createdBy: user._id
+        },
+        { upsert: true, new: true }
+      );
+    }
+
     res.status(200).json({ status: "success", data: expediente });
   } catch (error) {
+    console.error("Error en guardarExpediente:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- OBTENER TODOS LOS EXPEDIENTES (para filtros como género) ----------
+const getAllExpedientes = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const expedientes = await ExpedienteMedico.find({ company: CompanyId })
+      .select("employeeId gender");
+    res.status(200).json({ status: "success", data: expedientes });
+  } catch (error) {
+    console.error("Error en getAllExpedientes:", error);
     res.status(500).json({ status: "error", message: error.message });
   }
 };
@@ -311,6 +338,41 @@ const getCronicoDegenerativo = async (req, res) => {
     res.status(200).json({ status: "success", data: registros });
   } catch (error) {
     console.error("Error en getCronicoDegenerativo:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- CRÓNICO DEGENERATIVO: actualizar / eliminar ----------
+const updateCronicoDegenerativo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      diseaseType, diagnosisDate, lastCheckupDate,
+      treatingPhysician, nextCheckupDate, currentTreatment, restrictions, notes
+    } = req.body;
+
+    const registro = await CronicoDegenerativo.findByIdAndUpdate(
+      id,
+      { diseaseType, diagnosisDate, lastCheckupDate, treatingPhysician, nextCheckupDate, currentTreatment, restrictions, notes },
+      { new: true, runValidators: true }
+    );
+
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en updateCronicoDegenerativo:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+const deleteCronicoDegenerativo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const registro = await CronicoDegenerativo.findByIdAndDelete(id);
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", message: "Registro eliminado" });
+  } catch (error) {
+    console.error("Error en deleteCronicoDegenerativo:", error);
     res.status(500).json({ status: "error", message: error.message });
   }
 };
@@ -372,6 +434,38 @@ const getSeguimientoGeneral = async (req, res) => {
   }
 };
 
+// ---------- SEGUIMIENTO MÉDICO GENERAL: actualizar / eliminar ----------
+const updateSeguimientoGeneral = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason, absenceStartDate, returnDate, nextCheckupDate, restrictions, notes } = req.body;
+
+    const registro = await SeguimientoMedicoGeneral.findByIdAndUpdate(
+      id,
+      { reason, absenceStartDate, returnDate, nextCheckupDate, restrictions, notes },
+      { new: true, runValidators: true }
+    );
+
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en updateSeguimientoGeneral:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+const deleteSeguimientoGeneral = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const registro = await SeguimientoMedicoGeneral.findByIdAndDelete(id);
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", message: "Registro eliminado" });
+  } catch (error) {
+    console.error("Error en deleteSeguimientoGeneral:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
 // Detectados: consultas con attentionType = Seguimiento médico (reincorporación...)
 const getDetectadosSeguimiento = async (req, res) => {
   try {
@@ -424,6 +518,38 @@ const getLactantes = async (req, res) => {
   }
 };
 
+// ---------- PERSONAL LACTANTE: actualizar / eliminar ----------
+const updateLactante = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { startDate, estimatedEndDate, notes } = req.body;
+
+    const registro = await PersonalLactante.findByIdAndUpdate(
+      id,
+      { startDate, estimatedEndDate, notes },
+      { new: true, runValidators: true }
+    );
+
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en updateLactante:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+const deleteLactante = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const registro = await PersonalLactante.findByIdAndDelete(id);
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", message: "Registro eliminado" });
+  } catch (error) {
+    console.error("Error en deleteLactante:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
 // ---------- CONTROL PRENATAL ----------
 const crearPrenatal = async (req, res) => {
   try {
@@ -459,10 +585,42 @@ const getPrenatales = async (req, res) => {
   }
 };
 
+// ---------- CONTROL PRENATAL: actualizar / eliminar ----------
+const updatePrenatal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { dueDate, gestationWeeks, estimatedLeaveDate, nextAppointmentDate, notes } = req.body;
+
+    const registro = await ControlPrenatal.findByIdAndUpdate(
+      id,
+      { dueDate, gestationWeeks, estimatedLeaveDate, nextAppointmentDate, notes },
+      { new: true, runValidators: true }
+    );
+
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en updatePrenatal:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+const deletePrenatal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const registro = await ControlPrenatal.findByIdAndDelete(id);
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+    res.status(200).json({ status: "success", message: "Registro eliminado" });
+  } catch (error) {
+    console.error("Error en deletePrenatal:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
 module.exports = {
-  crearConsulta, getConsultas, getExpediente, guardarExpediente,
-  crearCronicoDegenerativo, getCronicoDegenerativo, getDetectadosCronicos,
-  crearSeguimientoGeneral, getSeguimientoGeneral, getDetectadosSeguimiento,
-  crearLactante, getLactantes,
-  crearPrenatal, getPrenatales,
+  crearConsulta, getConsultas, getExpediente, guardarExpediente, getAllExpedientes,
+  crearCronicoDegenerativo, getCronicoDegenerativo, updateCronicoDegenerativo, deleteCronicoDegenerativo, getDetectadosCronicos,
+  crearSeguimientoGeneral, getSeguimientoGeneral, getDetectadosSeguimiento, updateSeguimientoGeneral, deleteSeguimientoGeneral,
+  crearLactante, getLactantes, updateLactante, deleteLactante,
+  crearPrenatal, getPrenatales, updatePrenatal, deletePrenatal,
 };
