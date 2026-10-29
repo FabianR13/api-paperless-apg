@@ -44,7 +44,13 @@ const ConsultaMedicaSchema = new mongoose.Schema(
         medicalHistory: { type: String, default: "" },
         externalMedicationPrescribed: { type: Boolean, default: false },
         externalMedication: { type: String, default: "" },
+        administrationRoute: {
+            type: String,
+            enum: ["No aplica", "Oral", "Oftálmica", "Ótica", "Tópica / Dérmica", "Nasal", "Intramuscular", "Intravenosa", "Sublingual", "Otra / No especificada", ""],
+            default: "No aplica"
+        },
         medicalIndications: { type: String, default: "" },
+        diagnosis: { type: String, default: "" },
 
         // Insumos del inventario EHS
         insumos: { type: [InsumoSchema], default: [] },

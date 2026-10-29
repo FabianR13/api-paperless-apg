@@ -30,6 +30,14 @@ const ExpedienteMedicoSchema = new mongoose.Schema(
     smoking: { type: String, default: "" },
     alcoholism: { type: String, default: "" },
     physicalActivity: { type: String, default: "" },
+    documents: [
+      {
+        fileName: { type: String, required: true },
+        originalName: { type: String, default: "" },
+        fileUrl: { type: String, default: "" },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
     updatedBy: { type: String, default: "" },
   },
   { timestamps: true }

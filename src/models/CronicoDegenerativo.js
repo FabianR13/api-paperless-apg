@@ -24,6 +24,14 @@ const CronicoDegenerativoSchema = new mongoose.Schema(
         restrictions: { type: String, default: "" },       // aptitud / restricciones para el puesto
         notes: { type: String, default: "" },
 
+        documents: [
+            {
+                fileName: { type: String, required: true },     // nombre en S3
+                originalName: { type: String, default: "" },    // nombre que tenía el archivo
+                fileUrl: { type: String, default: "" },
+                uploadedAt: { type: Date, default: Date.now },
+            },
+        ],
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     },
     { timestamps: true }

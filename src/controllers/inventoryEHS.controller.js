@@ -27,6 +27,7 @@ const createUbicacion = async (req, res) => {
 
     try {
         const nombre = cleanText(req.body.nombre);
+        const tipo = req.body.tipo;
         if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
 
         const user = await User.findById(req.userId);
@@ -41,12 +42,13 @@ const createUbicacion = async (req, res) => {
                 // Si existía pero estaba inactiva, la reactivamos y actualizamos
                 ubicacion.status = "Activo";
                 ubicacion.modifiedBy = user._id;
+                if (tipo) ubicacion.tipo = tipo;
                 await ubicacion.save();
                 return res.status(200).json({ status: "success", data: ubicacion });
             }
         }
 
-        const newUbicacion = new EHSUbicacion({ nombre, createdBy: user._id, modifiedBy: user._id, company: CompanyId });
+        const newUbicacion = new EHSUbicacion({ nombre, tipo, createdBy: user._id, modifiedBy: user._id, company: CompanyId });
         await newUbicacion.save();
         res.status(201).json({ status: "success", data: newUbicacion });
     } catch (error) {
@@ -81,6 +83,7 @@ const updateUbicacion = async (req, res) => {
     try {
         const { id } = req.params;
         const nombre = cleanText(req.body.nombre);
+        const tipo = req.body.tipo;
         if (!nombre) return res.status(400).json({ status: "error", message: "El nombre es obligatorio" });
 
         const user = await User.findById(req.userId);
@@ -89,7 +92,7 @@ const updateUbicacion = async (req, res) => {
         const duplicado = await EHSUbicacion.findOne({ nombre, _id: { $ne: id } });
         if (duplicado) return res.status(409).json({ status: "error", message: "Esa ubicación ya existe" });
 
-        const updated = await EHSUbicacion.findByIdAndUpdate(id, { nombre, modifiedBy: user._id }, { new: true });
+        const updated = await EHSUbicacion.findByIdAndUpdate(id, { nombre, tipo, modifiedBy: user._id }, { new: true });
         if (!updated) return res.status(404).json({ status: "error", message: "Ubicación no encontrada" });
         res.status(200).json({ status: "success", data: updated });
     } catch (error) {
@@ -524,11 +527,65 @@ const getBitacora = async (req, res) => {
 
 };
 
+const registrarBaja = async (req, res) => {
+    try {
+        const { productoId, ubicacionOrigen, lote, fechaCaducidad, cantidad, motivo } = req.body;
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
+        const cantidadBaja = Number(cantidad);
+        if (!cantidadBaja || cantidadBaja <= 0) {
+            return res.status(400).json({ status: "error", message: "Cantidad inválida" });
+        }
+        if (!motivo) return res.status(400).json({ status: "error", message: "El motivo es obligatorio" });
+
+        const producto = await EHSProducto.findById(productoId);
+        if (!producto) return res.status(404).json({ status: "error", message: "Producto no encontrado" });
+
+        const caducidadKey = fechaCaducidad ? new Date(fechaCaducidad).toISOString() : null;
+
+        const origen = producto.existencias.find(
+            (ex) => ex.ubicacion.toString() === ubicacionOrigen &&
+                ex.lote === lote &&
+                (ex.fechaCaducidad ? ex.fechaCaducidad.toISOString() : null) === caducidadKey
+        );
+        if (!origen) return res.status(404).json({ status: "error", message: "Existencia no encontrada" });
+        if (origen.cantidad < cantidadBaja) {
+            return res.status(400).json({ status: "error", message: "No hay suficiente cantidad en esa ubicación" });
+        }
+
+        const factura = origen.factura;
+        origen.cantidad -= cantidadBaja;
+        if (origen.cantidad === 0) {
+            producto.existencias.pull({ _id: origen._id });
+        }
+
+        producto.modifiedBy = user._id;
+        await producto.save();
+
+        await EHSMovimiento.create({
+            producto: producto._id,
+            tipo: "Baja",
+            lote,
+            fechaCaducidad,
+            cantidad: cantidadBaja,
+            ubicacionOrigen,
+            factura,
+            motivo,
+            createdBy: user._id
+        });
+
+        res.status(200).json({ status: "success", data: producto });
+    } catch (error) {
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
 
 
 module.exports = {
     createUbicacion, getUbicaciones, updateUbicacion, toggleUbicacionStatus,
     createComponente, getComponentes, updateComponente, deleteComponente,
     createProducto, getProductos, updateProducto, toggleProductoStatus,
-    registrarIngreso, registrarTraspaso, getMovimientos, getBitacora
+    registrarIngreso, registrarTraspaso, getMovimientos, getBitacora, registrarBaja
 };

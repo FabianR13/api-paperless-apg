@@ -11,6 +11,15 @@ const ControlPrenatalSchema = new mongoose.Schema(
     nextAppointmentDate: { type: Date, default: null },
     notes: { type: String, default: "" },
 
+    documents: [
+      {
+        fileName: { type: String, required: true },
+        originalName: { type: String, default: "" },
+        fileUrl: { type: String, default: "" },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
+
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

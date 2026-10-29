@@ -9,6 +9,17 @@ const CronicoDegenerativo = require("../models/CronicoDegenerativo");
 const SeguimientoMedicoGeneral = require("../models/SeguimientoMedicoGeneral");
 const PersonalLactante = require("../models/PersonalLactante");
 const ControlPrenatal = require("../models/ControlPrenatal");
+const { S3Client, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+
+const s3 = new S3Client({
+  region: process.env.S3_BUCKET_REGION,
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  },
+});
+
+const MEDICAL_DOCS_FOLDER = "Uploads/MedicalDocs/";
 
 // Convierte la cantidad capturada a la unidad base del producto
 const aUnidadBase = (producto, quantity, uom) => {
@@ -59,6 +70,7 @@ const crearConsulta = async (req, res) => {
       physicalExam,
       medicalHistory,
       externalMedicationPrescribed,
+      administrationRoute,
       bloodPressure,                // <-- Nuevos
       temperature,                  // <-- Signos
       heartRate,                    // <-- Vitales
@@ -88,6 +100,7 @@ const crearConsulta = async (req, res) => {
       physicalExam,
       medicalHistory,
       externalMedicationPrescribed,
+      administrationRoute,
       bloodPressure,
       temperature,
       heartRate,
@@ -167,6 +180,8 @@ const crearConsulta = async (req, res) => {
     }
 
     // 2) PERSISTENCIA EN BASE DE DATOS
+    await consulta.save(); // primero: si falla, el inventario no se toca
+
     for (const { producto, existenciaId } of vaciar) {
       producto.existencias.pull({ _id: existenciaId });
     }
@@ -176,7 +191,6 @@ const crearConsulta = async (req, res) => {
       await producto.save();
     }
     if (movimientos.length) await EHSMovimiento.insertMany(movimientos);
-    await consulta.save();
 
     res.status(201).json({ status: "201", message: "Consulta médica creada con éxito", body: consulta });
   } catch (error) {
@@ -196,10 +210,11 @@ const getConsultas = async (req, res) => {
     if (employeeId) filter.employeeId = employeeId;
     if (attentionType && attentionType !== "ALL") filter.attentionType = attentionType;
 
-    if (startDate || endDate) {
-      filter.consultationDate = {};
-      if (startDate) filter.consultationDate.$gte = new Date(startDate);
-      if (endDate) filter.consultationDate.$lte = new Date(endDate);
+    if (startDate) filter.consultationDate.$gte = new Date(startDate);
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setUTCHours(23, 59, 59, 999);
+      filter.consultationDate.$lte = end;
     }
 
     const consultas = await ConsultaMedica.find(filter)
@@ -241,11 +256,12 @@ const guardarExpediente = async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
+    const { documents, ...datos } = req.body; // los documentos solo se manejan con sus propios endpoints
     // 1. Guardar/Actualizar Expediente Médico
     const expediente = await ExpedienteMedico.findOneAndUpdate(
       { company: CompanyId, employeeId },
       {
-        ...req.body,
+        ...datos,
         company: CompanyId,
         employeeId,
         updatedBy: user._id
@@ -286,6 +302,22 @@ const getAllExpedientes = async (req, res) => {
   }
 };
 
+// Deja el Expediente General igual a la lista de enfermedades del registro crónico
+const syncEnfermedadesExpediente = async ({ company, employeeId, diseaseType, userId }) => {
+  if (!Array.isArray(diseaseType)) return null;
+  return ExpedienteMedico.findOneAndUpdate(
+    { company: String(company), employeeId },
+    {
+      $set: {
+        chronicDiseases: diseaseType,
+        hasChronicDisease: diseaseType.length > 0 ? "Sí" : "No",
+        updatedBy: userId,
+      },
+    },
+    { new: true, upsert: true, runValidators: true }
+  );
+};
+
 // ---------- CREAR REGISTRO DE SEGUIMIENTO CRÓNICO ----------
 const crearCronicoDegenerativo = async (req, res) => {
   try {
@@ -315,6 +347,8 @@ const crearCronicoDegenerativo = async (req, res) => {
       notes,
       createdBy: user._id,
     });
+
+    await syncEnfermedadesExpediente({ company: CompanyId, employeeId, diseaseType, userId: user._id });
 
     res.status(201).json({ status: "success", data: registro });
   } catch (error) {
@@ -346,6 +380,9 @@ const getCronicoDegenerativo = async (req, res) => {
 const updateCronicoDegenerativo = async (req, res) => {
   try {
     const { id } = req.params;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
+
     const {
       diseaseType, diagnosisDate, lastCheckupDate,
       treatingPhysician, nextCheckupDate, currentTreatment, restrictions, notes
@@ -358,6 +395,14 @@ const updateCronicoDegenerativo = async (req, res) => {
     );
 
     if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+
+    await syncEnfermedadesExpediente({
+      company: registro.company,
+      employeeId: registro.employeeId,
+      diseaseType: registro.diseaseType,
+      userId: user._id,
+    });
+
     res.status(200).json({ status: "success", data: registro });
   } catch (error) {
     console.error("Error en updateCronicoDegenerativo:", error);
@@ -373,6 +418,64 @@ const deleteCronicoDegenerativo = async (req, res) => {
     res.status(200).json({ status: "success", message: "Registro eliminado" });
   } catch (error) {
     console.error("Error en deleteCronicoDegenerativo:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- CRÓNICO: subir documentos ----------
+const uploadCronicoDocs = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const registro = await CronicoDegenerativo.findById(id);
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+
+    // Armamos la lista de documentos con la URL pública directa
+    const nuevos = (req.files || []).map((f) => {
+      const fileName = f.key.split("/").pop();
+      return {
+        fileName,
+        originalName: f.originalname,
+        // Construimos la URL fija/pública de Amazon S3
+        fileUrl: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com/${MEDICAL_DOCS_FOLDER}${fileName}`
+      };
+    });
+
+    if (nuevos.length === 0) {
+      return res.status(400).json({ status: "error", message: "No se recibió ningún archivo" });
+    }
+
+    registro.documents.push(...nuevos);
+    await registro.save();
+
+    res.status(200).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en uploadCronicoDocs:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- CRÓNICO: eliminar un documento ----------
+const deleteCronicoDoc = async (req, res) => {
+  try {
+    const { id, docId } = req.params;
+    const registro = await CronicoDegenerativo.findById(id);
+    if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+
+    const doc = registro.documents.id(docId);
+    if (!doc) return res.status(404).json({ status: "error", message: "Documento no encontrado" });
+
+    // Eliminamos el archivo físico del S3
+    await s3.send(new DeleteObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: MEDICAL_DOCS_FOLDER + doc.fileName,
+    }));
+
+    registro.documents.pull({ _id: docId });
+    await registro.save();
+
+    res.status(200).json({ status: "success", data: registro });
+  } catch (error) {
+    console.error("Error en deleteCronicoDoc:", error);
     res.status(500).json({ status: "error", message: error.message });
   }
 };
@@ -617,10 +720,194 @@ const deletePrenatal = async (req, res) => {
   }
 };
 
+// Genera subir y eliminar para cualquier modelo con campo "documents"
+const buildDocHandlers = (Model) => ({
+  upload: async (req, res) => {
+    try {
+      const registro = await Model.findById(req.params.id);
+      if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+
+      const nuevos = (req.files || []).map((f) => {
+        const fileName = f.key.split("/").pop();
+        return {
+          fileName,
+          originalName: f.originalname,
+          // URL pública directa fija de S3
+          fileUrl: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com/${MEDICAL_DOCS_FOLDER}${fileName}`
+        };
+      });
+
+      if (nuevos.length === 0) {
+        return res.status(400).json({ status: "error", message: "No se recibió ningún archivo" });
+      }
+
+      registro.documents.push(...nuevos);
+      await registro.save();
+      res.status(200).json({ status: "success", data: registro });
+    } catch (error) {
+      console.error("Error al subir documentos:", error);
+      res.status(500).json({ status: "error", message: error.message });
+    }
+  },
+
+  remove: async (req, res) => {
+    try {
+      const { id, docId } = req.params;
+      const registro = await Model.findById(id);
+      if (!registro) return res.status(404).json({ status: "error", message: "Registro no encontrado" });
+
+      const doc = registro.documents.id(docId);
+      if (!doc) return res.status(404).json({ status: "error", message: "Documento no encontrado" });
+
+      await s3.send(new DeleteObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: MEDICAL_DOCS_FOLDER + doc.fileName,
+      }));
+
+      registro.documents.pull({ _id: docId });
+      await registro.save();
+      res.status(200).json({ status: "success", data: registro });
+    } catch (error) {
+      console.error("Error al eliminar documento:", error);
+      res.status(500).json({ status: "error", message: error.message });
+    }
+  }
+});
+
+const seguimientoDocs = buildDocHandlers(SeguimientoMedicoGeneral);
+const lactanteDocs = buildDocHandlers(PersonalLactante);
+const prenatalDocs = buildDocHandlers(ControlPrenatal);
+
+// ---------- EXPEDIENTE: subir documentos (crea el expediente si no existe) ----------
+const uploadExpedienteDocs = async (req, res) => {
+  try {
+    const { CompanyId, employeeId } = req.params;
+
+    const nuevos = (req.files || []).map((f) => {
+      const fileName = f.key.split("/").pop();
+      return {
+        fileName,
+        originalName: f.originalname,
+        // URL pública fija de Amazon S3
+        fileUrl: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com/${MEDICAL_DOCS_FOLDER}${fileName}`
+      };
+    });
+
+    if (nuevos.length === 0) {
+      return res.status(400).json({ status: "error", message: "No se recibió ningún archivo" });
+    }
+
+    const expediente = await ExpedienteMedico.findOneAndUpdate(
+      { company: CompanyId, employeeId },
+      { $push: { documents: { $each: nuevos } } },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({ status: "success", data: expediente });
+  } catch (error) {
+    console.error("Error en uploadExpedienteDocs:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- EXPEDIENTE: eliminar un documento ----------
+const deleteExpedienteDoc = async (req, res) => {
+  try {
+    const { CompanyId, employeeId, docId } = req.params;
+    const expediente = await ExpedienteMedico.findOne({ company: CompanyId, employeeId });
+    if (!expediente) return res.status(404).json({ status: "error", message: "Expediente no encontrado" });
+
+    const doc = expediente.documents.id(docId);
+    if (!doc) return res.status(404).json({ status: "error", message: "Documento no encontrado" });
+
+    await s3.send(new DeleteObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: MEDICAL_DOCS_FOLDER + doc.fileName,
+    }));
+
+    expediente.documents.pull({ _id: docId });
+    await expediente.save();
+
+    res.status(200).json({ status: "success", data: expediente });
+  } catch (error) {
+    console.error("Error en deleteExpedienteDoc:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+// ---------- ALERTAS DE CITAS / REVISIONES ----------
+const getAlertasCitas = async (req, res) => {
+  try {
+    const { CompanyId } = req.params;
+    const days = Math.min(Math.max(Number(req.query.days) || 7, 1), 60);
+    const DAY = 24 * 60 * 60 * 1000;
+    const limite = new Date(Date.now() + (days + 2) * DAY); // margen: el front afina con la fecha local
+    const desde30 = new Date(Date.now() - 32 * DAY);
+
+    const enVentana = (d) => d && new Date(d) < limite;
+    const reciente = (d) => d && new Date(d) >= desde30 && new Date(d) < limite;
+
+    const sort = { createdAt: -1 };
+    const emp = { path: "employeeId", select: "name lastName numberEmployee" };
+
+    const [cronicos, seguimientos, prenatales, lactancias] = await Promise.all([
+      CronicoDegenerativo.find({ company: CompanyId }).sort(sort).populate(emp),
+      SeguimientoMedicoGeneral.find({ company: CompanyId, returnDate: null }).sort(sort).populate(emp),
+      ControlPrenatal.find({ company: CompanyId }).sort(sort).populate(emp),
+      PersonalLactante.find({ company: CompanyId }).sort(sort).populate(emp),
+    ]);
+
+    // Solo el registro más reciente por empleado (los ya ordenados por createdAt desc)
+    const ultimoPorEmpleado = (docs) => {
+      const vistos = new Set();
+      return docs.filter((r) => {
+        if (!r.employeeId) return false;
+        const id = String(r.employeeId._id);
+        if (vistos.has(id)) return false;
+        vistos.add(id);
+        return true;
+      });
+    };
+
+    const item = (r, type, label, date) => ({
+      _id: `${r._id}-${type}`, type, label, date, employee: r.employeeId,
+    });
+
+    const prenatalesUlt = ultimoPorEmpleado(prenatales);
+
+    const alertas = [
+      ...ultimoPorEmpleado(cronicos)
+        .filter((r) => enVentana(r.nextCheckupDate))
+        .map((r) => item(r, "cronico", "Próxima revisión", r.nextCheckupDate)),
+      ...seguimientos
+        .filter((r) => r.employeeId && enVentana(r.nextCheckupDate))
+        .map((r) => item(r, "seguimiento", "Próxima revisión", r.nextCheckupDate)),
+      ...prenatalesUlt
+        .filter((r) => reciente(r.nextAppointmentDate))
+        .map((r) => item(r, "prenatal", "Próxima consulta prenatal", r.nextAppointmentDate)),
+      ...prenatalesUlt
+        .filter((r) => reciente(r.estimatedLeaveDate))
+        .map((r) => item(r, "prenatal", "Inicio de incapacidad prenatal", r.estimatedLeaveDate)),
+      ...ultimoPorEmpleado(lactancias)
+        .filter((r) => reciente(r.estimatedEndDate))
+        .map((r) => item(r, "lactancia", "Término del periodo de lactancia", r.estimatedEndDate)),
+    ];
+
+    res.status(200).json({ status: "success", data: alertas });
+  } catch (error) {
+    console.error("Error en getAlertasCitas:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
 module.exports = {
   crearConsulta, getConsultas, getExpediente, guardarExpediente, getAllExpedientes,
-  crearCronicoDegenerativo, getCronicoDegenerativo, updateCronicoDegenerativo, deleteCronicoDegenerativo, getDetectadosCronicos,
+  crearCronicoDegenerativo, getCronicoDegenerativo, updateCronicoDegenerativo, deleteCronicoDegenerativo, getDetectadosCronicos, uploadCronicoDocs,
+  deleteCronicoDoc,
   crearSeguimientoGeneral, getSeguimientoGeneral, getDetectadosSeguimiento, updateSeguimientoGeneral, deleteSeguimientoGeneral,
   crearLactante, getLactantes, updateLactante, deleteLactante,
   crearPrenatal, getPrenatales, updatePrenatal, deletePrenatal,
+  uploadExpedienteDocs, deleteExpedienteDoc,
+  getAlertasCitas,
+  seguimientoDocs, lactanteDocs, prenatalDocs
 };

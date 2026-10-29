@@ -3,7 +3,7 @@ const {
     createUbicacion, getUbicaciones, updateUbicacion, toggleUbicacionStatus,
     createComponente, getComponentes, updateComponente, deleteComponente,
     createProducto, getProductos, updateProducto, toggleProductoStatus,
-    registrarIngreso, registrarTraspaso, getMovimientos, getBitacora
+    registrarIngreso, registrarTraspaso, getMovimientos, getBitacora, registrarBaja
 } = require("../controllers/inventoryEHS.controller");
 const { verifyToken, isAutorized, isEHS } = require("../middlewares/auth.Jwt");
 const router = Router();
@@ -105,5 +105,7 @@ router.get("/bitacora/:CompanyId",
     isAutorized,
     isEHS,
     getBitacora);
+
+router.post("/baja/:CompanyId?", verifyToken, registrarBaja);
 
 module.exports = router;

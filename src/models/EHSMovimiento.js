@@ -9,7 +9,7 @@ const EHSMovimientoSchema = new mongoose.Schema({
 
     tipo: {
         type: String,
-        enum: ["Ingreso", "Traspaso", "Consumo médico"],
+        enum: ["Ingreso", "Traspaso", "Consumo médico", "Baja"],
         required: true
     },
 
@@ -44,11 +44,16 @@ const EHSMovimientoSchema = new mongoose.Schema({
         trim: true
     },
 
+    motivo: {
+        type: String,
+        trim: true
+    },
+
     consulta: {
         ref: "ConsultaMedica",
         type: mongoose.Schema.Types.ObjectId
     },
-    
+
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
