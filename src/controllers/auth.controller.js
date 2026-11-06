@@ -6,6 +6,7 @@ const Employees = require("../models/Employees.js");
 const Company = require("../models/Company.js");
 const Signature = require("../models/Signatures.js");
 const PushToken = require("../models/PushToken.js");
+const nodemailer = require('nodemailer');
 console.log("ENV:", process.env.FIREBASE_CREDENTIALS_JSON ? "✅ cargada" : "❌ no encontrada");
 
 // Getting all Users/////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +190,7 @@ const signIn = async (req, res) => {
 
   // 4. Construcción de userData usando Template Literals
   const emp = userFound.employee[0];
-  const userData = `${emp.name}|${emp.lastName}|${userFound.username}|${emp.picture}|${apg}|${axg}|${userFound.company[0]._id}|${emp.numberEmployee}|${userFound.language}`;
+  const userData = `${emp.name}|${emp.lastName}|${userFound.username}|${emp.picture}|${apg}|${axg}|${userFound.company[0]._id}|${emp.numberEmployee}|${userFound.language}|${userFound.email}`;
 
   // 5. Inicialización de arrays de accesos
   let userAccessApg = Array(70).fill("false");
@@ -863,7 +864,213 @@ const getUserSignature = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
+    // 1. Validar que el usuario exista
+    const user = await User.findOne({ email }).populate('employee');
+
+    if (!user) {
+      return res.status(404).json({ message: "No se encontró un usuario con ese correo." });
+    }
+
+    // 2. Validar que tenga un empleado asociado
+    if (!user.employee || user.employee.length === 0) {
+      return res.status(400).json({ message: "Este usuario no tiene un perfil de empleado asociado." });
+    }
+
+    // 3. Validar si el empleado está activo (como employee es un array en tu modelo, tomamos el índice 0)
+    const employeeData = user.employee[0];
+
+    if (employeeData.active !== true) {
+      return res.status(403).json({ message: "El usuario está inactivo. No tienes permisos para restablecer la contraseña." });
+    }
+
+    // 2. Generar código de 6 dígitos aleatorio
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 3. Guardar el código y expiración (5 minutos) en el modelo
+    user.resetPasswordCode = code;
+    user.resetPasswordExpires = Date.now() + 5 * 60 * 1000; // 5 minutos en milisegundos
+    await user.save();
+
+    // 4. Configurar Nodemailer y enviar correo
+    const transporter = nodemailer.createTransport({
+      host: "smtp.office365.com",
+      port: 587,
+      auth: {
+        user: process.env.MAIL_AUTH_USER,
+        pass: process.env.MAIL_AUTH_PASS,
+      },
+      secureConnection: false,
+      tls: { ciphers: "SSLv3" },
+    });
+
+    const mailOptions = {
+      from: `"Paperless" <${process.env.MAIL_AUTH_USER}>`,
+      to: user.email,
+      subject: "Código de verificación cuenta paperless",
+      html: `
+        <p>Hola <b>${user.username}</b>,</p>
+        <p>Utiliza el siguiente código: <b style="font-size: 24px; color: #441E75;">${code}</b>, para cambiar la contraseña de tu usuario.</p>
+        <p>Este código expira en 5 minutos.</p>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    // 5. Enviar respuesta exitosa con el username
+    return res.status(200).json({
+      message: "Código enviado correctamente",
+      username: user.username
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error en el servidor al enviar el correo" });
+  }
+};
+
+const verifyResetCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    // 1. Buscar al usuario por correo
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "No se encontró un usuario con ese correo." });
+    }
+
+    // 2. Validar que el código coincida
+    if (user.resetPasswordCode !== code) {
+      return res.status(400).json({ message: "El código ingresado es incorrecto." });
+    }
+
+    // 3. Validar que el código no haya expirado (5 minutos)
+    if (user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "El código ha expirado. Por favor, solicita uno nuevo." });
+    }
+
+    // Si todo está bien, enviamos respuesta exitosa
+    return res.status(200).json({ message: "Código verificado correctamente." });
+
+  } catch (error) {
+    console.error("Error al verificar código:", error);
+    return res.status(500).json({ message: "Error en el servidor al verificar el código." });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    // Ya no pedimos "confirmPassword", el frontend ya lo validó
+    const { email, code, password } = req.body;
+
+    // 1. Buscar al usuario
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "No se encontró un usuario con ese correo." });
+    }
+
+    // 2. Validar que el código sea correcto y no haya expirado
+    if (user.resetPasswordCode !== code || user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "Código inválido o expirado. No se puede cambiar la contraseña." });
+    }
+
+    // 3. Encriptar la nueva contraseña usando el método que ya tienes en tu modelo
+    user.password = await User.encryptPassword(password);
+
+    // 4. Limpiar los campos temporales del código
+    user.resetPasswordCode = null;
+    user.resetPasswordExpires = null;
+
+    // 5. Guardar los cambios en la base de datos
+    await user.save();
+
+    return res.status(200).json({ message: "Contraseña actualizada exitosamente." });
+
+  } catch (error) {
+    console.error("Error al restablecer contraseña:", error);
+    return res.status(500).json({ message: "Error en el servidor al cambiar la contraseña." });
+  }
+};
+
+const requestEmailChange = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // 1. Validar que el usuario existe y coincide el correo actual
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
+
+    // 2. Verificar que el NUEVO correo no esté en uso por nadie más
+    const emailExists = await User.findOne({ email: newEmail });
+    if (emailExists) {
+      return res.status(400).json({ message: "Este email ya está en uso. Por favor ingresa otro." });
+    }
+
+    // 3. Generar código y guardarlo en los campos temporales del modelo
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordCode = code; // Usamos el mismo campo temporal para no alterar el modelo
+    user.resetPasswordExpires = Date.now() + 5 * 60 * 1000; // 5 minutos
+    await user.save();
+
+    // 4. Enviar código al NUEVO correo
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: `"Paperless" <${process.env.EMAIL_USER}>`,
+      to: newEmail,
+      subject: "Código de verificación para cambio de correo",
+      html: `
+                <p>Hola <b>${user.username}</b>,</p>
+                <p>Has solicitado cambiar tu correo electrónico.</p>
+                <p>Ingresa el siguiente código para confirmar este correo: <b style="font-size: 24px; color: #441E75;">${code}</b></p>
+                <p>Este código expira en 5 minutos.</p>
+            `
+    };
+
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ message: "Código enviado al nuevo correo." });
+
+  } catch (error) {
+    console.error("Error al solicitar cambio de email:", error);
+    return res.status(500).json({ message: "Error interno del servidor." });
+  }
+};
+
+const verifyEmailChange = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { newEmail, code } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
+
+    // 1. Validar el código y la fecha de expiración
+    if (user.resetPasswordCode !== code || user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "Código inválido o expirado." });
+    }
+
+    // 2. Aplicar el cambio de correo y limpiar el código
+    user.email = newEmail;
+    user.resetPasswordCode = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    return res.status(200).json({ message: "Correo electrónico actualizado exitosamente." });
+
+  } catch (error) {
+    console.error("Error al verificar código de email:", error);
+    return res.status(500).json({ message: "Error interno del servidor." });
+  }
+};
 
 module.exports = {
   signUp,
@@ -885,5 +1092,10 @@ module.exports = {
   // notifyInteresErrorProofing,
   // notificarInicioDevolucion,
   // notificarConfirmacionDevolucion,
-  getUserSignature
+  getUserSignature,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
+  requestEmailChange,
+  verifyEmailChange
 };

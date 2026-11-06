@@ -86,11 +86,11 @@ const createItems = async (req, res) => {
                 });
             }
         }
-        
+
         if (bulkOps.length > 0) {
             await Items.bulkWrite(bulkOps);
         }
-        
+
         res.status(200).json({ status: "200", message: 'Materiales procesados correctamente' });
     } catch (error) {
         console.error('Error al procesar materiales:', error);
@@ -290,7 +290,7 @@ const createPedido = async (req, res) => {
         console.log(req.body)
         const { usuario, maquina, materiales } = req.body;
 
-        
+
 
         // Validaciones básicas
         if (!usuario || !maquina || !materiales || materiales.length === 0) {
@@ -304,7 +304,7 @@ const createPedido = async (req, res) => {
             pStatus: "pending",
             surtidor: null,
             creationTime: time,
-            company:CompanyId
+            company: CompanyId
         });
 
         // Buscar usuario en la base de datos
@@ -1065,6 +1065,41 @@ const updateDevolucionContent = async (req, res) => {
     }
 };
 
+//Metodo para obtener todos los pedidos limitados///////////////////////////////////////////////////////////////////////////////////
+const getAllLimitedPedidos = async (req, res) => {
+    const { CompanyId } = req.params
+    if (CompanyId.length !== 24) {
+        return;
+    }
+    const company = await Company.find({
+        _id: { $in: CompanyId },
+    })
+
+    if (!company) {
+        return;
+    }
+
+    const pedidos = await Pedido.find({
+        company: { $in: CompanyId },
+    }).sort({ createdAt: -1 })
+        .limit(100)
+        .populate({
+            path: "usuario",
+            select: "employee",
+            populate: { path: "employee", select: "name lastName" }
+        })
+        .populate({
+            path: "surtidor",
+            select: "employee",
+            populate: { path: "employee", select: "name lastName" }
+        })
+        .populate({
+            path: "items",
+            populate: { path: "id", select: "name description vendorItemNo" }
+        });
+    res.json({ status: "200", message: "Pedidos Loaded", body: pedidos });
+};
+
 module.exports = {
     createItems,
     getAllItems,
@@ -1077,5 +1112,6 @@ module.exports = {
     createDevolucion,
     getDevoluciones,
     updateDevolucionStatus,
-    updateDevolucionContent
+    updateDevolucionContent,
+    getAllLimitedPedidos
 }

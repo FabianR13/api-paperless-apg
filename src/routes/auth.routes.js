@@ -14,7 +14,12 @@ const {
   getAccess,
   saveTokenPush,
   enviarNotificacionPush,
-  getUserSignature
+  getUserSignature,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
+  requestEmailChange,
+  verifyEmailChange
 } = require("../controllers/auth.controller.js");
 const {
   checkDuplicateUsernameorEmail,
@@ -98,5 +103,25 @@ router.post(
   enviarNotificacionPush
 );
 router.get("/UserSignature/:userId", verifyToken, getUserSignature);
+
+router.post(
+  "/forgot-password",
+  forgotPassword
+);
+
+router.post('/verify-code', verifyResetCode);
+router.post('/reset-password', resetPassword);
+
+router.post(
+  '/request-email-change/:userId',
+  verifyToken,
+  requestEmailChange
+);
+
+router.post(
+  '/verify-email-change/:userId',
+  verifyToken,
+  verifyEmailChange
+);
 
 module.exports = router;

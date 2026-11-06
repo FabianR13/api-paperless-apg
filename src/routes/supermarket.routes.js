@@ -12,7 +12,8 @@ const {
     createDevolucion,
     getDevoluciones,
     updateDevolucionStatus,
-    updateDevolucionContent
+    updateDevolucionContent,
+    getAllLimitedPedidos
 } = require("../controllers/supermarket.controller.js");
 const router = Router();
 
@@ -50,6 +51,15 @@ router.get(
     isAutorized,
     isSMReader,
     getAllPedidos
+);
+
+//route to get all pedidos
+router.get(
+    "/LimitedPedidos/:CompanyId",
+    verifyToken,
+    isAutorized,
+    isSMReader,
+    getAllLimitedPedidos
 );
 
 //route to update pedido
