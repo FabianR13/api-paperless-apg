@@ -33,6 +33,7 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: false }));
 app.use('/api/panels', require('./routes/panels.routes'));
 app.use('/api/inventoryEHS', require('./routes/inventoryEHS.routes'));
+app.use('/api/medicalService', require('./routes/medicalService.routes'));
 
 app.get('/', (req, res) => {
   res.json({
