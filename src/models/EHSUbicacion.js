@@ -10,6 +10,12 @@ const EHSUbicacionSchema = new mongoose.Schema({
         unique: true
     },
 
+    tipo: {
+        type: String,
+        enum: ["Servicio Médico", "Botiquín"],
+        default: "Botiquín"
+    },
+
     status: {
         type: String,
         enum: ["Activo", "Inactivo"],
