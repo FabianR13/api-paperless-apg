@@ -6,13 +6,22 @@ const EHSMovimiento = require("../models/EHSMovimiento");
 const EHSBitacora = require("../models/EHSBitacora");
 const Company = require("../models/Company");
 
-// Helper para limpiar texto: Mayúsculas, Trim y Sin Acentos/Tildes
+// Helper para limpiar texto: Mayúsculas, Trim, sin acentos pero CONSERVANDO la Ñ
 const cleanText = (str = "") => {
     return str
         .trim()
         .toUpperCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+        // Excluimos la Ñ de la limpieza de tildes (Ñ mayúscula y ñ minúscula)
+        .replace(/[\u0300-\u036f]/g, (match, offset, string) => {
+            // Si el caracter anterior es N, no eliminamos el diacrítico de la eñe
+            const charBefore = string.charAt(offset - 1);
+            if (charBefore === 'N' || charBefore === 'n') {
+                return match;
+            }
+            return '';
+        })
+        .normalize("NFC"); // Volvemos a normalizar para unificar la Ñ correctamente
 };
 
 // ---------- UBICACIONES ----------
@@ -33,7 +42,22 @@ const createUbicacion = async (req, res) => {
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ status: "error", message: "Error al buscar usuario" });
 
-        let ubicacion = await EHSUbicacion.findOne({ nombre });
+        // Validar si ya existe una ubicación de tipo "Servicio Médico" activa
+        if (tipo === "Servicio Médico") {
+            const yaExisteServicioMedico = await EHSUbicacion.findOne({
+                company: { $in: CompanyId },
+                tipo: "Servicio Médico",
+                status: "Activo"
+            });
+            if (yaExisteServicioMedico) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Ya existe una ubicación de Servicio Médico activa."
+                });
+            }
+        }
+
+        let ubicacion = await EHSUbicacion.findOne({ nombre, company: { $in: CompanyId } });
 
         if (ubicacion) {
             if (ubicacion.status === "Activo") {
@@ -91,6 +115,21 @@ const updateUbicacion = async (req, res) => {
 
         const duplicado = await EHSUbicacion.findOne({ nombre, _id: { $ne: id } });
         if (duplicado) return res.status(409).json({ status: "error", message: "Esa ubicación ya existe" });
+
+        // NUEVO: Validar que no intenten cambiar otra ubicación a Servicio Médico si ya hay una
+        if (tipo === "Servicio Médico") {
+            const yaExisteServicioMedico = await EHSUbicacion.findOne({
+                _id: { $ne: id },
+                tipo: "Servicio Médico",
+                status: "Activo"
+            });
+            if (yaExisteServicioMedico) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Ya existe otra ubicación de Servicio Médico activa."
+                });
+            }
+        }
 
         const updated = await EHSUbicacion.findByIdAndUpdate(id, { nombre, tipo, modifiedBy: user._id }, { new: true });
         if (!updated) return res.status(404).json({ status: "error", message: "Ubicación no encontrada" });
