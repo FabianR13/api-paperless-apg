@@ -75,7 +75,108 @@ const createptInspection = async (req, res) => {
     }
 };
 
+// Actualizar Cantidad Física (Fase 1 - Detalle)
+const updatePhysicalQty = async (req, res) => {
+    const { id } = req.params;
+    const { totalInventoryPhysical } = req.body;
+
+    try {
+        const inspection = await PTInspection.findByIdAndUpdate(
+            id,
+            { totalInventoryPhysical },
+            { new: true }
+        );
+
+        if (!inspection) return res.status(404).json({ status: "error", message: "Inspection not found" });
+
+        res.json({ status: "200", message: "Cantidad física actualizada", body: inspection });
+    } catch (error) {
+        console.error("Error updating physical qty:", error);
+        res.status(500).json({ status: "error", message: "Error al actualizar cantidad física" });
+    }
+};
+
+// Agregar Registro de Turno (Fase 2)
+const addRow = async (req, res) => {
+    const { id } = req.params;
+    const { shift, deliveryDate, supervisorId, deliveredQty, deliveredUnit } = req.body;
+
+    try {
+        const inspection = await PTInspection.findById(id);
+        if (!inspection) return res.status(404).json({ status: "error", message: "Inspection not found" });
+
+        // Agregamos el nuevo registro al arreglo
+        inspection.inspectionDetails.push({
+            shift,
+            deliveryDate,
+            supervisorId,
+            deliveredQty,
+            deliveredUnit
+        });
+
+        await inspection.save();
+        res.json({ status: "200", message: "Fila agregada correctamente", body: inspection });
+    } catch (error) {
+        console.error("Error adding row:", error);
+        res.status(500).json({ status: "error", message: "Error al agregar fila" });
+    }
+};
+
+// Actualizar Registro Existente (Para Fase 3 y Fase 4)
+const updateRow = async (req, res) => {
+    const { id, rowIndex } = req.params;
+    const updateData = req.body; // Contendrá los datos de la Fase 3 o Fase 4 dependiendo de quién llame
+
+    try {
+        const inspection = await PTInspection.findById(id);
+        if (!inspection) return res.status(404).json({ status: "error", message: "Inspection not found" });
+
+        if (rowIndex < 0 || rowIndex >= inspection.inspectionDetails.length) {
+            return res.status(400).json({ status: "error", message: "Índice de fila inválido" });
+        }
+
+        // Combinamos los datos existentes de esa fila con los nuevos datos que llegan
+        const currentRow = inspection.inspectionDetails[rowIndex];
+        Object.assign(currentRow, updateData);
+
+        await inspection.save();
+        res.json({ status: "200", message: "Datos de la fila guardados", body: inspection });
+    } catch (error) {
+        console.error("Error updating row:", error);
+        res.status(500).json({ status: "error", message: "Error al actualizar la fila" });
+    }
+};
+
+// Completar la Inspección (Finalizar)
+const completeInspection = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const dateMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+        
+        const inspection = await PTInspection.findByIdAndUpdate(
+            id,
+            { 
+                status: 'Completed', 
+                completedDate: dateMX 
+            },
+            { new: true }
+        );
+
+        if (!inspection) return res.status(404).json({ status: "error", message: "Inspection not found" });
+
+        res.json({ status: "200", message: "Inspección completada exitosamente", body: inspection });
+    } catch (error) {
+        console.error("Error completing inspection:", error);
+        res.status(500).json({ status: "error", message: "Error al completar inspección" });
+    }
+};
+
 module.exports = {
     getptInspections,
-    createptInspection
+    createptInspection,
+    updatePhysicalQty,
+    addRow,
+    updateRow,
+    completeInspection
 }
