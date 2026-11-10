@@ -602,7 +602,7 @@ const createDeviationRequest = async (req, res) => {
 
     let deviationImages = [];
     if (req.files && req.files["deviationImages"]) {
-        deviationImages = req.files["deviationImages"].map((file) => ({ img: file.key }));
+        deviationImages = req.files["deviationImages"].map((file) => ({ img: file.key.split('/').pop() }));
     }
 
     try {
