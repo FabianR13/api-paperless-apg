@@ -59,6 +59,7 @@ const deviationRequestSchema = new mongoose.Schema(
         },
         resolution: { type: String },
         deviationImages: [{ img: String }],
+        deviationPdfs: [{ pdf: String }],
         reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
         reviewDate: { type: Date },
         approvedBy: { type: Schema.Types.ObjectId, ref: "User" },

@@ -81,6 +81,7 @@ const deviationsNewSchema = new mongoose.Schema(
         closedDate: { type: Date },
         closureImages: [{ img: String }],
         closurePdfs: [{ pdf: String }],
+        deviationPdfs: [{ pdf: String }],
     },
     {
         timestamps: true,
