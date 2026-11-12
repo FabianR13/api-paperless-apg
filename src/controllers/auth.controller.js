@@ -258,6 +258,10 @@ const signIn = async (req, res) => {
     AccessPanelsM: [46],
     //Roles EHS 
     EHSManager: [47],
+    //Roles PT Inspection
+    PTInspectionR: [48],
+    PTQuality: [49],
+    PTWarehouse: [50],
   };
 
   // 7. Configuración de Mapeo de Roles Axiom (Afecta tanto a AXG como a APG)
@@ -322,6 +326,10 @@ const signIn = async (req, res) => {
     AccessPanelsM: [46],
     //Roles EHS 
     EHSManager: [47],
+     //Roles PT Inspection
+    PTInspectionR: [48],
+    PTQuality: [49],
+    PTWarehouse: [50],
   };
 
   // 8. Aplicar accesos buscando asíncronamente los roles a la DB
@@ -869,7 +877,9 @@ const forgotPassword = async (req, res) => {
     const { email } = req.body;
 
     // 1. Validar que el usuario exista
-    const user = await User.findOne({ email }).populate('employee');
+    const user = await User.findOne({
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
+    }).populate('employee');
 
     if (!user) {
       return res.status(404).json({ message: "No se encontró un usuario con ese correo." });
