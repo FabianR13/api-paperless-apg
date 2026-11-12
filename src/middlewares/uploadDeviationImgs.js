@@ -32,8 +32,8 @@ const upload = multer({
 
 ///Metodo para subir multiples imagenes///
 const uploadDeviationImgs = upload.fields([
-  { name: "deviationImages", maxCount: 5 },
-  { name: "newEvidencePdfs", maxCount: 4 },
+  { name: "deviationImages", maxCount: 12 },
+  { name: "newEvidencePdfs", maxCount: 12 },
 ]);
 
 module.exports = uploadDeviationImgs;
