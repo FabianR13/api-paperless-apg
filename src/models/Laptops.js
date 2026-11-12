@@ -69,6 +69,9 @@ const laptopsSchema = new mongoose.Schema(
         purchaseDate: {
             type: Date,
         },
+        lastMaintenance: {
+            type: Date
+        },
         status: {
             type: String,
         },
