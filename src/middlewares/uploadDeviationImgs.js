@@ -1,6 +1,7 @@
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const shortid = require("shortid");
+const path = require("path");
 const dotenv = require('dotenv')
 dotenv.config({ path: "C:\\api-paperless-apg\\src\\.env" });
 
@@ -22,7 +23,9 @@ const upload = multer({
       cb(null, { fieldName: file.fieldname });
     },
     key: (req, file, cb) => {
-      cb(null, "Uploads/DeviationImgs/" + shortid.generate() + ".jpeg");
+      console.log(`Procesando archivo: ${file.originalname} del campo: ${file.fieldname}`);
+      const extension = path.extname(file.originalname);
+      cb(null, "Uploads/DeviationImgs/" + shortid.generate() + extension);
     }
   })
 });
@@ -30,6 +33,7 @@ const upload = multer({
 ///Metodo para subir multiples imagenes///
 const uploadDeviationImgs = upload.fields([
   { name: "deviationImages", maxCount: 5 },
+  { name: "newEvidencePdfs", maxCount: 4 },
 ]);
 
 module.exports = uploadDeviationImgs;

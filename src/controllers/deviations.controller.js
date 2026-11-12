@@ -602,7 +602,11 @@ const createDeviationRequest = async (req, res) => {
 
     let deviationImages = [];
     if (req.files && req.files["deviationImages"]) {
-        deviationImages = req.files["deviationImages"].map((file) => ({ img: file.key }));
+        deviationImages = req.files["deviationImages"].map((file) => ({ img: file.key.split('/').pop() }));
+    }
+    let deviationPdfs = []
+    if (req.files && req.files['newEvidencePdfs']) {
+        deviationPdfs = req.files["newEvidencePdfs"].map((file) => ({ pdf: file.key.split('/').pop() }));
     }
 
     try {
@@ -645,11 +649,12 @@ const createDeviationRequest = async (req, res) => {
             deviationDescription,
             interimControlMeasure,
             deviationImages,
+            deviationPdfs,
             termRequest,
             active: true,
             resolution: "New"
         });
-
+        //console.log(newDeviationRequest)
         const savedDeviationRequest = await newDeviationRequest.save();
 
         if (!savedDeviationRequest) {
@@ -892,6 +897,7 @@ const validationDeviationRequest = async (req, res) => {
                 consequence: updateDeviationRequest.consequence,
                 termRequest: updateDeviationRequest.termRequest,
                 deviationImages: updateDeviationRequest.deviationImages,
+                deviationPdfs: updateDeviationRequest.deviationPdfs,
                 reviewedBy: updateDeviationRequest.reviewedBy,
                 reviewDate: updateDeviationRequest.reviewDate,
                 approvedBy: updateDeviationRequest.approvedBy,
